@@ -1,0 +1,1644 @@
+{
+  "about": "Starter cases for excel-parity.xlsx. scripts/build-parity-workbook.ps1 writes these into the workbook through real Excel, which computes the answers. A leading ' in data means 'store as text'. Rows already in the workbook are never touched; new seed cases are appended.",
+  "sheets": [
+    {
+      "name": "basics",
+      "data": [
+        [
+          "Day",
+          "Sales",
+          "Costs",
+          "Small",
+          "Flag",
+          "Mixed"
+        ],
+        [
+          "Mon",
+          120,
+          80,
+          5,
+          true,
+          10
+        ],
+        [
+          "Tue",
+          95,
+          60.5,
+          "abc",
+          false,
+          "text"
+        ],
+        [
+          "Wed",
+          140,
+          90,
+          null,
+          true,
+          null
+        ],
+        [
+          "Thu",
+          110,
+          0,
+          0.1,
+          null,
+          true
+        ],
+        [
+          "Fri",
+          160,
+          100,
+          0.2,
+          null,
+          "'7"
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "=B2/C5",
+          null,
+          null
+        ]
+      ],
+      "cases": [
+        {
+          "f": "=B2+B3",
+          "note": "add two cells"
+        },
+        {
+          "f": "=B2-C2",
+          "note": "subtract"
+        },
+        {
+          "f": "=B2*C2",
+          "note": "multiply"
+        },
+        {
+          "f": "=B2/C2",
+          "note": "divide"
+        },
+        {
+          "f": "=B2/C5",
+          "note": "divide by zero"
+        },
+        {
+          "f": "=B2/D4",
+          "note": "divide by empty cell"
+        },
+        {
+          "f": "=1+2*3",
+          "note": "precedence: * before +"
+        },
+        {
+          "f": "=(1+2)*3",
+          "note": "brackets"
+        },
+        {
+          "f": "=1-2-3",
+          "note": "minus runs left to right"
+        },
+        {
+          "f": "=8/4/2",
+          "note": "divide runs left to right"
+        },
+        {
+          "f": "=-2^2",
+          "note": "unary minus binds tighter than ^"
+        },
+        {
+          "f": "=2^3^2",
+          "note": "^ runs left to right"
+        },
+        {
+          "f": "=2^-1",
+          "note": "negative exponent"
+        },
+        {
+          "f": "=2^0.5",
+          "note": "fractional exponent"
+        },
+        {
+          "f": "=0^0",
+          "note": "zero to the zero"
+        },
+        {
+          "f": "=0^-1",
+          "note": "zero to a negative power"
+        },
+        {
+          "f": "=10%",
+          "note": "percent literal"
+        },
+        {
+          "f": "=50%*B2",
+          "note": "percent of a cell"
+        },
+        {
+          "f": "=2*3%",
+          "note": "% binds tighter than *"
+        },
+        {
+          "f": "=-B2",
+          "note": "unary minus on a cell"
+        },
+        {
+          "f": "=--B2",
+          "note": "double minus"
+        },
+        {
+          "f": "=+B2",
+          "note": "unary plus"
+        },
+        {
+          "f": "=B2+D4",
+          "note": "empty cell is 0 in arithmetic"
+        },
+        {
+          "f": "=D4",
+          "note": "reference to an empty cell shows 0"
+        },
+        {
+          "f": "=A2+1",
+          "note": "text cell in arithmetic"
+        },
+        {
+          "f": "=\"5\"+1",
+          "note": "numeric text is coerced"
+        },
+        {
+          "f": "=TRUE+1",
+          "note": "TRUE is 1"
+        },
+        {
+          "f": "=\"a\"+1",
+          "note": "non-numeric text"
+        },
+        {
+          "f": "=E2+1",
+          "note": "TRUE cell in arithmetic"
+        },
+        {
+          "f": "=F6+1",
+          "note": "numeric text cell in arithmetic"
+        },
+        {
+          "f": "=1000+1",
+          "note": "plain numbers"
+        },
+        {
+          "f": "=1/3",
+          "note": "repeating decimal"
+        },
+        {
+          "f": "=0.1+0.2",
+          "note": "classic float sum"
+        },
+        {
+          "f": "=D5+D6",
+          "note": "float sum from cells"
+        },
+        {
+          "f": "=D8+1",
+          "note": "error cell propagates"
+        },
+        {
+          "f": "=B2+foo",
+          "note": "unknown name"
+        },
+        {
+          "f": "=SUMM(B2:B6)",
+          "note": "misspelt function"
+        },
+        {
+          "f": "=SUM(B2:B6)",
+          "note": "sum a column"
+        },
+        {
+          "f": "=SUM(B6:B2)",
+          "note": "reversed range"
+        },
+        {
+          "f": "=SUM(B2:C6)",
+          "note": "sum a block"
+        },
+        {
+          "f": "=SUM(B2,B3)",
+          "note": "two separate cells"
+        },
+        {
+          "f": "=SUM(B2:B3,C2)",
+          "note": "range plus a cell"
+        },
+        {
+          "f": "=SUM(B2:B6,10)",
+          "note": "range plus a number"
+        },
+        {
+          "f": "=SUM(1,2,3)",
+          "note": "numbers only"
+        },
+        {
+          "f": "=SUM(A2:A6)",
+          "note": "text in a range is skipped"
+        },
+        {
+          "f": "=SUM(A2:B6)",
+          "note": "mixed text and numbers"
+        },
+        {
+          "f": "=SUM(F2:F6)",
+          "note": "text, TRUE and numeric text in a range are skipped"
+        },
+        {
+          "f": "=SUM(E2:E4)",
+          "note": "TRUE/FALSE in a range are skipped"
+        },
+        {
+          "f": "=SUM(F6)",
+          "note": "single text cell reference is skipped"
+        },
+        {
+          "f": "=SUM(D4)",
+          "note": "single empty cell"
+        },
+        {
+          "f": "=SUM(\"5\",1)",
+          "note": "numeric text typed into SUM counts"
+        },
+        {
+          "f": "=SUM(TRUE,1)",
+          "note": "TRUE typed into SUM counts"
+        },
+        {
+          "f": "=SUM(\"a\",1)",
+          "note": "text typed into SUM is an error"
+        },
+        {
+          "f": "=SUM(D2:D8)",
+          "note": "error inside the range"
+        },
+        {
+          "f": "=SUM(D5:D6)",
+          "note": "float sum via SUM"
+        },
+        {
+          "f": "=SUM(B2:B6)/5",
+          "note": "SUM in arithmetic"
+        },
+        {
+          "f": "=SUM(B2:B6)-SUM(C2:C6)",
+          "note": "two SUMs"
+        },
+        {
+          "f": "=SUM(B2:B6)*2",
+          "note": "SUM times a number"
+        },
+        {
+          "f": "=\"a\"&\"b\"",
+          "note": "join text"
+        },
+        {
+          "f": "=B2&A2",
+          "note": "join number and text"
+        },
+        {
+          "f": "=D4&\"x\"",
+          "note": "empty cell is \"\" with &"
+        },
+        {
+          "f": "=TRUE&\"\"",
+          "note": "TRUE as text"
+        },
+        {
+          "f": "=1/3&\"\"",
+          "note": "display: 15 significant digits"
+        },
+        {
+          "f": "=2/3&\"\"",
+          "note": "display: rounding the 15th digit"
+        },
+        {
+          "f": "=0.1+0.2&\"\"",
+          "note": "display: 0.1+0.2 shows 0.3"
+        },
+        {
+          "f": "=1234567.891&\"\"",
+          "note": "display: no thousands separators"
+        },
+        {
+          "f": "=100000000000000&\"\"",
+          "note": "display: 15 digit whole number"
+        },
+        {
+          "f": "=1000000000000000&\"\"",
+          "note": "display: 16 digit whole number"
+        },
+        {
+          "f": "=123456789012345678&\"\"",
+          "note": "display: beyond 15 digits"
+        },
+        {
+          "f": "=0.00001&\"\"",
+          "note": "display: small number"
+        },
+        {
+          "f": "=0.0000000001&\"\"",
+          "note": "display: very small number"
+        },
+        {
+          "f": "=0.00000000001234&\"\"",
+          "note": "display: tiny number"
+        },
+        {
+          "f": "=-0.5&\"\"",
+          "note": "display: negative fraction"
+        },
+        {
+          "f": "=1=1",
+          "note": "equal numbers"
+        },
+        {
+          "f": "=1<>2",
+          "note": "not equal"
+        },
+        {
+          "f": "=1<2",
+          "note": "less than"
+        },
+        {
+          "f": "=B2>=120",
+          "note": "greater or equal with a cell"
+        },
+        {
+          "f": "=\"a\"=\"A\"",
+          "note": "text comparison ignores case"
+        },
+        {
+          "f": "=\"a\"<\"b\"",
+          "note": "text ordering"
+        },
+        {
+          "f": "=1<\"a\"",
+          "note": "any number is less than any text"
+        },
+        {
+          "f": "=\"z\"<TRUE",
+          "note": "any text is less than TRUE/FALSE"
+        },
+        {
+          "f": "=FALSE<TRUE",
+          "note": "FALSE is less than TRUE"
+        },
+        {
+          "f": "=D4=0",
+          "note": "empty equals 0"
+        },
+        {
+          "f": "=D4=\"\"",
+          "note": "empty equals empty text"
+        },
+        {
+          "f": "=1+1=2",
+          "note": "arithmetic before comparison"
+        },
+        {
+          "f": "=\"a\"&\"b\"=\"ab\"",
+          "note": "& before comparison"
+        },
+        {
+          "f": "=0.1+0.2=0.3",
+          "note": "float equality"
+        },
+        {
+          "f": "=1.1+2.2=3.3",
+          "note": "float equality 2"
+        },
+        {
+          "f": "=0.5-0.4-0.1",
+          "note": "float subtraction that should cancel"
+        },
+        {
+          "f": "=1*(0.5-0.4-0.1)",
+          "note": "same, as an inner result"
+        },
+        {
+          "f": "=(0.1+0.2)-0.3",
+          "note": "float cancel 2"
+        },
+        {
+          "f": "=0.1*3=0.3",
+          "note": "float equality 3"
+        },
+        {
+          "f": "=0.1+0.2>0.3",
+          "note": "float greater-than on near-equal values"
+        },
+        {
+          "f": "=0.1+0.2<=0.3",
+          "note": "float less-or-equal on near-equal values"
+        },
+        {
+          "f": "=1+1E-14=1",
+          "note": "differs in the 15th digit"
+        },
+        {
+          "f": "=1+1E-15=1",
+          "note": "differs in the 16th digit"
+        },
+        {
+          "f": "=1+2E-15=1",
+          "note": "differs in the 16th digit by 2"
+        },
+        {
+          "f": "=1+5E-15=1",
+          "note": "differs in the 16th digit by 5"
+        },
+        {
+          "f": "=1+1E-15>1",
+          "note": "greater-than, 16th digit"
+        },
+        {
+          "f": "=100+1E-13=100",
+          "note": "16th digit at a larger size"
+        },
+        {
+          "f": "=100+1E-12=100",
+          "note": "15th digit at a larger size"
+        },
+        {
+          "f": "=1E+19&\"\"",
+          "note": "display: 1E+19"
+        },
+        {
+          "f": "=1E+20&\"\"",
+          "note": "display: 1E+20"
+        },
+        {
+          "f": "=1E+21&\"\"",
+          "note": "display: 1E+21"
+        },
+        {
+          "f": "=1.234E+30&\"\"",
+          "note": "display: 1.234E+30"
+        },
+        {
+          "f": "=1E-15&\"\"",
+          "note": "display: 1E-15"
+        },
+        {
+          "f": "=1E-19&\"\"",
+          "note": "display: 1E-19"
+        },
+        {
+          "f": "=1E-20&\"\"",
+          "note": "display: 1E-20"
+        },
+        {
+          "f": "=1.5E-25&\"\"",
+          "note": "display: 1.5E-25"
+        },
+        {
+          "f": "=1.23456789012345E-07&\"\"",
+          "note": "display: small with 15 digits"
+        },
+        {
+          "f": "=12345.6789012345678&\"\"",
+          "note": "display: decimals cut to 15 digits"
+        },
+        {
+          "f": "=-1E+21&\"\"",
+          "note": "display: negative large"
+        },
+        {
+          "f": "=1E-16&\"\"",
+          "note": "display: 1E-16"
+        },
+        {
+          "f": "=1E-17&\"\"",
+          "note": "display: 1E-17"
+        },
+        {
+          "f": "=1E-18&\"\"",
+          "note": "display: 1E-18"
+        },
+        {
+          "f": "=-1E+19&\"\"",
+          "note": "display: negative, 20 digits"
+        },
+        {
+          "f": "=-1E-18&\"\"",
+          "note": "display: negative, small"
+        },
+        {
+          "f": "=1.5E-17&\"\"",
+          "note": "display: 20 characters as a decimal"
+        },
+        {
+          "f": "=1.5E-18&\"\"",
+          "note": "display: 21 characters as a decimal"
+        },
+        {
+          "f": "=1.234E-17&\"\"",
+          "note": "display: 22 characters as a decimal"
+        },
+        {
+          "f": "=12345678901234500000&\"\"",
+          "note": "display: 20 digit whole number"
+        },
+        {
+          "f": "=0.000123456789012345&\"\"",
+          "note": "display: 20 characters, 15 digits"
+        },
+        {
+          "f": "=0.0000123456789012345&\"\"",
+          "note": "display: 21 characters, 15 digits"
+        },
+        {
+          "f": "=1234567890.12345678&\"\"",
+          "note": "display: whole and decimal parts"
+        }
+      ]
+    },
+    {
+      "name": "stats",
+      "data": [
+        [
+          "Item",
+          "Qty",
+          "Price",
+          "Mixed",
+          "Flags",
+          "Text"
+        ],
+        [
+          "A",
+          10,
+          2.5,
+          4,
+          true,
+          "apple"
+        ],
+        [
+          "B",
+          20,
+          3.25,
+          "x",
+          false,
+          "Banana"
+        ],
+        [
+          "C",
+          30,
+          1.005,
+          null,
+          null,
+          " pad  ded "
+        ],
+        [
+          "D",
+          null,
+          2.675,
+          0,
+          true,
+          "'12"
+        ],
+        [
+          "E",
+          50,
+          -2.5,
+          "'8",
+          null,
+          null
+        ],
+        [
+          "F",
+          5,
+          1234.5678,
+          -3,
+          false,
+          "cherry"
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "cases": [
+        {
+          "f": "=AVERAGE(B2:B7)",
+          "note": "average skips the blank cell"
+        },
+        {
+          "f": "=AVERAGE(D2:D7)",
+          "note": "average skips text, numeric text and blanks"
+        },
+        {
+          "f": "=AVERAGE(F2:F7)",
+          "note": "average of no numbers"
+        },
+        {
+          "f": "=AVERAGE(B2,B3)",
+          "note": "average of two cells"
+        },
+        {
+          "f": "=AVERAGE(\"5\",3)",
+          "note": "typed-in numeric text is used"
+        },
+        {
+          "f": "=AVERAGE(\"a\",3)",
+          "note": "typed-in text is an error"
+        },
+        {
+          "f": "=AVERAGE(E2:E7)",
+          "note": "average of only TRUE/FALSE cells"
+        },
+        {
+          "f": "=AVERAGE(B2:C3)",
+          "note": "average over a block"
+        },
+        {
+          "f": "=MIN(B2:B7)",
+          "note": "smallest"
+        },
+        {
+          "f": "=MAX(B2:B7)",
+          "note": "biggest"
+        },
+        {
+          "f": "=MIN(F2:F4)",
+          "note": "min of no numbers"
+        },
+        {
+          "f": "=MAX(F2:F4)",
+          "note": "max of no numbers"
+        },
+        {
+          "f": "=MAX(D2:D7)",
+          "note": "max skips text"
+        },
+        {
+          "f": "=MIN(D2:D7)",
+          "note": "min with a negative"
+        },
+        {
+          "f": "=MIN(5,\"3\")",
+          "note": "typed-in numeric text counts"
+        },
+        {
+          "f": "=MAX(B2:B7,100)",
+          "note": "range and a number"
+        },
+        {
+          "f": "=MIN(C2:C7)",
+          "note": "min of decimals"
+        },
+        {
+          "f": "=COUNT(B2:B7)",
+          "note": "count skips the blank"
+        },
+        {
+          "f": "=COUNT(D2:D7)",
+          "note": "count skips text and numeric text"
+        },
+        {
+          "f": "=COUNT(E2:E7)",
+          "note": "TRUE/FALSE cells are not counted"
+        },
+        {
+          "f": "=COUNT(F2:F7)",
+          "note": "text column"
+        },
+        {
+          "f": "=COUNT(1,\"2\",TRUE,\"a\")",
+          "note": "typed-in values"
+        },
+        {
+          "f": "=COUNT(B2:D7)",
+          "note": "count over a block"
+        },
+        {
+          "f": "=COUNTA(B2:B7)",
+          "note": "counta skips only the blank"
+        },
+        {
+          "f": "=COUNTA(D2:D7)",
+          "note": "counta counts text"
+        },
+        {
+          "f": "=COUNTA(F2:F7)",
+          "note": "counta on text"
+        },
+        {
+          "f": "=COUNTA(E2:E7)",
+          "note": "counta on TRUE/FALSE"
+        },
+        {
+          "f": "=COUNTA(A8:F8)",
+          "note": "empty row"
+        },
+        {
+          "f": "=COUNTA(1,\"\",TRUE)",
+          "note": "typed-in empty text still counts"
+        },
+        {
+          "f": "=ROUND(-2.5,0)",
+          "note": "half rounds away from zero (negative)"
+        },
+        {
+          "f": "=ROUND(2.5,0)",
+          "note": "half rounds away from zero"
+        },
+        {
+          "f": "=ROUND(2.675,2)",
+          "note": "rounds the decimal value, not the binary one"
+        },
+        {
+          "f": "=ROUND(1.005,2)",
+          "note": "another binary trap"
+        },
+        {
+          "f": "=ROUND(C4,2)",
+          "note": "binary trap from a cell"
+        },
+        {
+          "f": "=ROUND(C5,2)",
+          "note": "2.675 from a cell"
+        },
+        {
+          "f": "=ROUND(C7,-2)",
+          "note": "negative digits round to hundreds"
+        },
+        {
+          "f": "=ROUND(C7,2)",
+          "note": "two places"
+        },
+        {
+          "f": "=ROUND(C7,0)",
+          "note": "whole number"
+        },
+        {
+          "f": "=ROUND(C6,0)",
+          "note": "-2.5 from a cell"
+        },
+        {
+          "f": "=ROUND(-1.5,0)",
+          "note": "-1.5"
+        },
+        {
+          "f": "=ROUND(0.5,0)",
+          "note": "0.5"
+        },
+        {
+          "f": "=ROUND(1.45,1)",
+          "note": "1.45 to one place"
+        },
+        {
+          "f": "=ROUND(8.325,2)",
+          "note": "8.325"
+        },
+        {
+          "f": "=ROUND(2.5,1.9)",
+          "note": "digits are cut, not rounded"
+        },
+        {
+          "f": "=ROUND(\"2.5\",0)",
+          "note": "numeric text"
+        },
+        {
+          "f": "=ROUND(B2/3,3)",
+          "note": "rounding a division"
+        },
+        {
+          "f": "=ROUND(1234.5,-1)",
+          "note": "tens"
+        },
+        {
+          "f": "=ROUND(-0.4,0)",
+          "note": "rounds to zero"
+        },
+        {
+          "f": "=SUM(B2:B7)/COUNT(B2:B7)",
+          "note": "average by hand"
+        },
+        {
+          "f": "=ROUND(AVERAGE(C2:C7),2)",
+          "note": "nested"
+        }
+      ]
+    },
+    {
+      "name": "logic",
+      "data": [
+        [
+          "Name",
+          "Score",
+          "Target",
+          "Region",
+          "Paid",
+          "Note"
+        ],
+        [
+          "Ann",
+          120,
+          100,
+          "North",
+          true,
+          "ok"
+        ],
+        [
+          "Bob",
+          80,
+          100,
+          "south",
+          false,
+          null
+        ],
+        [
+          "Cat",
+          100,
+          100,
+          "North",
+          true,
+          "late"
+        ],
+        [
+          "Dan",
+          150,
+          120,
+          "East",
+          false,
+          "ok"
+        ],
+        [
+          "Eve",
+          0,
+          50,
+          "NORTH",
+          true,
+          null
+        ],
+        [
+          "Fay",
+          95,
+          90,
+          "West",
+          null,
+          "n/a"
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "cases": [
+        {
+          "f": "=B2>C2",
+          "note": "greater than"
+        },
+        {
+          "f": "=B3>C3",
+          "note": "greater than, false"
+        },
+        {
+          "f": "=B4>=C4",
+          "note": "at least"
+        },
+        {
+          "f": "=B4=C4",
+          "note": "equal numbers"
+        },
+        {
+          "f": "=D2=\"north\"",
+          "note": "text equality ignores case"
+        },
+        {
+          "f": "=D2<>D3",
+          "note": "different text"
+        },
+        {
+          "f": "=\"a\"<\"B\"",
+          "note": "text order ignores case"
+        },
+        {
+          "f": "=1<\"a\"",
+          "note": "numbers sort before text"
+        },
+        {
+          "f": "=TRUE>\"z\"",
+          "note": "TRUE sorts after text"
+        },
+        {
+          "f": "=IF(B2>C2,\"Hit\",\"Miss\")",
+          "note": "if true"
+        },
+        {
+          "f": "=IF(B3>C3,\"Hit\",\"Miss\")",
+          "note": "if false"
+        },
+        {
+          "f": "=IF(B4>=C4,\"Hit\",\"Miss\")",
+          "note": "if on the boundary"
+        },
+        {
+          "f": "=IF(B3>C3,\"Hit\")",
+          "note": "no false branch"
+        },
+        {
+          "f": "=IF(B2>C2,B2-C2,0)",
+          "note": "if returning a calculation"
+        },
+        {
+          "f": "=IF(B6,\"yes\",\"no\")",
+          "note": "zero is false"
+        },
+        {
+          "f": "=IF(B2,\"yes\",\"no\")",
+          "note": "a number is true"
+        },
+        {
+          "f": "=IF(F3,\"yes\",\"no\")",
+          "note": "an empty cell is false"
+        },
+        {
+          "f": "=IF(\"a\",\"yes\",\"no\")",
+          "note": "text is not true or false"
+        },
+        {
+          "f": "=IF(E2,1,2)",
+          "note": "TRUE cell"
+        },
+        {
+          "f": "=IF(B2>C2,F3,1)",
+          "note": "result is an empty cell"
+        },
+        {
+          "f": "=IF(1/0,1,2)",
+          "note": "error in the test"
+        },
+        {
+          "f": "=IF(TRUE,1,1/0)",
+          "note": "error in the branch not taken"
+        },
+        {
+          "f": "=IF(B2>100,IF(B2>140,\"Top\",\"Good\"),\"Low\")",
+          "note": "nested if"
+        },
+        {
+          "f": "=AND(B2>100,E2)",
+          "note": "and, both true"
+        },
+        {
+          "f": "=AND(B3>100,E3)",
+          "note": "and, both false"
+        },
+        {
+          "f": "=AND(TRUE,TRUE,FALSE)",
+          "note": "and with one false"
+        },
+        {
+          "f": "=AND(E2:E6)",
+          "note": "and over a range"
+        },
+        {
+          "f": "=AND(1,2)",
+          "note": "numbers count as true"
+        },
+        {
+          "f": "=AND(\"TRUE\",TRUE)",
+          "note": "typed-in text TRUE"
+        },
+        {
+          "f": "=AND(\"a\",TRUE)",
+          "note": "typed-in text"
+        },
+        {
+          "f": "=AND(F2:F3)",
+          "note": "a range with only text"
+        },
+        {
+          "f": "=AND(E2:E7)",
+          "note": "range with a blank"
+        },
+        {
+          "f": "=OR(B3>100,E3)",
+          "note": "or, both false"
+        },
+        {
+          "f": "=OR(B2>100,E3)",
+          "note": "or, one true"
+        },
+        {
+          "f": "=OR(E2:E7)",
+          "note": "or over a range"
+        },
+        {
+          "f": "=OR(0,0)",
+          "note": "zeros are false"
+        },
+        {
+          "f": "=NOT(E2)",
+          "note": "not TRUE"
+        },
+        {
+          "f": "=NOT(B6)",
+          "note": "not zero"
+        },
+        {
+          "f": "=NOT(0)",
+          "note": "not 0"
+        },
+        {
+          "f": "=NOT(\"a\")",
+          "note": "not text"
+        },
+        {
+          "f": "=IFERROR(B2/B6,\"n/a\")",
+          "note": "iferror catches divide by zero"
+        },
+        {
+          "f": "=IFERROR(B2/C2,\"n/a\")",
+          "note": "iferror passes a good value through"
+        },
+        {
+          "f": "=IFERROR(1/0,0)",
+          "note": "iferror with a number fallback"
+        },
+        {
+          "f": "=IFERROR(F3,\"blank\")",
+          "note": "iferror on an empty cell"
+        },
+        {
+          "f": "=IFERROR(\"a\"+1,\"bad\")",
+          "note": "iferror catches #VALUE!"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\">100\")",
+          "note": "countif greater than"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\">=100\")",
+          "note": "countif at least"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\"<>0\")",
+          "note": "countif not zero"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,100)",
+          "note": "countif a number"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\"100\")",
+          "note": "countif a number as text"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\"=100\")",
+          "note": "countif with an equals sign"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,\"North\")",
+          "note": "countif text ignores case"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,\"n*\")",
+          "note": "countif star wildcard"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,\"?est\")",
+          "note": "countif question-mark wildcard"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,\"<>North\")",
+          "note": "countif not equal text"
+        },
+        {
+          "f": "=COUNTIF(F2:F7,\"ok\")",
+          "note": "countif with blanks around"
+        },
+        {
+          "f": "=COUNTIF(F2:F7,\"\")",
+          "note": "countif blank"
+        },
+        {
+          "f": "=COUNTIF(F2:F7,\"<>\")",
+          "note": "countif not blank"
+        },
+        {
+          "f": "=COUNTIF(E2:E7,TRUE)",
+          "note": "countif TRUE"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,\"<\"&C2)",
+          "note": "countif built from a cell"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,C2)",
+          "note": "countif equal to a cell"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,D2)",
+          "note": "countif equal to a text cell"
+        },
+        {
+          "f": "=COUNTIF(B2:B8,\"<>100\")",
+          "note": "not-equal counts the blank cell"
+        },
+        {
+          "f": "=COUNTIF(D2:D7,\">M\")",
+          "note": "countif text comparison"
+        },
+        {
+          "f": "=COUNTIF(F2:F7,\"n/a\")",
+          "note": "countif text with a slash"
+        },
+        {
+          "f": "=COUNTIF(B2:C7,\">99\")",
+          "note": "countif over a block"
+        },
+        {
+          "f": "=COUNTIF(A2:F7,\"<>ok\")",
+          "note": "not-equal text over mixed cells"
+        },
+        {
+          "f": "=COUNTIF(B2:B7,F3)",
+          "note": "criteria from an empty cell"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"North\",B2:B7)",
+          "note": "sumif text ignores case"
+        },
+        {
+          "f": "=SUMIF(B2:B7,\">100\")",
+          "note": "sumif without a sum range"
+        },
+        {
+          "f": "=SUMIF(B2:B7,\">=100\",C2:C7)",
+          "note": "sumif adds another column"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"<>North\",B2:B7)",
+          "note": "sumif not equal"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"n*\",B2)",
+          "note": "sum range given by its first cell only"
+        },
+        {
+          "f": "=SUMIF(E2:E7,TRUE,B2:B7)",
+          "note": "sumif TRUE"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"East\",B2:B7)",
+          "note": "sumif one match"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"Nowhere\",B2:B7)",
+          "note": "sumif no match"
+        },
+        {
+          "f": "=SUMIF(D2:D7,\"North\",A2:A7)",
+          "note": "sumif over text adds nothing"
+        }
+      ]
+    },
+    {
+      "name": "lookup",
+      "data": [
+        [
+          "Code",
+          "Product",
+          "Price",
+          "Stock",
+          "Score",
+          "Grade"
+        ],
+        [
+          "A1x",
+          "Pen",
+          1.5,
+          200,
+          0,
+          "F"
+        ],
+        [
+          "B2y",
+          "Notebook",
+          4.25,
+          35,
+          50,
+          "D"
+        ],
+        [
+          "C3z",
+          "Stapler",
+          12,
+          0,
+          60,
+          "C"
+        ],
+        [
+          "D4w",
+          "Lamp",
+          30,
+          12,
+          70,
+          "B"
+        ],
+        [
+          "E5v",
+          "Desk",
+          150,
+          3,
+          85,
+          "A"
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "B2y",
+          "pen",
+          null,
+          35,
+          null,
+          null
+        ]
+      ],
+      "cases": [
+        {
+          "f": "=VLOOKUP(\"B2y\",A2:D6,2,FALSE)",
+          "note": "exact match"
+        },
+        {
+          "f": "=VLOOKUP(\"b2y\",A2:D6,3,FALSE)",
+          "note": "exact match ignores case"
+        },
+        {
+          "f": "=VLOOKUP(\"Z9\",A2:D6,2,FALSE)",
+          "note": "nothing matches"
+        },
+        {
+          "f": "=VLOOKUP(A8,A2:D6,4,FALSE)",
+          "note": "lookup value from a cell"
+        },
+        {
+          "f": "=VLOOKUP(\"C*\",A2:D6,2,FALSE)",
+          "note": "wildcard in an exact lookup"
+        },
+        {
+          "f": "=VLOOKUP(\"D4w\",A2:D6,3,0)",
+          "note": "0 means exact"
+        },
+        {
+          "f": "=VLOOKUP(65,E2:F6,2)",
+          "note": "approximate is the default"
+        },
+        {
+          "f": "=VLOOKUP(85,E2:F6,2,TRUE)",
+          "note": "approximate, exact hit on the last row"
+        },
+        {
+          "f": "=VLOOKUP(100,E2:F6,2)",
+          "note": "approximate, above the top"
+        },
+        {
+          "f": "=VLOOKUP(-5,E2:F6,2)",
+          "note": "approximate, below the bottom"
+        },
+        {
+          "f": "=VLOOKUP(50,E2:F6,2)",
+          "note": "approximate, exact hit"
+        },
+        {
+          "f": "=VLOOKUP(0,E2:F6,2)",
+          "note": "approximate, first row"
+        },
+        {
+          "f": "=VLOOKUP(59.9,E2:F6,2)",
+          "note": "approximate, just under a step"
+        },
+        {
+          "f": "=VLOOKUP(\"B2y\",A2:D6,5,FALSE)",
+          "note": "column past the table"
+        },
+        {
+          "f": "=VLOOKUP(\"B2y\",A2:D6,0,FALSE)",
+          "note": "column zero"
+        },
+        {
+          "f": "=VLOOKUP(70,E2:F6,2,FALSE)",
+          "note": "exact number"
+        },
+        {
+          "f": "=VLOOKUP(71,E2:F6,2,FALSE)",
+          "note": "exact number, not there"
+        },
+        {
+          "f": "=VLOOKUP(\"C3z\",A2:D6,1,FALSE)",
+          "note": "first column returns the key itself"
+        },
+        {
+          "f": "=XLOOKUP(\"Lamp\",B2:B6,C2:C6)",
+          "note": "xlookup exact"
+        },
+        {
+          "f": "=XLOOKUP(\"lamp\",B2:B6,C2:C6)",
+          "note": "xlookup ignores case"
+        },
+        {
+          "f": "=XLOOKUP(\"Chair\",B2:B6,C2:C6)",
+          "note": "xlookup not found"
+        },
+        {
+          "f": "=XLOOKUP(\"Chair\",B2:B6,C2:C6,\"none\")",
+          "note": "xlookup with a fallback"
+        },
+        {
+          "f": "=XLOOKUP(\"D4w\",A2:A6,D2:D6)",
+          "note": "xlookup another column"
+        },
+        {
+          "f": "=XLOOKUP(\"Pen\",B2:B6,A2:A6)",
+          "note": "xlookup can look to the left"
+        },
+        {
+          "f": "=XLOOKUP(12,C2:C6,B2:B6)",
+          "note": "xlookup a number"
+        },
+        {
+          "f": "=XLOOKUP(65,E2:E6,F2:F6)",
+          "note": "xlookup is exact by default"
+        },
+        {
+          "f": "=XLOOKUP(65,E2:E6,F2:F6,\"?\",-1)",
+          "note": "xlookup next smaller"
+        },
+        {
+          "f": "=XLOOKUP(65,E2:E6,F2:F6,\"?\",1)",
+          "note": "xlookup next larger"
+        },
+        {
+          "f": "=XLOOKUP(60,E2:E6,F2:F6,\"?\",-1)",
+          "note": "next smaller, exact hit"
+        },
+        {
+          "f": "=XLOOKUP(-1,E2:E6,F2:F6,\"?\",-1)",
+          "note": "next smaller, nothing below"
+        },
+        {
+          "f": "=XLOOKUP(99,E2:E6,F2:F6,\"?\",1)",
+          "note": "next larger, nothing above"
+        },
+        {
+          "f": "=XLOOKUP(\"St*\",B2:B6,C2:C6,\"none\",2)",
+          "note": "xlookup wildcard mode"
+        },
+        {
+          "f": "=XLOOKUP(\"St*\",B2:B6,C2:C6,\"none\")",
+          "note": "no wildcards unless asked"
+        },
+        {
+          "f": "=XLOOKUP(35,D2:D8,B2:B8)",
+          "note": "first match wins"
+        },
+        {
+          "f": "=XLOOKUP(35,D2:D8,B2:B8,\"x\",0,-1)",
+          "note": "search from the bottom"
+        },
+        {
+          "f": "=XLOOKUP(\"Pen\",B2:B8,D2:D8)",
+          "note": "first of two matches"
+        },
+        {
+          "f": "=XLOOKUP(\"E5v\",A2:A6,B2:B6)",
+          "note": "last row"
+        },
+        {
+          "f": "=IFERROR(VLOOKUP(\"Z9\",A2:D6,2,FALSE),\"Not found\")",
+          "note": "iferror round a lookup"
+        },
+        {
+          "f": "=IFERROR(XLOOKUP(\"Chair\",B2:B6,C2:C6),\"Not found\")",
+          "note": "iferror round xlookup"
+        },
+        {
+          "f": "=VLOOKUP(\"E5v\",A2:D6,3,FALSE)*2",
+          "note": "lookup result in a calculation"
+        }
+      ]
+    },
+    {
+      "name": "text",
+      "data": [
+        [
+          "Raw",
+          "Num",
+          "Flag",
+          "Word",
+          "Empty",
+          "More"
+        ],
+        [
+          "  hello   world  ",
+          "'00123",
+          true,
+          "Excel",
+          null,
+          "abc"
+        ],
+        [
+          "Mixed Case",
+          42,
+          false,
+          "grid",
+          null,
+          "x"
+        ],
+        [
+          "ALLCAPS",
+          3.5,
+          null,
+          "a b",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "cases": [
+        {
+          "f": "=LEN(A2)",
+          "note": "len counts every space"
+        },
+        {
+          "f": "=LEN(B3)",
+          "note": "len of a number"
+        },
+        {
+          "f": "=LEN(C2)",
+          "note": "len of TRUE"
+        },
+        {
+          "f": "=LEN(E2)",
+          "note": "len of an empty cell"
+        },
+        {
+          "f": "=LEN(B4)",
+          "note": "len of a decimal"
+        },
+        {
+          "f": "=LEN(\"\")",
+          "note": "len of nothing"
+        },
+        {
+          "f": "=LEN(1/3)",
+          "note": "len of a long decimal"
+        },
+        {
+          "f": "=LEFT(A3,5)",
+          "note": "left"
+        },
+        {
+          "f": "=LEFT(A3)",
+          "note": "left defaults to one"
+        },
+        {
+          "f": "=LEFT(A3,0)",
+          "note": "left zero"
+        },
+        {
+          "f": "=LEFT(A3,100)",
+          "note": "left more than there is"
+        },
+        {
+          "f": "=LEFT(B3,1)",
+          "note": "left of a number gives text"
+        },
+        {
+          "f": "=LEFT(A3,-1)",
+          "note": "left negative"
+        },
+        {
+          "f": "=LEFT(\"abc\",1.9)",
+          "note": "count is cut, not rounded"
+        },
+        {
+          "f": "=RIGHT(A3,4)",
+          "note": "right"
+        },
+        {
+          "f": "=RIGHT(A3)",
+          "note": "right defaults to one"
+        },
+        {
+          "f": "=RIGHT(A3,0)",
+          "note": "right zero"
+        },
+        {
+          "f": "=RIGHT(B2,3)",
+          "note": "right of numeric text"
+        },
+        {
+          "f": "=RIGHT(A3,100)",
+          "note": "right more than there is"
+        },
+        {
+          "f": "=UPPER(A3)",
+          "note": "upper"
+        },
+        {
+          "f": "=LOWER(A3)",
+          "note": "lower"
+        },
+        {
+          "f": "=LOWER(A4)",
+          "note": "lower all caps"
+        },
+        {
+          "f": "=UPPER(B3)",
+          "note": "upper of a number"
+        },
+        {
+          "f": "=UPPER(C3)",
+          "note": "upper of FALSE"
+        },
+        {
+          "f": "=TRIM(A2)",
+          "note": "trim outside and inside"
+        },
+        {
+          "f": "=TRIM(\"  a  b  \")",
+          "note": "trim typed-in text"
+        },
+        {
+          "f": "=TRIM(B3)",
+          "note": "trim a number"
+        },
+        {
+          "f": "=CONCAT(D2,\" \",A4)",
+          "note": "concat pieces"
+        },
+        {
+          "f": "=CONCAT(F2:F4)",
+          "note": "concat a range"
+        },
+        {
+          "f": "=CONCAT(D2,B3,C2)",
+          "note": "concat text, number, TRUE"
+        },
+        {
+          "f": "=CONCAT(A3:B3)",
+          "note": "concat across a row"
+        },
+        {
+          "f": "=CONCAT(\"a\",1/0)",
+          "note": "concat with an error"
+        },
+        {
+          "f": "=LEN(TRIM(A2))",
+          "note": "nested text functions"
+        },
+        {
+          "f": "=LEFT(D2,2)&RIGHT(D2,2)",
+          "note": "joined with ampersand"
+        },
+        {
+          "f": "=UPPER(LEFT(A3,1))",
+          "note": "nested"
+        },
+        {
+          "f": "=LEFT(A3,5)=\"mixed\"",
+          "note": "comparing text ignores case"
+        }
+      ]
+    }
+  ]
+}

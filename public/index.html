@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>%WEB_TITLE%</title>
+    <!-- Opened from a phone's Home Screen, run full screen like an app, under the app's own icon. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="%WEB_TITLE%" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+    <!-- A phone browser's own gestures, switched off where they would fight the app's. -->
+    <style id="phone-browser">
+      html {
+        /* Two quick taps on a key must not zoom the page. Pinching still zooms. */
+        touch-action: manipulation;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        /* No rubber-band pull, no text selection or pop-up menu from a long press. */
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* Dragging across the sheet selects cells: the browser must not treat it as a scroll. */
+      [data-testid='grid'] {
+        touch-action: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--
+      For testing on the developer's own computer only. A page in a hidden window is never
+      told how big its parts are, so the sheet would never draw there and nothing could be
+      checked. With the flag below set by hand, sizes are looked up ten times a second
+      instead. It does nothing anywhere else: not on the public link, not without the flag.
+    -->
+    <script>
+      (function () {
+        try {
+          if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || !sessionStorage.getItem('gridwise.pollLayout')) return;
+        } catch (e) {
+          return;
+        }
+        var observers = [];
+        function Polled(callback) {
+          this.callback = callback;
+          this.seen = new Map();
+          observers.push(this);
+        }
+        Polled.prototype.observe = function (el) {
+          this.seen.set(el, '');
+        };
+        Polled.prototype.unobserve = function (el) {
+          this.seen.delete(el);
+        };
+        Polled.prototype.disconnect = function () {
+          this.seen.clear();
+        };
+        window.ResizeObserver = Polled;
+        setInterval(function () {
+          observers.forEach(function (o) {
+            var entries = [];
+            o.seen.forEach(function (last, el) {
+              var r = el.getBoundingClientRect();
+              var now = [r.width, r.height, r.left, r.top].join();
+              if (now !== last) {
+                o.seen.set(el, now);
+                entries.push({ target: el, contentRect: r });
+              }
+            });
+            if (entries.length) o.callback(entries, o);
+          });
+        }, 100);
+      })();
+    </script>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  </body>
+</html>
