@@ -147,7 +147,6 @@ Changed from his message, and why:
 Not built yet: Worlds 2 to 5. Formatting (fill colour, font colour, borders), Find, redo and dates need adding to the sheet first. His later games (a falling-blocks puzzle and others) would also need their own look rather than copying Tetris.
 
 ## Product rules (what makes it not trash)
-
 1. **No hearts, lives, energy, ads or timers.** Wrong answers cost nothing.
 2. **No padding.** A skill you get right first try twice is not shown again until its review date. Repetition only targets what you actually missed.
 3. **Test out of anything.** Every unit has a "Skip ahead" checkpoint (8 exercises, pass = 7 of 8). Onboarding asks "new / used it a bit / test me" and "Windows or Mac?".
