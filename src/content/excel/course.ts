@@ -1,7 +1,7 @@
 import { isGrid, isScored, type Course, type Lesson } from '@/lessons/types';
-
-import { meetTheGrid } from './unit-00-start-here/lesson-01-meet-the-grid';
+import { goldenApplesFarm } from './unit-00-start-here/lesson-00-golden-apples-farm';
 import { typeInACell } from './unit-00-start-here/lesson-02-type-in-a-cell';
+import { meetTheGrid } from './unit-00-start-here/lesson-01-meet-the-grid';
 import { rowsAndColumns } from './unit-00-start-here/lesson-03-rows-and-columns';
 import { arrows } from './unit-00-start-here/lesson-04-arrows';
 import { unit1Test } from './unit-01-first-formulas/checkpoint';
@@ -43,7 +43,9 @@ export const excelCourse: Course = {
   id: 'xl',
   title: 'Spreadsheets',
   simulator: 'spreadsheet',
-  skills: [
+
+    skills: [
+    { id: 'xl.spreadsheet.purpose', name: 'Understanding spreadsheets' },
     { id: 'xl.cell.address', name: 'Finding a cell' },
     { id: 'xl.cell.type', name: 'Typing in a cell' },
     { id: 'xl.select.column', name: 'Selecting a whole column' },
@@ -83,7 +85,7 @@ export const excelCourse: Course = {
       summary: 'Understand the spreadsheet itself: cells, rows, columns and getting around.',
       stage: 'roots',
       intro: true,
-      lessons: lessons(meetTheGrid, typeInACell, rowsAndColumns, arrows),
+      lessons: lessons(goldenApplesFarm, meetTheGrid, typeInACell, rowsAndColumns, arrows),
     },
     {
       id: 'xl.u1',

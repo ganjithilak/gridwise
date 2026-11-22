@@ -28,12 +28,12 @@ const pets = table(
 /** For someone who has never opened a spreadsheet: what the boxes are and how they are named. */
 export const meetTheGrid: Lesson = {
   id: 'xl.u0.l1',
-  title: 'Meet the grid',
-  summary: 'Cells, columns and rows, and how to find your way around.',
+  title: 'Explore the Spreadsheet',
+  summary: 'Discover cells, rows, columns and cell references.',
   recap: [
-    'A spreadsheet is a tool to organise, store and work with information.',
-    'Columns run vertically and have letters. Rows run horizontally and have numbers.',
-    'Where they meet is a cell. Its name, like B3, is its cell reference.',
+    'Every spreadsheet contains cells that can hold information.',
+    'Cells are arranged in columns and rows. Columns run vertically and have letters. Rows run horizontally and have numbers.',
+    'Each cell has a unique reference, such as B3, identifying its column and row.',
   ],
   newSkills: [ADDRESS],
   exercises: [
@@ -45,11 +45,22 @@ export const meetTheGrid: Lesson = {
       skill: ADDRESS,
       sheet: stall,
       script: [
-        { tap: 'A2', say: 'A spreadsheet is a tool to organise and store information.' },
-        { tap: 'C2', say: 'It can record names, dates, quantities and currency.' },
-        { tap: 'B2', say: 'Use it to manage projects, track expenses or run a business.' },
-        { tap: 'A1', say: 'A spreadsheet is made up of columns and rows.' },
-        { tap: 'C3', say: 'To select a cell, simply tap it.' },
+        {
+          tap: 'A2',
+          say: "Welcome back to Golden Apples Farm! We've expanded our roadside stall to include fruit.",
+        },
+        {
+          tap: 'A1',
+          say: "You've already seen how spreadsheets organise information. Now let's explore how they're built.",
+        },
+        {
+          tap: 'B2',
+          say: 'A spreadsheet contains boxes called cells. Each cell can hold information.',
+        },
+        {
+          tap: 'C3',
+          say: 'To select a cell, simply tap it. The selected cell is called the active cell.',
+        },
       ],
       prompt: 'Your turn. Select the cell that says Pear.',
       checks: [{ type: 'selectionEquals', range: 'A3' }],
@@ -84,7 +95,7 @@ export const meetTheGrid: Lesson = {
       sheet: stall,
       prompt: 'Tap the cell that holds the price of a Pear.',
       checks: [{ type: 'selectionEquals', range: 'B3' }],
-      hints: ['Find Pear in column A, then look along its row.', 'Price is the second column. Pear is the third row.', 'Tap the 3 next to Pear.'],
+      hints: ['Find Pear in column A, then look along its row.', 'Price is the second column. Pear is the third row.', 'Select the cell containing the price 3, next to Pear.'],
       explain: 'Read across from Pear and down from Price. They meet at B3.',
       tips: [BASICS.labels, BASICS.headings],
       solution: [{ tap: 'B3', say: 'Pear is in row 3. Price is column B. So: B3.' }],

@@ -6,30 +6,30 @@ import { BASICS } from '../tips';
 const MOVE = 'xl.keys.move';
 const EXTEND = 'xl.select.extend';
 
-const shop = table(
-  ['Item', 'Cost', 'Stock'],
+const inventory = table(
+  ['Product', 'Price per kg', 'Stock (kg)'],
   [
-    ['Milk', 2, 12],
-    ['Bread', 3, 8],
-    ['Eggs', 4, 30],
-    ['Tea', 5, 6],
+    ['Carrots', 3, 115],
+    ['Potatoes', 2.75, 200],
+    ['Tomatoes', 6, 100],
+    ['Apples', 4, 80],
   ],
 );
 
-const team = table(
-  ['Player', 'Goals', 'Games'],
+const customers = table(
+  ['Customer', 'Orders', 'Crates'],
   [
-    ['Ada', 7, 10],
-    ['Ben', 3, 9],
-    ['Cal', 5, 10],
+    ['River Cafe', 7, 10],
+    ['Hill Market', 3, 9],
+    ['Town Grocer', 5, 10],
   ],
 );
 
 /** Getting around with the arrow keys, and stretching a selection with Shift held. */
 export const arrows: Lesson = {
   id: 'xl.u0.l4',
-  title: 'Move and stretch with arrows',
-  summary: 'Arrow keys move the active cell. With Shift held, they stretch the selection.',
+  title: 'Navigate the Farm Records',
+  summary: 'Move through farm records and select ranges using arrow keys.',
   recap: [
     'An arrow key moves the active cell one cell that way.',
     'Shift + an arrow stretches the selection one cell that way.',
@@ -41,19 +41,19 @@ export const arrows: Lesson = {
       id: 'xl.u0.l4.e1',
       type: 'demo',
       skill: MOVE,
-      sheet: shop,
+      sheet: inventory,
       script: [
-        { tap: 'A2', say: 'Arrow keys move the active cell. Start on Milk.' },
+        { tap: 'A2', say: 'Arrow keys move the active cell. Start on Carrots.' },
         { combo: 'moveDown', say: '↓ moves one cell down.' },
         { combo: 'moveRight', say: '→ moves one cell right.' },
       ],
-      prompt: 'Your turn. Use the arrows to move to the Stock of Tea: C5.',
+      prompt: 'Your turn. Use the arrows to move to the stock for Apples: C5.',
       checks: [{ type: 'selectionEquals', range: 'C5' }],
-      hints: ['You are on B3. Tea is two rows down.', 'Press ↓ twice, then → once.', 'The active cell should be C5, which holds 6.'],
+      hints: ['You are on B3. Apples are two rows down.', 'Press ↓ twice, then → once.', 'The active cell should be C5, which holds 80.'],
       explain: 'Arrow keys get you around without lifting your hands from the keyboard.',
       tips: ['Each press of an arrow moves one cell.', 'The arrow keys are under the grid.'],
       solution: [
-        { combo: 'moveDown', say: '↓ twice, to the Tea row.' },
+        { combo: 'moveDown', say: '↓ twice, to the Apples row.' },
         { combo: 'moveDown' },
         { combo: 'moveRight', say: '→ once, to Stock.' },
       ],
@@ -62,26 +62,26 @@ export const arrows: Lesson = {
       id: 'xl.u0.l4.e2',
       type: 'shortcut-press',
       skill: MOVE,
-      sheet: team,
-      prompt: "New sheet. From A1, move to Ben's Goals with the arrow keys.",
+      sheet: customers,
+      prompt: "New sheet. From A1, move to Hill Market's Orders with the arrow keys.",
       checks: [
         { type: 'usedShortcut', id: 'moveDown' },
         { type: 'selectionEquals', range: 'B3' },
       ],
-      hints: ['Ben is two rows down from the heading.', 'Press ↓ twice, then → once.', 'The active cell should be B3, which holds 3.'],
+      hints: ['Hill Market is two rows down from the heading.', 'Press ↓ twice, then → once.', 'The active cell should be B3, which holds 3.'],
       explain: 'Two presses down and one across: the active cell is B3.',
       tips: [BASICS.labels, 'An arrow at the edge of the sheet does nothing.'],
       solution: [
-        { combo: 'moveDown', say: '↓ twice, to the Ben row.' },
+        { combo: 'moveDown', say: '↓ twice, to the Hill Market row.' },
         { combo: 'moveDown' },
-        { combo: 'moveRight', say: '→ once, to Goals.' },
+        { combo: 'moveRight', say: '→ once, to Orders.' },
       ],
     },
     {
       id: 'xl.u0.l4.e3',
       type: 'demo',
       skill: EXTEND,
-      sheet: shop,
+      sheet: inventory,
       script: [
         { tap: 'B2', say: 'Select the first cell of the block you want.' },
         { combo: 'extendDown', say: 'Hold Shift and press ↓. The selection stretches.' },
@@ -101,14 +101,14 @@ export const arrows: Lesson = {
       id: 'xl.u0.l4.e4',
       type: 'shortcut-press',
       skill: EXTEND,
-      sheet: shop,
+      sheet: inventory,
       select: 'C2',
       prompt: 'C2 is selected. Stretch the selection down to C4 with Shift + ↓.',
       checks: [
         { type: 'usedShortcut', id: 'extendDown' },
         { type: 'selectionEquals', range: 'C2:C4' },
       ],
-      hints: ['C4 is two cells below C2.', 'Hold Shift, then press ↓ twice.', 'Three cells should be shaded: 12, 8 and 30.'],
+      hints: ['C4 is two cells below C2.', 'Hold Shift, then press ↓ twice.', 'Three cells should be shaded: 115, 200 and 100.'],
       explain: 'Two presses, two more cells: C2:C4.',
       tips: ['Went too far? Shift + ↑ takes one cell back off.', BASICS.free],
       solution: [
@@ -131,14 +131,14 @@ export const arrows: Lesson = {
       type: 'shortcut-press',
       skill: EXTEND,
       apply: true,
-      sheet: shop,
+      sheet: inventory,
       select: 'A3',
-      prompt: 'You want to copy all of Bread. From A3, select across to C3 with Shift + →.',
+      prompt: 'You want to copy the Potatoes record. From A3, select across to C3 with Shift + →.',
       checks: [
         { type: 'usedShortcut', id: 'extendRight' },
         { type: 'selectionEquals', range: 'A3:C3' },
       ],
-      hints: ['C3 is two cells to the right of A3.', 'Hold Shift, then press → twice.', 'Three cells should be shaded: Bread, 3 and 8.'],
+      hints: ['C3 is two cells to the right of A3.', 'Hold Shift, then press → twice.', 'Three cells should be shaded: Potatoes, 2.75 and 200.'],
       explain: 'Shift + → stretches across, just as Shift + ↓ stretches down.',
       tips: ['Shift works with all four arrows.', 'The first cell you selected stays white: it is the active cell.'],
       solution: [
@@ -152,20 +152,20 @@ export const arrows: Lesson = {
       id: 'xl.u0.l4.p1',
       type: 'shortcut-press',
       skill: MOVE,
-      sheet: team,
-      prompt: "From A1, move to Cal's Games with the arrow keys.",
+      sheet: customers,
+      prompt: "From A1, move to Town Grocer's Crates with the arrow keys.",
       checks: [
         { type: 'usedShortcut', id: 'moveDown' },
         { type: 'selectionEquals', range: 'C4' },
       ],
-      hints: ['Cal is three rows down from the heading.', 'Press ↓ three times, then → twice.', 'The active cell should be C4, which holds 10.'],
+      hints: ['Town Grocer is three rows down from the heading.', 'Press ↓ three times, then → twice.', 'The active cell should be C4, which holds 10.'],
       explain: 'Three presses down and two across: the active cell is C4.',
       tips: ['Each press of an arrow moves one cell.', BASICS.labels],
       solution: [
-        { combo: 'moveDown', say: '↓ three times, to the Cal row.' },
+        { combo: 'moveDown', say: '↓ three times, to the Town Grocer row.' },
         { combo: 'moveDown' },
         { combo: 'moveDown' },
-        { combo: 'moveRight', say: '→ twice, to Games.' },
+        { combo: 'moveRight', say: '→ twice, to Crates.' },
         { combo: 'moveRight' },
       ],
     },
@@ -173,9 +173,9 @@ export const arrows: Lesson = {
       id: 'xl.u0.l4.p2',
       type: 'shortcut-press',
       skill: EXTEND,
-      sheet: team,
+      sheet: customers,
       select: 'B2',
-      prompt: 'B2 is selected. Stretch down to select all three Goals.',
+      prompt: 'B2 is selected. Stretch down to select all three order counts.',
       checks: [
         { type: 'usedShortcut', id: 'extendDown' },
         { type: 'selectionEquals', range: 'B2:B4' },
