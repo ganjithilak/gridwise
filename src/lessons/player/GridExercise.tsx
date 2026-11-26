@@ -5,12 +5,13 @@ import type { Expression } from '@/components/Mascot';
 import { a1, parseRange, toA1 } from '@/engine';
 import { buzz } from '@/lib/feedback';
 import type { Side } from '@/progress/saved';
-import { DIGIT_KEYS, SheetController, SYMBOL_KEYS, type KeyId, type ShortcutId } from '@/spreadsheet/controller';
+import { SheetController, type KeyId, type ShortcutId } from '@/spreadsheet/controller';
 import { FormulaBar } from '@/spreadsheet/FormulaBar';
 import { FormulaKeyboard, keyboardHeight } from '@/spreadsheet/FormulaKeyboard';
 import { Grid } from '@/spreadsheet/Grid';
+import { applySheetKey, listenForKeys, readKey, type KeyResult } from '@/spreadsheet/keyboard';
 import { KeyCaps } from '@/spreadsheet/KeyCaps';
-import { capSetFor, forComputer, modifierKey, type Computer } from '@/spreadsheet/shortcuts';
+import { capSetFor, comboLabel, forComputer, modifierKey, type Computer } from '@/spreadsheet/shortcuts';
 import { TokenTray } from '@/spreadsheet/TokenTray';
 import { Toolbar } from '@/spreadsheet/Toolbar';
 import { useSheet } from '@/spreadsheet/useSheet';
@@ -77,7 +78,6 @@ export interface GridExerciseProps {
 }
 
 const PRAISE = ['Nice!', 'Spot on!', "That's it!", 'Exactly right!', 'You got it!'];
-const WEB_KEYS = new Set<string>([...DIGIT_KEYS, ...SYMBOL_KEYS]);
 
 /** The cell an exercise opens on: the one named, or for a built formula, the one it goes in. */
 const openingCell = (exercise: SheetExercise): string =>
@@ -189,10 +189,12 @@ export function GridExercise({
   const [outcome, setOutcome] = useState<CheckOutcome | null>(null);
   const [checkedVersion, setCheckedVersion] = useState(-1);
   /** Which message the card shows when there is more than one to choose from. */
-  const [latest, setLatest] = useState<'outcome' | 'hint' | 'nudge' | null>(
+  const [latest, setLatest] = useState<'outcome' | 'hint' | 'nudge' | 'key' | null>(
     opening.phase === 'do' && attempt.hintsShown > 0 ? 'hint' : null,
   );
   const [showTask, setShowTask] = useState(false);
+  /** A word about a key press that did nothing: the wrong modifier, or a cell still being typed in. */
+  const [keyNote, setKeyNote] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState<{ cell: string; nonce: number } | null>(null);
   // Varies from one exercise to the next, but is always the same for a given exercise.
   const praise = exercise.praise ?? PRAISE[[...exercise.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % PRAISE.length];
@@ -250,21 +252,39 @@ export function GridExercise({
     if (buildCell && doing && !editing && controller.sheet.getRaw(a1(buildCell)) === '') controller.startEdit();
   }, [buildCell, doing, editing, controller, state.version]);
 
-  // A real keyboard works too, where there is one.
+  /** What the card says after a key press: clears an old nudge, or explains a press that did nothing. */
+  const noteKey = useCallback(
+    (result: KeyResult) => {
+      if (!result.claimed) return;
+      if (!result.note) {
+        setLatest((now) => (now === 'nudge' || now === 'key' ? null : now));
+        return;
+      }
+      if (result.note === 'finishTyping') {
+        setKeyNote('Press Enter to finish typing first. Then try the shortcut again.');
+      } else {
+        const { wrongModifier, used } = result.note;
+        const where = computer === 'mac' ? 'On a Mac' : 'On Windows';
+        setKeyNote(`${where} it is ${comboLabel(wrongModifier, computer)}. ${used} is a different key there.`);
+      }
+      setLatest('key');
+    },
+    [computer],
+  );
+
+  // A real keyboard works too, where there is one: typing and every shortcut the sheet
+  // knows, read for this learner's computer. Listening happens before a clicked cell or
+  // key cap sees the key, so Space and Enter reach the sheet (see listenForKeys).
   useEffect(() => {
     if (Platform.OS !== 'web' || !doing || tray) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === 'Escape') controller.cancel();
-      else if (e.key === 'Enter') controller.pressKey('enter');
-      else if (e.key === 'Backspace') controller.pressKey('backspace');
-      else if (WEB_KEYS.has(e.key) && !hideKeys?.includes(e.key as KeyId)) controller.pressKey(e.key as KeyId);
-      else return;
-      e.preventDefault();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [controller, doing, hideKeys, tray]);
+    return listenForKeys(window, (e) => {
+      const read = readKey(e, computer);
+      if (!read) return false;
+      const result = applySheetKey(controller, read, hideKeys);
+      noteKey(result);
+      return result.claimed;
+    });
+  }, [controller, computer, doing, hideKeys, tray, noteKey]);
 
   const check = () => {
     const result = checkController(exercise.checks, controller);
@@ -330,12 +350,10 @@ export function GridExercise({
     }
   };
 
+  // A tap on the strip of key caps goes the same way as a real key press.
   const onCombo = useCallback(
-    (id: ShortcutId) => {
-      setLatest((now) => (now === 'nudge' ? null : now));
-      controller.runShortcut(id);
-    },
-    [controller],
+    (id: ShortcutId) => noteKey(applySheetKey(controller, { kind: 'shortcut', id })),
+    [controller, noteKey],
   );
 
   // ---- one step back, one step forward ------------------------------------------------
@@ -407,6 +425,8 @@ export function GridExercise({
     card = { mood: 'cheering', tone: 'task', text: exercise.prompt };
   } else if (state.editing?.error) {
     card = { mood: 'oops', tone: 'bad', text: state.editing.error };
+  } else if (latest === 'key' && keyNote) {
+    card = { mood: 'thinking', tone: 'hint', text: keyNote };
   } else if (latest === 'nudge') {
     const first = capSet === 'letters' ? modifierKey(computer) : 'Ctrl or Shift';
     card = { mood: 'thinking', tone: 'hint', text: `Press ${first} first. It stays held. Then press the other key.` };
@@ -455,6 +475,8 @@ export function GridExercise({
         set={capSet}
         onCombo={onCombo}
         onLoose={() => setLatest('nudge')}
+        // The sheet above listens to the whole keyboard; the strip only shows and taps keys.
+        keyboard={false}
         flash={player.flashKey}
         locked={locked}
         height={metrics.keyHeight}

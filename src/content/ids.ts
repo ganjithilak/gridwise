@@ -267,6 +267,17 @@ export const KNOWN_IDS: readonly string[] = [
   'xl.u4.l2.e4',
   'xl.u4.l2.e5',
   'xl.u4.l2.e6',
+  // Added 22 Nov 2026: "Welcome to Golden Apples Farm", the first lesson in "Start here".
+  'xl.spreadsheet.purpose',
+  'xl.u0.l0',
+  'xl.u0.l0.e1',
+  'xl.u0.l0.e2',
+  'xl.u0.l0.e3',
+  'xl.u0.l0.e4',
+  'xl.u0.l0.e5',
+  'xl.u0.l0.e6',
+  'xl.u0.l0.p1',
+  'xl.u0.l0.p2',
 ];
 
 export const RETIRED_IDS: readonly string[] = [];

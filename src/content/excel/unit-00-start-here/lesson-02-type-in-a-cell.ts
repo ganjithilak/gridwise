@@ -4,683 +4,263 @@ import { choice, table, withCells } from '../build';
 import { BASICS } from '../tips';
 
 const TYPE = 'xl.cell.type';
+/** Taught in the lesson before. Here it is the first half of a real task: find the cell, then change it. */
 const ADDRESS = 'xl.cell.address';
 
 const money = { numFmt: 'currency' as const };
 
-// Golden Apples Farm inventory before the supplier delivery.
-const inventory = {
-  ...table(
-    ['Product', 'Stock (kg)', 'Price per kg'],
-    [
-      ['Carrots', 15, 2.5],
-      ['Potatoes', 200, 3],
-      ['Tomatoes', 50, 6],
-      ['Apples', 80, 4],
-    ],
-  ),
-};
+/**
+ * Golden Apples Farm's inventory after a busy month at the stall. Lesson 0 left 60 kg of
+ * carrots, 120 kg of potatoes and 30 kg of tomatoes at the farm; apples arrived with the fruit.
+ */
+const inventory = table(
+  ['Product', 'Stock (kg)', 'Price per kg'],
+  [
+    ['Carrots', 15, 2.5],
+    ['Potatoes', 120, 3],
+    ['Tomatoes', 30, 6],
+    ['Apples', 80, 4],
+  ],
+);
+inventory.formats = { ...inventory.formats, 'C2:C5': money };
 
-inventory.formats = {
-  ...inventory.formats,
-  'C2:C5': money,
-};
-
-// Supplier purchasing records.
-const purchases = {
-  ...table(
-    ['Product', 'Cost per kg', 'Ordered (kg)'],
-    [
-      ['Carrots', 3, 100],
-      ['Potatoes', 2, null],
-      ['Tomatoes', 5, 50],
-    ],
-  ),
-};
-
-purchases.formats = {
-  ...purchases.formats,
-  'B2:B4': money,
-};
-
-// Preview of automatic inventory calculations.
+// Each task opens on the sheet as the task before left it, so the learner's own updates stay.
+/** After the demonstration (10 kg of potatoes sold) and the carrot delivery. */
+const carrotsIn = withCells(inventory, { B2: 115, B3: 110 });
+/** After the carrot price rise. */
+const carrotPrice = withCells(carrotsIn, { C2: 3 });
+/** After the potato special. */
+const potatoPrice = withCells(carrotPrice, { C3: 2.75 });
+/** After the tomato harvest, with a total added at the bottom. */
 const totalled = withCells(
-  {
-    ...inventory,
-    rows: 6,
-    formats: {
-      ...inventory.formats,
-      A6: { bold: true },
-      B6: { bold: true },
-    },
-  },
-  {
-    A6: 'Total stock (kg)',
-    B6: '=SUM(B2:B5)',
-  },
+  { ...potatoPrice, rows: 6, formats: { ...potatoPrice.formats, A6: { bold: true }, B6: { bold: true } } },
+  { B4: 80, A6: 'Total stock (kg)', B6: '=SUM(B2:B5)' },
 );
 
+/** What the farm buys from its suppliers. */
+const purchases = table(
+  ['Product', 'Cost per kg', 'Ordered (kg)'],
+  [
+    ['Carrots', 3, 100],
+    ['Potatoes', 2, null],
+    ['Tomatoes', 5, 50],
+  ],
+);
+purchases.formats = { ...purchases.formats, 'B2:B4': money };
+
+/** What a cell can hold, and putting numbers into cells and changing them: the last step before formulas. */
 export const typeInACell: Lesson = {
   id: 'xl.u0.l2',
-
   title: 'Entering Data',
-
-  summary:
-    'Enter, update and correct information at Golden Apples Farm.',
-
+  summary: 'Enter, update and correct information at Golden Apples Farm.',
   recap: [
-    'Cells can hold words, numbers and currency values.',
-    'Select a cell, enter information and press Enter to confirm it.',
-    'Existing information can be replaced when business records change.',
-    'Accurate information helps businesses manage their inventory.',
+    'Cells can hold words, numbers and money.',
+    'Tap a cell twice to type in it. ⌫ deletes one character at a time.',
+    'Press Enter to keep a change. The ✕ in the bar cancels it.',
   ],
-
   newSkills: [TYPE],
-
-  // Formulas are introduced in a later lesson.
+  // Formulas come next. For now the keyboard is just numbers.
   hideKeys: ['=', '+', '-', '*', '/', '(', ')', ':', ',', '$', 'SUM'],
-
   exercises: [
-    // --------------------------------------------------
-    // TEACH: THE CARROT SHORTAGE
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.e1',
       type: 'demo',
       skill: TYPE,
       sheet: inventory,
-
       script: [
-        {
-          tap: 'A2',
-          say:
-            'Welcome back to Golden Apples Farm! We have a problem. Our carrot supplies are running low.',
-        },
-        {
-          tap: 'B2',
-          say:
-            'We only have 15 kg of carrots remaining, and our next harvest is still weeks away.',
-        },
-        {
-          tap: 'A1',
-          say:
-            'We have ordered more carrots from a local supplier. We need to update our inventory.',
-        },
-        {
-          tap: 'B2',
-          say:
-            'A spreadsheet allows us to change information whenever our business records need updating.',
-        },
-        {
-          tap: 'B2',
-          say:
-            'To change information, select a cell and tap it again to open the keyboard.',
-        },
-        {
-          tap: 'B2',
-          say:
-            'The keyboard lets us enter numbers. We can replace the old quantity with the new one.',
-        },
-        {
-          tap: 'B2',
-          say:
-            'After entering the new quantity, press Enter to confirm the change.',
-        },
+        { tap: 'A2', say: 'Welcome back! The stall sold a lot this month.' },
+        { tap: 'B2', say: 'Only 15 kg of carrots are left. More are on order.' },
+        { tap: 'A3', say: 'A cell can hold words, like a product name.' },
+        { tap: 'B3', say: 'Or a number, like kilograms in stock.' },
+        { tap: 'C3', say: 'Or money, like the price per kg.' },
+        { tap: 'B3', say: 'We sold 10 kg of potatoes, so their stock changes.' },
+        { tap: 'B3', say: 'Tap it again to type. The keyboard opens.' },
+        { key: 'backspace', say: '⌫ deletes one digit. Press it until the cell is empty.' },
+        { key: 'backspace' },
+        { key: 'backspace' },
+        { key: '1', say: 'Type the new number: 110.' },
+        { key: '1' },
+        { key: '0' },
+        { key: 'enter', say: 'Enter keeps it in the cell.' },
       ],
-
-      prompt:
-        'Our supplier delivered 100 kg of carrots. Update cell B2 from 15 to 115.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'B2',
-          equals: 115,
-        },
-      ],
-
-      hints: [
-        'Carrots are listed in row 2. Their stock quantity is in column B.',
-        'Select B2, delete the existing 15 and enter 115.',
-        'Press Enter. The cell should display 115.',
-      ],
-
+      prompt: 'Your turn. 100 kg of carrots arrived. Change their stock from 15 to 115.',
+      checks: [{ type: 'cellValue', cell: 'B2', equals: 115 }],
+      hints: ['Carrot stock is in B2.', 'Tap B2 twice. Press ⌫ twice to clear the 15.', 'Type 115, then press Enter. The cell should show 115.'],
       praise: 'Excellent work!',
-
-      explain:
-        'Golden Apples Farm now has 115 kg of carrots recorded in its inventory.',
-
-      tips: [
-        BASICS.tapTwice,
-        BASICS.enter,
-      ],
-
+      explain: 'Golden Apples Farm now has 115 kg of carrots in stock.',
+      tips: [BASICS.tapTwice, BASICS.enter],
       solution: [
-        {
-          tap: 'B2',
-          say: 'Select the carrot stock quantity.',
-        },
-        {
-          tap: 'B2',
-          say: 'Open the cell for editing.',
-        },
-        {
-          key: 'backspace',
-          say: 'Remove the existing value.',
-        },
-        {
-          key: '1',
-          say: 'Enter 115.',
-        },
-        {
-          key: '1',
-        },
-        {
-          key: '5',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the updated quantity.',
-        },
+        { tap: 'B2', say: 'Tap B2, then tap it again to type.' },
+        { tap: 'B2' },
+        { key: 'backspace', say: 'Press ⌫ twice to clear the 15.' },
+        { key: 'backspace' },
+        { key: '1', say: 'Type 115.' },
+        { key: '1' },
+        { key: '5' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // PRACTICE: UPDATE A SUPPLIER PRICE
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.e3',
       type: 'grid-task',
       skill: TYPE,
-      sheet: inventory,
-
-      prompt:
-        'Our supplier has increased the price of carrots to $3 per kilogram. Find the price and update it.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'C2',
-          equals: 3,
-        },
-      ],
-
-      hints: [
-        'Find Carrots in row 2.',
-        'Price per kg is column C. Select C2.',
-        'Delete 2.5, enter 3 and press Enter.',
-      ],
-
-      explain:
-        'Well done! The new carrot price is $3 per kilogram.',
-
-      tips: [
-        BASICS.backspace,
-        BASICS.bar,
-      ],
-
+      sheet: carrotsIn,
+      prompt: 'Carrots cost us more this season. Raise their price to $3 per kg.',
+      checks: [{ type: 'cellValue', cell: 'C2', equals: 3 }],
+      hints: ['Find Carrots in column A.', 'Price per kg is column C. Tap C2 twice.', 'Press ⌫ three times to clear 2.5, type 3, then press Enter.'],
+      explain: 'Carrots now sell for $3.00 a kg. The money format adds the $ and the .00.',
+      tips: ['⌫ deletes one character at a time.', BASICS.bar],
       solution: [
-        {
-          tap: 'C2',
-          say: 'Select the carrot price.',
-        },
-        {
-          tap: 'C2',
-          say: 'Open the cell.',
-        },
-        {
-          key: 'backspace',
-          say: 'Delete the old price.',
-        },
-        {
-          key: '3',
-          say: 'Enter the new price.',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the change.',
-        },
+        { tap: 'C2', say: 'Tap C2, then tap it again to type.' },
+        { tap: 'C2' },
+        { key: 'backspace', say: 'Press ⌫ three times to clear 2.5.' },
+        { key: 'backspace' },
+        { key: 'backspace' },
+        { key: '3', say: 'Type 3.' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // PRACTICE: ENTER DECIMAL VALUES
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.e4',
       type: 'grid-task',
       skill: TYPE,
-      sheet: inventory,
-
-      prompt:
-        'Our potato supplier offers a new price of $2.75 per kilogram. Update the potato price.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'C3',
-          equals: 2.75,
-        },
-      ],
-
-      hints: [
-        'Potatoes are in row 3.',
-        'Their price is in column C.',
-        'Select C3, delete 3 and enter 2.75.',
-      ],
-
-      explain:
-        'Great work! You have entered a decimal value. The potato price is now $2.75.',
-
-      tips: [
-        'The decimal point allows you to enter values such as 2.75.',
-        'Currency formatting displays the number as money.',
-      ],
-
+      sheet: carrotPrice,
+      prompt: 'Potatoes are on special. Change their price to $2.75 per kg.',
+      checks: [{ type: 'cellValue', cell: 'C3', equals: 2.75 }],
+      hints: ['Potatoes are in row 3.', 'Their price is in column C.', 'Tap C3 twice, press ⌫, type 2.75, then press Enter.'],
+      explain: 'The . key makes a decimal point. The cell shows $2.75.',
+      tips: ['A decimal point is the . key, next to 0.', 'Money format shows a number as dollars and cents.'],
       solution: [
-        {
-          tap: 'C3',
-          say: 'Select the potato price.',
-        },
-        {
-          tap: 'C3',
-        },
-        {
-          key: 'backspace',
-          say: 'Delete the old price.',
-        },
-        {
-          key: '2',
-          say: 'Enter 2.75.',
-        },
-        {
-          key: '.',
-        },
-        {
-          key: '7',
-        },
-        {
-          key: '5',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the price.',
-        },
+        { tap: 'C3', say: 'Tap C3, then tap it again to type.' },
+        { tap: 'C3' },
+        { key: 'backspace', say: 'Delete the old price.' },
+        { key: '2', say: 'Type 2, the point, then 7 and 5.' },
+        { key: '.' },
+        { key: '7' },
+        { key: '5' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // KNOWLEDGE CHECK
-    // --------------------------------------------------
-
     choice({
       id: 'xl.u0.l2.e5',
       skill: TYPE,
-
-      prompt:
-        'After entering information into a cell, what should you do to confirm it?',
-
-      options: [
-        'Press Enter',
-        'Wait for the spreadsheet to save it',
-        'Press the ✕ button',
-      ],
-
+      prompt: 'You have typed a number. What puts it into the cell?',
+      options: ['Pressing Enter', 'Waiting a moment', 'Tapping the ✕ in the bar'],
       right: 0,
-
-      hints: [
-        'Think about the keyboard.',
-        'The Enter key confirms your entry.',
-        'The ✕ button cancels your changes.',
-      ],
-
-      explain:
-        'Correct! Pressing Enter confirms the information you entered.',
-
-      tips: [
-        'Enter confirms your changes.',
-        'The ✕ button cancels the current edit.',
-      ],
+      hints: ['It is a key on the keyboard.', 'It is the big key at the bottom right.', 'The ✕ does the opposite: it throws the typing away.'],
+      explain: 'Enter keeps what you typed. The ✕ in the bar throws it away.',
+      tips: ['The ✕ in the bar stops typing and leaves the cell as it was.', 'You can change a cell as often as you like.'],
     }),
-
-    // --------------------------------------------------
-    // APPLY: IDENTIFY THE TOMATO STOCK CELL
-    // --------------------------------------------------
-
+    // Apply: one real task in two steps, as set out in the course brief. First find the
+    // cell, then change it.
     {
       id: 'xl.u0.l2.e7',
       type: 'grid-task',
       skill: ADDRESS,
       apply: true,
-      sheet: inventory,
-
-      prompt:
-        'Another delivery has arrived! Our supplier delivered 50 kg of tomatoes. Select the tomato stock cell.',
-
-      checks: [
-        {
-          type: 'selectionEquals',
-          range: 'B4',
-        },
-      ],
-
-      hints: [
-        'Find Tomatoes in column A.',
-        'Stock quantities are recorded in column B.',
-        'Tomatoes are in row 4. Select B4.',
-      ],
-
+      sheet: potatoPrice,
+      prompt: 'We picked another 50 kg of tomatoes. Select the tomato stock.',
+      checks: [{ type: 'selectionEquals', range: 'B4' }],
+      hints: ['Find Tomatoes in column A.', 'Stock (kg) is column B.', 'Tomatoes are in row 4. Select B4.'],
       praise: 'Well done!',
-
-      explain:
-        'You selected B4, which records the quantity of tomatoes in stock.',
-
-      tips: [
-        BASICS.labels,
-        BASICS.headings,
-      ],
-
-      solution: [
-        {
-          tap: 'B4',
-          say: 'Tomatoes are in row 4, and Stock is column B.',
-        },
-      ],
+      explain: 'You selected B4: the stock of tomatoes.',
+      tips: [BASICS.labels, BASICS.headings],
+      solution: [{ tap: 'B4', say: 'Tomatoes are in row 4. Stock is column B.' }],
     },
-
-    // --------------------------------------------------
-    // APPLY: UPDATE THE TOMATO INVENTORY
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.e2',
       type: 'grid-task',
       skill: TYPE,
       apply: true,
-      sheet: inventory,
-
+      sheet: potatoPrice,
+      // Carries on from the step before: the cell that was found is still selected.
       select: 'B4',
-
-      prompt:
-        'We had 50 kg of tomatoes and received another 50 kg. Update our inventory to show the new total.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'B4',
-          equals: 100,
-        },
-      ],
-
-      hints: [
-        'Add the existing 50 kg to the new delivery of 50 kg.',
-        'The updated quantity is 100 kg.',
-        'Select B4, replace 50 with 100 and press Enter.',
-      ],
-
+      prompt: 'We had 30 kg and picked 50 kg more. Change the stock to 80.',
+      checks: [{ type: 'cellValue', cell: 'B4', equals: 80 }],
+      hints: ['B4 is already selected. Tap it to start typing.', 'Press ⌫ twice to clear the 30, then type 80.', 'Finish with Enter. The cell should show 80.'],
       praise: 'Excellent work!',
-
-      explain:
-        'Golden Apples Farm now has 100 kg of tomatoes recorded in its inventory.',
-
-      tips: [
-        BASICS.backspace,
-        BASICS.enter,
-      ],
-
+      explain: 'Golden Apples Farm now has 80 kg of tomatoes in stock.',
+      tips: [BASICS.backspace, 'Nothing goes into the cell until you press Enter.'],
       solution: [
-        {
-          tap: 'B4',
-          say: 'Open the tomato stock cell.',
-        },
-        {
-          key: 'backspace',
-          say: 'Remove the previous quantity.',
-        },
-        {
-          key: '1',
-          say: 'Enter 100.',
-        },
-        {
-          key: '0',
-        },
-        {
-          key: '0',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the updated inventory.',
-        },
+        { tap: 'B4', say: 'B4 is already selected. Tap it again to type.' },
+        { key: 'backspace', say: 'Press ⌫ twice to clear the 30.' },
+        { key: 'backspace' },
+        { key: '8', say: 'Type 80.' },
+        { key: '0' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // APPLY: PREVIEW AUTOMATIC CALCULATIONS
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.e6',
       type: 'grid-task',
       skill: TYPE,
       apply: true,
       sheet: totalled,
-
-      prompt:
-        'Our apple harvest is ready! We have collected another 20 kg of apples. Update our inventory and watch the total stock change.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'B5',
-          equals: 100,
-        },
-      ],
-
-      hints: [
-        'Apples are in row 5.',
-        'We had 80 kg and harvested another 20 kg.',
-        'Select B5, replace 80 with 100 and press Enter.',
-      ],
-
-      praise: 'Excellent work!',
-
-      explain:
-        'The total stock increased from 345 kg to 365 kg automatically! A formula performed the calculation. You will learn how formulas work in a later lesson.',
-
-      tips: [
-        BASICS.free,
-        BASICS.hint,
-      ],
-
+      prompt: 'We picked 20 kg more apples. Change their stock and watch the total.',
+      checks: [{ type: 'cellValue', cell: 'B5', equals: 100 }],
+      hints: ['Apple stock is in B5.', 'Tap B5 twice, press ⌫ twice, then type 100.', 'Press Enter. The total should change from 385 to 405.'],
+      explain: 'The total changed by itself. It is a formula, and you will write your own soon.',
+      tips: [BASICS.free, BASICS.hint],
       solution: [
-        {
-          tap: 'B5',
-          say: 'Select the apple stock quantity.',
-        },
-        {
-          tap: 'B5',
-        },
-        {
-          key: 'backspace',
-          say: 'Delete the old quantity.',
-        },
-        {
-          key: '1',
-          say: 'Enter 100.',
-        },
-        {
-          key: '0',
-        },
-        {
-          key: '0',
-        },
-        {
-          key: 'enter',
-          say: 'Watch the total stock update automatically.',
-        },
+        { tap: 'B5', say: 'Tap B5, then tap it again to type.' },
+        { tap: 'B5' },
+        { key: 'backspace', say: 'Press ⌫ twice to clear the 80.' },
+        { key: 'backspace' },
+        { key: '1', say: 'Type 100.' },
+        { key: '0' },
+        { key: '0' },
+        { key: 'enter', say: 'Enter. The total follows: 405.' },
       ],
     },
   ],
-
-  // --------------------------------------------------
-  // INDEPENDENT PRACTICE
-  // --------------------------------------------------
-
   practice: [
     {
       id: 'xl.u0.l2.p1',
       type: 'grid-task',
       skill: TYPE,
       sheet: purchases,
-
-      prompt:
-        'Golden Apples Farm has ordered 75 kg of potatoes. Enter 75 in the empty order quantity cell.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'C3',
-          equals: 75,
-        },
-      ],
-
-      hints: [
-        'Find Potatoes in row 3.',
-        'Ordered (kg) is column C.',
-        'Select C3, enter 75 and press Enter.',
-      ],
-
-      explain:
-        'Excellent! You have recorded the potato order.',
-
-      tips: [
-        BASICS.tapTwice,
-        BASICS.enter,
-      ],
-
+      prompt: 'We ordered 75 kg of potatoes. Put 75 in the empty Ordered cell.',
+      checks: [{ type: 'cellValue', cell: 'C3', equals: 75 }],
+      hints: ['Find Potatoes in row 3.', 'Ordered (kg) is column C.', 'Tap C3 twice, type 75, then press Enter.'],
+      explain: 'Tap, tap, type, Enter. The potato order is recorded.',
+      tips: [BASICS.tapTwice, BASICS.enter],
       solution: [
-        {
-          tap: 'C3',
-          say: 'Select the empty order cell.',
-        },
-        {
-          tap: 'C3',
-        },
-        {
-          key: '7',
-          say: 'Enter 75.',
-        },
-        {
-          key: '5',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the order.',
-        },
+        { tap: 'C3', say: 'Tap C3, then tap it again to type.' },
+        { tap: 'C3' },
+        { key: '7', say: 'Type 75.' },
+        { key: '5' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // PRACTICE: UPDATE A SUPPLIER PRICE
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.p2',
       type: 'grid-task',
       skill: TYPE,
       sheet: purchases,
-
-      prompt:
-        'Our tomato supplier has reduced the price to $4 per kilogram. Update the supplier price.',
-
-      checks: [
-        {
-          type: 'cellValue',
-          cell: 'B4',
-          equals: 4,
-        },
-      ],
-
-      hints: [
-        'Find Tomatoes in row 4.',
-        'Cost per kg is column B.',
-        'Replace the existing 5 with 4.',
-      ],
-
-      explain:
-        'Well done! The supplier price is now $4 per kilogram.',
-
-      tips: [
-        BASICS.backspace,
-        BASICS.bar,
-      ],
-
+      prompt: 'The tomato supplier now charges $4 per kg. Change the cost to 4.',
+      checks: [{ type: 'cellValue', cell: 'B4', equals: 4 }],
+      hints: ['Find Tomatoes in row 4.', 'Cost per kg is column B.', 'Tap B4 twice, press ⌫ to clear the 5, then type 4.'],
+      explain: 'Delete the old number first, then type the new one.',
+      tips: ['⌫ deletes one character at a time.', BASICS.bar],
       solution: [
-        {
-          tap: 'B4',
-          say: 'Select the tomato supplier price.',
-        },
-        {
-          tap: 'B4',
-        },
-        {
-          key: 'backspace',
-          say: 'Remove the old price.',
-        },
-        {
-          key: '4',
-          say: 'Enter the new price.',
-        },
-        {
-          key: 'enter',
-          say: 'Confirm the change.',
-        },
+        { tap: 'B4', say: 'Tap B4, then tap it again to type.' },
+        { tap: 'B4' },
+        { key: 'backspace', say: 'Delete the 5.' },
+        { key: '4', say: 'Type 4.' },
+        { key: 'enter', say: 'Enter.' },
       ],
     },
-
-    // --------------------------------------------------
-    // PRACTICE: IDENTIFY A CELL REFERENCE
-    // --------------------------------------------------
-
     {
       id: 'xl.u0.l2.p3',
       type: 'grid-task',
       skill: ADDRESS,
       sheet: purchases,
-
-      prompt:
-        'Our carrot supplier has announced a price change. Select the cell containing the current carrot price.',
-
-      checks: [
-        {
-          type: 'selectionEquals',
-          range: 'B2',
-        },
-      ],
-
-      hints: [
-        'Carrots are in row 2.',
-        'Cost per kg is column B.',
-        'Select cell B2.',
-      ],
-
-      explain:
-        'Correct! B2 contains the supplier price for carrots.',
-
-      tips: [
-        BASICS.labels,
-        BASICS.headings,
-      ],
-
-      solution: [
-        {
-          tap: 'B2',
-          say: 'Carrots are in row 2, and Cost is column B.',
-        },
-      ],
+      prompt: 'Carrot costs are changing. Select the carrot cost cell.',
+      checks: [{ type: 'selectionEquals', range: 'B2' }],
+      hints: ['Carrots are in row 2.', 'Cost per kg is column B.', 'Select the $3.00 next to Carrots. That cell is B2.'],
+      explain: 'Carrots are in row 2 and Cost per kg is column B, so the cell is B2.',
+      tips: [BASICS.labels, BASICS.headings],
+      solution: [{ tap: 'B2', say: 'Carrots are in row 2. Cost is column B. So: B2.' }],
     },
   ],
 };

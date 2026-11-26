@@ -567,7 +567,13 @@ export class SheetController {
   }
 
   /** A keyboard shortcut, from the key caps on screen or a real keyboard. */
-  runShortcut(id: ShortcutId): void {
+  /**
+   * Runs a shortcut. Returns false, and leaves no record, when it can't work right now:
+   * while a cell is being typed in, only Undo does anything (it stops the typing). So a
+   * lesson's "use the keys" check only passes for a press that really did something.
+   */
+  runShortcut(id: ShortcutId): boolean {
+    if (this.state.editing && id !== 'undo') return false;
     this.done.push(`combo:${id}`);
     if (id === 'selectAll') this.selectAll();
     else if (id === 'copy') this.copy();
@@ -585,6 +591,7 @@ export class SheetController {
     else if (id === 'extendUp') this.extend(0, -1);
     else if (id === 'extendDown') this.extend(0, 1);
     else if (id === 'extendRight') this.extend(1, 0);
+    return true;
   }
 
   /** What has been done so far, for tasks that are about the doing and not just the result. */

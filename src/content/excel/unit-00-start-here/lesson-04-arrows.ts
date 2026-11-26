@@ -6,15 +6,19 @@ import { BASICS } from '../tips';
 const MOVE = 'xl.keys.move';
 const EXTEND = 'xl.select.extend';
 
+const money = { numFmt: 'currency' as const };
+
+/** The farm inventory as "Entering Data" left it. */
 const inventory = table(
-  ['Product', 'Price per kg', 'Stock (kg)'],
+  ['Product', 'Stock (kg)', 'Price per kg'],
   [
-    ['Carrots', 3, 115],
-    ['Potatoes', 2.75, 200],
-    ['Tomatoes', 6, 100],
-    ['Apples', 4, 80],
+    ['Carrots', 115, 3],
+    ['Potatoes', 110, 2.75],
+    ['Tomatoes', 80, 6],
+    ['Apples', 100, 4],
   ],
 );
+inventory.formats = { ...inventory.formats, 'C2:C5': money };
 
 const customers = table(
   ['Customer', 'Orders', 'Crates'],
@@ -47,15 +51,19 @@ export const arrows: Lesson = {
         { combo: 'moveDown', say: '↓ moves one cell down.' },
         { combo: 'moveRight', say: '→ moves one cell right.' },
       ],
-      prompt: 'Your turn. Use the arrows to move to the stock for Apples: C5.',
-      checks: [{ type: 'selectionEquals', range: 'C5' }],
-      hints: ['You are on B3. Apples are two rows down.', 'Press ↓ twice, then → once.', 'The active cell should be C5, which holds 80.'],
+      prompt: 'Your turn. Use the arrows to move to the price of Apples: C5.',
+      checks: [
+        { type: 'usedShortcut', id: 'moveDown' },
+        { type: 'usedShortcut', id: 'moveRight' },
+        { type: 'selectionEquals', range: 'C5' },
+      ],
+      hints: ['You are on B3. Apples are two rows down.', 'Press ↓ twice, then → once.', 'The active cell should be C5: the price of Apples, $4.00.'],
       explain: 'Arrow keys get you around without lifting your hands from the keyboard.',
       tips: ['Each press of an arrow moves one cell.', 'The arrow keys are under the grid.'],
       solution: [
         { combo: 'moveDown', say: '↓ twice, to the Apples row.' },
         { combo: 'moveDown' },
-        { combo: 'moveRight', say: '→ once, to Stock.' },
+        { combo: 'moveRight', say: '→ once, to Price per kg.' },
       ],
     },
     {
@@ -66,6 +74,7 @@ export const arrows: Lesson = {
       prompt: "New sheet. From A1, move to Hill Market's Orders with the arrow keys.",
       checks: [
         { type: 'usedShortcut', id: 'moveDown' },
+        { type: 'usedShortcut', id: 'moveRight' },
         { type: 'selectionEquals', range: 'B3' },
       ],
       hints: ['Hill Market is two rows down from the heading.', 'Press ↓ twice, then → once.', 'The active cell should be B3, which holds 3.'],
@@ -108,7 +117,7 @@ export const arrows: Lesson = {
         { type: 'usedShortcut', id: 'extendDown' },
         { type: 'selectionEquals', range: 'C2:C4' },
       ],
-      hints: ['C4 is two cells below C2.', 'Hold Shift, then press ↓ twice.', 'Three cells should be shaded: 115, 200 and 100.'],
+      hints: ['C4 is two cells below C2.', 'Hold Shift, then press ↓ twice.', 'Three cells should be shaded: $3.00, $2.75 and $6.00.'],
       explain: 'Two presses, two more cells: C2:C4.',
       tips: ['Went too far? Shift + ↑ takes one cell back off.', BASICS.free],
       solution: [
@@ -133,12 +142,12 @@ export const arrows: Lesson = {
       apply: true,
       sheet: inventory,
       select: 'A3',
-      prompt: 'You want to copy the Potatoes record. From A3, select across to C3 with Shift + →.',
+      prompt: 'To copy the Potatoes row, select from A3 across to C3 with Shift + →.',
       checks: [
         { type: 'usedShortcut', id: 'extendRight' },
         { type: 'selectionEquals', range: 'A3:C3' },
       ],
-      hints: ['C3 is two cells to the right of A3.', 'Hold Shift, then press → twice.', 'Three cells should be shaded: Potatoes, 2.75 and 200.'],
+      hints: ['C3 is two cells to the right of A3.', 'Hold Shift, then press → twice.', 'Three cells should be shaded: Potatoes, 110 and $2.75.'],
       explain: 'Shift + → stretches across, just as Shift + ↓ stretches down.',
       tips: ['Shift works with all four arrows.', 'The first cell you selected stays white: it is the active cell.'],
       solution: [
@@ -156,6 +165,7 @@ export const arrows: Lesson = {
       prompt: "From A1, move to Town Grocer's Crates with the arrow keys.",
       checks: [
         { type: 'usedShortcut', id: 'moveDown' },
+        { type: 'usedShortcut', id: 'moveRight' },
         { type: 'selectionEquals', range: 'C4' },
       ],
       hints: ['Town Grocer is three rows down from the heading.', 'Press ↓ three times, then → twice.', 'The active cell should be C4, which holds 10.'],

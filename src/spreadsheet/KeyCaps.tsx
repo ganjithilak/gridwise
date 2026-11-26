@@ -5,6 +5,7 @@ import { buzz } from '@/lib/feedback';
 import { radius, useTheme } from '@/theme';
 
 import type { ShortcutId } from './controller';
+import { listenForKeys, readKey } from './keyboard';
 import {
   ARROWS,
   CAP_LETTERS,
@@ -37,6 +38,11 @@ interface Props {
   startHeld?: readonly HoldKey[];
   /** Lights a key up to point it out, as "Shift". Used when the wrong key was pressed. */
   pointAt?: HoldKey | null;
+  /**
+   * Whether the strip also answers the real keyboard. A lesson turns this off: its sheet
+   * listens to the whole keyboard itself, so the strip only shows and taps keys.
+   */
+  keyboard?: boolean;
 }
 
 /** The keys that are held, and the keys that are pressed, on each strip. */
@@ -45,19 +51,12 @@ const STRIPS: Record<CapSet, { hold: readonly HoldKey[]; press: readonly PressKe
   moving: { hold: ['ctrl', 'shift'], press: ['Space', ...ARROWS] },
 };
 
-/** What a real keyboard calls the same keys. */
-const fromEvent = (key: string): PressKey | null => {
-  if (key === ' ' || key === 'Spacebar') return 'Space';
-  if (key.startsWith('Arrow')) return key.slice(5);
-  return key.length === 1 ? key.toUpperCase() : null;
-};
-
 /**
  * A strip of keyboard keys to press in combination: a key such as Ctrl or Shift first,
  * which stays held, then another. On a phone this teaches what a shortcut is; with a real
  * keyboard on the web the real keys work too.
  */
-export function KeyCaps({ computer, set = 'letters', onCombo, onLoose, flash, locked = false, height = 44, startHeld = [], pointAt = null }: Props) {
+export function KeyCaps({ computer, set = 'letters', onCombo, onLoose, flash, locked = false, height = 44, startHeld = [], pointAt = null, keyboard = true }: Props) {
   const c = useTheme();
   const [held, setHeld] = useState<readonly HoldKey[]>(startHeld);
   const strip = STRIPS[set];
@@ -65,28 +64,18 @@ export function KeyCaps({ computer, set = 'letters', onCombo, onLoose, flash, lo
 
   // A real keyboard, where there is one. The browser keeps a few combinations for itself
   // (such as Ctrl+W), which is why none of those are taught here.
+  // Read the same way as the lesson sheet reads it: Cmd on a Mac, Ctrl on Windows.
   useEffect(() => {
-    if (Platform.OS !== 'web' || locked) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey) return;
-      const key = fromEvent(e.key);
-      if (!key) return;
-      // Ctrl on a Mac is its own key; Cmd there does what Ctrl does on Windows.
-      const down: HoldKey[] = [];
-      if (e.shiftKey) down.push('shift');
-      const id =
-        (e.ctrlKey || e.metaKey ? shortcutFor(key, [...down, 'mod']) : null) ??
-        (e.ctrlKey ? shortcutFor(key, [...down, 'ctrl']) : null) ??
-        (!e.ctrlKey && !e.metaKey ? shortcutFor(key, down) : null);
-      if (!id) return;
-      // Only the keys on this strip: a lesson about arrows should not also copy and paste.
-      if (!strip.press.includes(SHORTCUTS[id].key)) return;
-      e.preventDefault();
-      onCombo(id);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [locked, onCombo, strip]);
+    if (Platform.OS !== 'web' || locked || !keyboard) return;
+    return listenForKeys(window, (e) => {
+      const read = readKey(e, computer);
+      if (read?.kind !== 'shortcut') return false;
+      // Only the keys on this strip: a game steered with arrows should not also copy and paste.
+      if (!strip.press.includes(SHORTCUTS[read.id].key)) return false;
+      onCombo(read.id);
+      return true;
+    });
+  }, [locked, keyboard, computer, onCombo, strip]);
 
   const toggle = (key: HoldKey) => {
     buzz('key');

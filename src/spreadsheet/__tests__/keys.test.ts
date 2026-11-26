@@ -35,11 +35,22 @@ describe('whole rows and columns', () => {
     expect(active(c)).toBe('B3');
   });
 
-  it('does nothing while a cell is being typed in', () => {
+  it('does nothing while a cell is being typed in, and is not counted as used', () => {
     const c = make('B3');
     c.startEdit();
-    c.runShortcut('selectColumn');
+    expect(c.runShortcut('selectColumn')).toBe(false);
     expect(selected(c)).toBe('B3');
+    expect(c.actions()).not.toContain('combo:selectColumn');
+  });
+
+  it('lets Undo stop the typing, as in Excel, and counts it', () => {
+    const c = make('B3');
+    c.startEdit();
+    c.pressKey('7');
+    expect(c.runShortcut('undo')).toBe(true);
+    expect(c.getState().editing).toBeNull();
+    expect(c.sheet.getRaw(a1('B3'))).toBe('3');
+    expect(c.actions()).toContain('combo:undo');
   });
 });
 

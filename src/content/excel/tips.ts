@@ -32,6 +32,7 @@ export const FORMULAS = {
 
 /** Two tips for each skill, for practice rounds and unit tests, where there is no lesson around them. */
 export const BY_SKILL: Record<string, readonly [string, string]> = {
+  'xl.spreadsheet.purpose': ['A spreadsheet organises information into rows and columns.', BASICS.labels],
   'xl.cell.address': [BASICS.name, BASICS.headings],
   'xl.cell.type': [BASICS.tapTwice, BASICS.enter],
   'xl.select.column': ['Ctrl + Space selects the whole column of the active cell.', 'Ctrl goes with columns. Shift goes with rows.'],
