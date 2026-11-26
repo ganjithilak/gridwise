@@ -1,6 +1,6 @@
 # Gridwise (working title)
 
-A hands-on spreadsheet learning app: short lessons where you do the task in a real working grid instead of answering trivia about it. The full plan, and where the build stands against it, is in [gridwise-plan.md](gridwise-plan.md). The design direction from 26 Nov 2026 on is [docs/creative-direction-v2.md](docs/creative-direction-v2.md).
+A hands-on spreadsheet learning app: short lessons where you do the task in a real working grid instead of answering trivia about it. The full plan, and where the build stands against it, is in [gridwise-plan.md](gridwise-plan.md). The design direction from 26 Nov 2026 on is [docs/creative-direction-v2.md](docs/creative-direction-v2.md); the staged plan is [docs/development-plan.md](docs/development-plan.md); writing rules are in [docs/editorial-standards.md](docs/editorial-standards.md).
 
 ## Run it
 

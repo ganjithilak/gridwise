@@ -8,8 +8,9 @@ const PURPOSE = 'xl.spreadsheet.purpose';
 const money = { numFmt: 'currency' as const };
 
 /**
- * Golden Apples Farm's inventory. The same columns, in the same order, run through every
- * lesson in "Start here": Product, Stock (kg), Price per kg.
+ * Golden Apples Farm's stock record at the start of the season. The same three columns run
+ * through every Roots lesson: Product, Stock (kg), Price per kg. See docs/curriculum-map.md
+ * for how the figures change from lesson to lesson.
  */
 const farmInventory = table(
   ['Product', 'Stock (kg)', 'Price per kg'],
@@ -21,7 +22,7 @@ const farmInventory = table(
 );
 farmInventory.formats = { ...farmInventory.formats, 'C2:C4': money };
 
-/** What the roadside stall was sent from the farm. */
+/** The first delivery from the farm to its roadside stall. */
 const roadsideStall = table(
   ['Product', 'Received (kg)'],
   [
@@ -31,7 +32,7 @@ const roadsideStall = table(
   ],
 );
 
-/** The two records side by side: what was picked, what went to the stall, what is left. */
+/** The two records side by side: harvested, sent to the stall, still at the farm. */
 const movements = table(
   ['Product', 'Picked (kg)', 'To stall (kg)', 'Left (kg)'],
   [
@@ -41,87 +42,93 @@ const movements = table(
   ],
 );
 
-/** The farm keeps a spreadsheet for each part of the business. */
+/** The farm keeps a separate workbook for each part of the business. */
 const records = table(
   ['Spreadsheet', 'What it records'],
   [
-    ['Farm Inventory', 'What we grow'],
-    ['Roadside Sales', 'What we sell'],
-    ['Farm Expenses', 'What we spend'],
+    ['Farm Inventory', 'Stock on hand'],
+    ['Roadside Sales', 'What the stall sells'],
+    ['Farm Expenses', 'What the farm spends'],
   ],
 );
 
-/** Before any cell or reference: what a spreadsheet is for, told through the farm. */
+/**
+ * Orientation: why a farm needs spreadsheets, before any cell or reference is taught. The
+ * opening is told as short dialogue, one sentence to a screen, so it reads well on a phone.
+ * An orientation lesson, so it asks for recognition rather than practice.
+ */
 export const goldenApplesFarm: Lesson = {
   id: 'xl.u0.l0',
   title: 'Welcome to Golden Apples Farm',
-  summary: 'Discover what spreadsheets are and how businesses use them.',
+  summary: 'A new season, a farm to run, and why spreadsheets matter.',
   recap: [
-    'A spreadsheet organises, stores and works with information.',
+    'A spreadsheet stores information in rows and columns so it is easy to find.',
     'Each part of a business can keep its own spreadsheet.',
-    'Records connect: produce sent to the stall leaves the farm.',
+    'Records are connected: stock sent to the stall is no longer at the farm.',
   ],
   newSkills: [PURPOSE],
   exercises: [
-    // Teach 1: what a spreadsheet is.
+    // Teach: the story, then what a spreadsheet is for.
     {
       id: 'xl.u0.l0.e1',
       type: 'demo',
       skill: PURPOSE,
       sheet: farmInventory,
       script: [
-        { tap: 'A2', say: 'Welcome to Golden Apples Farm! The farm is now yours.' },
-        { tap: 'B2', say: 'You need to know how much produce you have.' },
-        { tap: 'C2', say: 'And what each product sells for.' },
-        { tap: 'A1', say: 'A spreadsheet organises and stores all of it.' },
+        { tap: 'A1', say: 'Welcome to Golden Apples Farm.' },
+        { tap: 'A2', say: 'A new growing season is about to begin.' },
+        { tap: 'A3', say: "You've been entrusted with running the farm." },
+        { tap: 'B2', say: 'Harvests, stock, expenses and sales all need tracking.' },
+        { tap: 'C2', say: 'A spreadsheet keeps that information organised.' },
+        { tap: 'A1', say: "Let's start with the farm's stock record." },
       ],
-      prompt: 'Your turn. Tap the word Carrots.',
+      prompt: 'Your turn. Select the cell that says Carrots.',
       checks: [{ type: 'selectionEquals', range: 'A2' }],
-      hints: ['Look in the Product column on the left.', 'Carrots are the first product listed.', 'Tap the cell that says Carrots.'],
-      explain: 'A spreadsheet organises information into rows and columns, one item to a box.',
-      tips: ['A spreadsheet is like a notebook made of rows and columns.', 'Each piece of information has its own place.'],
-      solution: [{ tap: 'A2', say: 'Carrots are listed here.' }],
+      hints: ['Product names are in the first column.', 'Carrots is the first product in the list.', 'Tap the cell containing the word Carrots.'],
+      explain: 'Each product has its own row, so its stock and price sit beside it.',
+      tips: ['A spreadsheet is a grid of rows and columns.', 'Each piece of information has its own place in the grid.'],
+      solution: [{ tap: 'A2', say: 'Carrots is the first product listed.' }],
     },
     choice({
       id: 'xl.u0.l0.e2',
       skill: PURPOSE,
       sheet: farmInventory,
-      prompt: 'What can this spreadsheet tell us?',
-      options: ['How many kg of carrots we have', 'Whether it will rain tomorrow', 'How many customers will visit next week'],
+      prompt: 'Which question can this spreadsheet answer?',
+      options: ['How many kilograms of carrots are in stock', 'Whether it will rain tomorrow', 'How many customers will visit next week'],
       right: 0,
-      hints: ['Look at what the spreadsheet records.', 'It shows products, stock and prices.', 'A spreadsheet only knows what has been typed into it.'],
-      explain: 'It records 100 kg of carrots. It cannot know the weather or who will visit.',
-      tips: ['Spreadsheets work with the information you give them.', 'Row 1 says what each column records.'],
+      hints: ['Read the headings in row 1.', 'The sheet records products, stock and prices.', 'A spreadsheet only knows what has been entered into it.'],
+      explain: 'The sheet records 100 kg of carrots. It holds no information about weather or visitors.',
+      tips: ['A spreadsheet works only with the information you give it.', 'Read the headings first: they say what each column records.'],
     }),
     {
       id: 'xl.u0.l0.e6',
       type: 'grid-task',
       skill: PURPOSE,
       sheet: farmInventory,
-      prompt: 'Which vegetable sells for the most per kg? Tap its price.',
+      prompt: 'Which product earns the most per kilogram? Select its price.',
       checks: [{ type: 'selectionEquals', range: 'C4' }],
-      hints: ['Look down the Price per kg column.', 'The biggest price there is $6.00.', 'Tap the $6.00 next to Tomatoes.'],
-      explain: 'Tomatoes sell for $6.00 a kg, the most of the three.',
+      hints: ['Compare the values in the Price per kg column.', 'The highest price in that column is $6.00.', 'Select the $6.00 in the Tomatoes row.'],
+      explain: 'Tomatoes sell for $6.00 per kg, the highest price of the three.',
       tips: [BASICS.labels, BASICS.headings],
-      solution: [{ tap: 'C4', say: 'Tomatoes: $6.00 a kg.' }],
+      solution: [{ tap: 'C4', say: 'Tomatoes: $6.00 per kg.' }],
     },
-    // Teach 2: different parts of the business, connected.
+    // Teach: separate records for separate parts of the business, and how they connect.
     {
       id: 'xl.u0.l0.e3',
       type: 'demo',
       skill: PURPOSE,
       sheet: roadsideStall,
       script: [
-        { tap: 'A2', say: 'Your farm also runs a roadside stall.' },
-        { tap: 'B2', say: 'The stall gets vegetables picked on the farm.' },
-        { tap: 'B3', say: 'Farm and stall are two parts of one business.' },
-        { tap: 'B4', say: 'Later, you will connect their numbers.' },
+        { tap: 'A1', say: 'The farm also runs a roadside stall.' },
+        { tap: 'B2', say: 'This sheet records what the stall received.' },
+        { tap: 'B3', say: 'The farm and the stall keep separate records.' },
+        { tap: 'B4', say: 'Later, formulas will connect them.' },
       ],
-      prompt: 'Your turn. Tap how many kg of carrots the stall received.',
+      prompt: 'Your turn. Select the amount of carrots the stall received.',
       checks: [{ type: 'selectionEquals', range: 'B2' }],
-      hints: ['Find Carrots in the first column.', 'Look across to the Received (kg) column.', 'Tap the 40 next to Carrots.'],
+      hints: ['Find Carrots in the first column.', 'Follow that row across to Received (kg).', 'Select the 40 in the Carrots row.'],
       explain: 'The stall received 40 kg of carrots from the farm.',
-      tips: ['Each part of a business can have its own spreadsheet.', 'Numbers in one column all measure the same thing.'],
+      tips: ['Each part of a business can keep its own spreadsheet.', 'Every value in a column measures the same thing.'],
       solution: [{ tap: 'B2', say: 'The stall received 40 kg of carrots.' }],
     },
     {
@@ -129,27 +136,26 @@ export const goldenApplesFarm: Lesson = {
       type: 'grid-task',
       skill: PURPOSE,
       sheet: movements,
-      prompt: 'We sent 40 kg of carrots to the stall. Tap how much is left.',
+      prompt: '40 kg of carrots went to the stall. Select how much is left.',
       checks: [{ type: 'selectionEquals', range: 'D2' }],
-      hints: ['Find the Carrots row.', 'Look along it to the Left (kg) column.', 'Tap the 60 next to Carrots: 100 picked, 40 sent.'],
-      explain: '100 kg picked and 40 kg sent to the stall leaves 60 kg. Later, a formula will work this out.',
-      tips: ['When produce moves, two records change at once.', BASICS.free],
+      hints: ['Find the Carrots row.', 'Follow it across to the Left (kg) column.', 'Select 60: 100 kg picked, less 40 kg sent.'],
+      explain: '100 kg picked less 40 kg sent leaves 60 kg. Soon a formula will calculate this.',
+      tips: ['When stock moves, two records change at once.', BASICS.free],
       solution: [{ tap: 'D2', say: '100 picked, 40 sent: 60 left.' }],
     },
-    // Apply: pick the right record for the job.
+    // Apply: choose the right record for a real question.
     {
       id: 'xl.u0.l0.e5',
       type: 'grid-task',
       skill: PURPOSE,
       apply: true,
       sheet: records,
-      prompt: 'You need to know what the farm spent on seeds. Tap the right spreadsheet.',
+      prompt: 'You need to know what the farm spent on seed. Select the right spreadsheet.',
       checks: [{ type: 'selectionEquals', range: 'A4' }],
-      hints: ['Seeds are something the farm buys.', 'Read column B to see what each one records.', 'Tap Farm Expenses: it records what we spend.'],
-      praise: 'Well done!',
-      explain: 'Farm Expenses records what the farm spends, so the cost of seeds is there.',
-      tips: ['Keeping different records apart makes them easier to find.', BASICS.hint],
-      solution: [{ tap: 'A4', say: 'Farm Expenses records what we spend.' }],
+      hints: ['Seed is something the farm buys.', 'Column B says what each spreadsheet records.', 'Select Farm Expenses.'],
+      explain: 'Farm Expenses records what the farm spends, including seed.',
+      tips: ['Separate records are easier to find and keep accurate.', BASICS.hint],
+      solution: [{ tap: 'A4', say: 'Farm Expenses records spending.' }],
     },
   ],
   practice: [
@@ -158,9 +164,9 @@ export const goldenApplesFarm: Lesson = {
       type: 'grid-task',
       skill: PURPOSE,
       sheet: roadsideStall,
-      prompt: 'Tap how many kg of tomatoes the stall received.',
+      prompt: 'Select the amount of tomatoes the stall received.',
       checks: [{ type: 'selectionEquals', range: 'B4' }],
-      hints: ['Find Tomatoes in the first column.', 'Look across to the Received (kg) column.', 'Tap the 20 next to Tomatoes.'],
+      hints: ['Find Tomatoes in the first column.', 'Follow that row across to Received (kg).', 'Select the 20 in the Tomatoes row.'],
       explain: 'The stall received 20 kg of tomatoes.',
       tips: [BASICS.labels, BASICS.headings],
       solution: [{ tap: 'B4', say: 'The stall received 20 kg of tomatoes.' }],
@@ -170,12 +176,12 @@ export const goldenApplesFarm: Lesson = {
       type: 'grid-task',
       skill: PURPOSE,
       sheet: records,
-      prompt: 'Which spreadsheet records what we sell? Tap it.',
+      prompt: 'Which spreadsheet records what the stall sells? Select it.',
       checks: [{ type: 'selectionEquals', range: 'A3' }],
-      hints: ['Read column B to see what each one records.', 'Selling happens at the roadside stall.', 'Tap Roadside Sales.'],
+      hints: ['Column B says what each spreadsheet records.', 'Sales happen at the roadside stall.', 'Select Roadside Sales.'],
       explain: 'Roadside Sales records what the stall sells.',
-      tips: ['Each part of a business can have its own spreadsheet.', BASICS.free],
-      solution: [{ tap: 'A3', say: 'Roadside Sales records what we sell.' }],
+      tips: ['Each part of a business can keep its own spreadsheet.', BASICS.free],
+      solution: [{ tap: 'A3', say: 'Roadside Sales records sales.' }],
     },
   ],
 };

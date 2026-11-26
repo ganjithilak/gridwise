@@ -35,7 +35,10 @@ export default function PracticeScreen() {
   const start = () => openLesson(REVIEW_ID);
 
   // How far each game has got: the number of levels finished, out of how many.
+  // Core educational games. Grid Master now lives in the locked Advanced Arcade below
+  // (its code and route are kept; see docs/games.md).
   const reached = (ids: string[]) => ids.filter((id) => data.game.levels[id] !== undefined).length;
+  const arcadeDone = reached(GRID_LEVELS.map((level) => level.id));
   const games = [
     {
       id: 'open-speed-trial',
@@ -44,14 +47,6 @@ export default function PracticeScreen() {
       done: reached(GAME_LEVELS.map((level) => level.id)),
       levels: GAME_LEVELS.length,
       path: '/speed-trial' as const,
-    },
-    {
-      id: 'open-grid-master',
-      title: 'Grid Master',
-      about: 'Steer a snake round the sheet with Shift + arrows',
-      done: reached(GRID_LEVELS.map((level) => level.id)),
-      levels: GRID_LEVELS.length,
-      path: '/grid-master' as const,
     },
   ];
 
@@ -86,6 +81,20 @@ export default function PracticeScreen() {
               </Pressable>
             );
           })}
+        </View>
+
+        {/* The Advanced Arcade: larger arcade games, locked while they are developed further. */}
+        <View
+          testID="advanced-arcade"
+          accessible
+          accessibilityLabel={`Advanced Arcade, locked. Grid Master, ${arcadeDone} of ${GRID_LEVELS.length} levels done, is being developed further.`}
+          style={[styles.arcade, { borderColor: c.line, backgroundColor: c.surface }]}
+        >
+          <Text style={[typography.label, { color: c.inkSoft }]}>ADVANCED ARCADE · LOCKED</Text>
+          <Text style={[typography.bodyStrong, { color: c.ink }]}>Grid Master and more</Text>
+          <Text style={[typography.small, { color: c.inkSoft }]}>
+            Arcade challenges built on your spreadsheet skills. Being developed further; the core games come first.
+          </Text>
         </View>
 
         {session || inProgress ? (
@@ -124,6 +133,7 @@ export default function PracticeScreen() {
 }
 
 const styles = StyleSheet.create({
+  arcade: { borderWidth: 1, borderStyle: 'dashed', borderRadius: radius.lg, padding: space.md, gap: 2, opacity: 0.85 },
   screen: { flex: 1, alignItems: 'center' },
   column: { flex: 1, width: '100%', maxWidth: 480, paddingHorizontal: space.lg, paddingBottom: space.md, gap: space.md },
   scroll: { flex: 1 },

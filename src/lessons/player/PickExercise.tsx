@@ -37,7 +37,8 @@ export interface PickExerciseProps {
   onSheetSide?: (side: Side) => void;
 }
 
-const PRAISE = ['Nice!', 'Spot on!', "That's it!", 'Exactly right!', 'You got it!'];
+/** Calm, factual confirmation; the explanation underneath carries the learning (docs/editorial-standards.md). */
+const PRAISE = ['Correct', 'Correct', 'That’s right'];
 const BLANK_SHEET = { cols: 1, rows: 1 };
 
 /**

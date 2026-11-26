@@ -161,7 +161,7 @@ export default function ProfileScreen() {
           })}
           <View style={styles.gameButtons}>
             <Button testID="profile-play" kind="quiet" label="Play Speed Trial" onPress={() => router.push('/speed-trial')} style={styles.half} />
-            <Button testID="profile-grid" kind="quiet" label="Play Grid Master" onPress={() => router.push('/grid-master')} style={styles.half} />
+            {/* Grid Master is in the locked Advanced Arcade; its results stay listed above. */}
           </View>
         </View>
 

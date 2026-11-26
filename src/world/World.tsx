@@ -163,7 +163,7 @@ export function World() {
                       {name ? `, ${name}` : ''}!
                     </Text>
                     <Text style={styles.bubbleText}>
-                      {next ? `Next up is “${next.lesson.title}”. Every lesson you finish grows your roots a little deeper.` : 'Every root is grown. Games keep the skills fresh.'}
+                      {next ? `Your next lesson is “${next.lesson.title}”. Each one builds on what you have already learned.` : 'You have completed every lesson. The games will help keep your skills sharp.'}
                     </Text>
                     {next ? <GoldButton testID="sky-next" label="Show me my roots" onPress={() => go(0, 1)} /> : null}
                   </GlassPanel>

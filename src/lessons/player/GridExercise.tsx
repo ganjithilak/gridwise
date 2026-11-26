@@ -77,7 +77,8 @@ export interface GridExerciseProps {
   onSheetSide?: (side: Side) => void;
 }
 
-const PRAISE = ['Nice!', 'Spot on!', "That's it!", 'Exactly right!', 'You got it!'];
+/** Calm, factual confirmation; the explanation underneath carries the learning (docs/editorial-standards.md). */
+const PRAISE = ['Correct', 'Correct', 'That’s right'];
 
 /** The cell an exercise opens on: the one named, or for a built formula, the one it goes in. */
 const openingCell = (exercise: SheetExercise): string =>
@@ -240,6 +241,8 @@ export function GridExercise({
   }, [attempt.hintsShown]);
 
   const doing = phase === 'do';
+  /** A task that is checked on a typed value (not a formula): the keys stay open while doing it. */
+  const typesValues = exercise.checks.some((c) => c.type === 'cellValue');
   const locked = !doing;
   const editing = state.editing !== null;
   // Once the learner changes the sheet, the last "not quite" no longer describes it.
@@ -518,6 +521,26 @@ export function GridExercise({
         flashKey={player.flashKey}
         locked={locked}
         keyHeight={metrics.keyHeight}
+      />
+    );
+  } else if (typesValues && doing && !liveOutcome) {
+    // Entering values: the keys are there as soon as a cell is selected, so typing replaces
+    // the cell's contents, as it does in Excel. Tapping the cell again still edits it.
+    bottom = (
+      <FeedbackSheet
+        top={
+          <FormulaKeyboard
+            onKey={(key) => controller.pressKey(key)}
+            hidden={hideKeys}
+            chips={chips}
+            onChip={(chip) => controller.pressChip(chip)}
+            flashKey={player.flashKey}
+            locked={locked}
+            keyHeight={metrics.keyHeight}
+          />
+        }
+        primary={checkAction}
+        secondary={showMeAction}
       />
     );
   } else if (phase === 'watch' || phase === 'showing') {

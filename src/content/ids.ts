@@ -79,6 +79,7 @@ export const KNOWN_IDS: readonly string[] = [
   'xl.u0.l2.e5',
   'xl.u0.l2.e6',
   'xl.u0.l2.e7',
+  'xl.u0.l2.e8',
   'xl.u0.l2.p1',
   'xl.u0.l2.p2',
   'xl.u0.l2.p3',
