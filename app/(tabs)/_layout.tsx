@@ -8,6 +8,8 @@ import { dueSkills } from '@/progress/srs';
 import { useProgress } from '@/progress/store';
 import { radius, space, useTheme } from '@/theme';
 import { useWorld } from '@/world/store';
+import { GOLD } from '@/world/ui/Gold';
+import { TabIcon } from '@/world/ui/TabIcons';
 
 /** Places in the world (Creative Direction V2, section 4). Gestures do the same; the bar means they are never required. */
 const TABS = [
@@ -20,6 +22,8 @@ type Tab = (typeof TABS)[number];
 
 /** A screen at least this wide, and wider than it is tall, gets the menu down its left side. */
 const SIDE_MENU_FROM = 640;
+/** Bar colours: the world's dark glass, gold for where you are. */
+const BAR_IDLE = '#CBB891';
 
 /**
  * Games, Farm, Roots and Profile: the places in the world. On a phone held upright there is
@@ -74,8 +78,9 @@ export default function TabsLayout() {
                 accessibilityState={{ selected: active }}
                 aria-selected={active}
                 onPress={() => go(tab)}
-                style={[styles.link, { backgroundColor: active ? c.accentSoft : 'transparent', borderColor: active ? c.accent : 'transparent' }]}
+                style={[styles.link, { backgroundColor: active ? 'rgba(242,193,78,0.14)' : 'transparent', borderColor: active ? GOLD.edge : 'transparent' }]}
               >
+                <TabIcon name={tab.id} colour={active ? GOLD.edge : c.inkSoft} size={20} />
                 <Text style={[styles.linkText, { color: active ? c.ink : c.inkSoft, fontWeight: active ? '800' : '600' }]}>{tab.label}</Text>
                 {tab.id === 'games' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
               </Pressable>
@@ -95,10 +100,7 @@ export default function TabsLayout() {
       <View style={styles.page}>
         <Slot />
       </View>
-      <View
-        accessibilityRole="tablist"
-        style={[styles.bar, { backgroundColor: c.surface, borderColor: c.line, paddingBottom: Math.max(insets.bottom, 6) }]}
-      >
+      <View accessibilityRole="tablist" style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 6) }]}>
         {TABS.map((tab) => {
           const active = isActive(tab);
           return (
@@ -112,9 +114,10 @@ export default function TabsLayout() {
               onPress={() => go(tab)}
               style={styles.tab}
             >
-              <View style={[styles.mark, { backgroundColor: active ? c.accent : 'transparent' }]} />
+              <View style={[styles.mark, active && styles.markOn]} />
+              <TabIcon name={tab.id} colour={active ? GOLD.edgeBright : BAR_IDLE} />
               <View style={styles.labelRow}>
-                <Text style={[styles.label, { color: active ? c.accent : c.inkSoft, fontWeight: active ? '800' : '600' }]}>{tab.label}</Text>
+                <Text style={[styles.label, { color: active ? GOLD.edgeBright : BAR_IDLE, fontWeight: active ? '800' : '600' }]}>{tab.label}</Text>
                 {tab.id === 'games' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
               </View>
             </Pressable>
@@ -136,10 +139,11 @@ const styles = StyleSheet.create({
   foot: { marginTop: 'auto', lineHeight: 16 },
   link: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: space.md, borderRadius: radius.md, borderWidth: 1, userSelect: 'none' },
   linkText: { fontSize: 15 },
-  bar: { flexDirection: 'row', borderTopWidth: 1 },
-  tab: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', gap: 4, userSelect: 'none' },
-  mark: { position: 'absolute', top: 0, width: 36, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
+  bar: { flexDirection: 'row', borderTopWidth: 1, borderColor: GOLD.edge, backgroundColor: '#1E1408', paddingTop: 4 },
+  tab: { flex: 1, minHeight: 54, alignItems: 'center', justifyContent: 'center', gap: 2, userSelect: 'none' },
+  mark: { position: 'absolute', top: -4, width: 40, height: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3 },
+  markOn: { backgroundColor: GOLD.edgeBright, shadowColor: GOLD.glow, shadowOpacity: 0.9, shadowRadius: 6, shadowOffset: { width: 0, height: 1 } },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  label: { fontSize: 14 },
+  label: { fontSize: 12.5 },
   dot: { width: 8, height: 8, borderRadius: 4 },
 });

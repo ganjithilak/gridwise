@@ -59,6 +59,8 @@ src/game/           the games: Speed Trial and Grid Master, their rules (tested)
 src/lib/            clock (fakeable), sound and vibration
 src/theme/          colours, spacing, type
 src/world/          the world: farm, roots, sky, plant, cloud, camera (docs/creative-direction-v2.md)
+src/world/env/      scenery and ambient life: sky grid, farm, stall, scarecrow, birds, worm (docs/world-animation-components.md)
+src/world/ui/       the world's gold glass interface kit and tab icons
 src/screens/        Practice and Profile, shown at the world's sides
 test/fixtures/      excel-parity.xlsx: test cases computed by real Excel
 scripts/            builds the parity workbook, the sounds and the icon

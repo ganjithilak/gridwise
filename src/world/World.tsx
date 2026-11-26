@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/Button';
 import { defaultCourse } from '@/content';
 import { BASICS, FORMULAS } from '@/content/excel/tips';
 import { dayKey } from '@/lib/clock';
@@ -16,13 +15,18 @@ import PracticeScreen from '@/screens/PracticeScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import { radius, useTheme } from '@/theme';
 
-import { CloudMascot } from './CloudMascot';
+import { CLOUD_EFFECTS, CLOUD_MOODS, CloudMascot, WanderingCloud, type CloudEffect, type CloudMood } from './CloudMascot';
+import { ambientScenes, triggerAmbient } from './env/ambient';
+import { Earthworm } from './env/Earthworm';
+import { FarmBackdrop, FarmForeground, farmGeometry } from './env/Farm';
+import { ScarecrowScene } from './env/ScarecrowScene';
 import { Goldspire } from './Goldspire';
 import { GROWTH_STAGES, growthOf, LAST_STAGE } from './growth';
 import { LessonCard } from './LessonCard';
 import { W } from './palette';
 import { layoutRoots, RootMap, type RootPick } from './RootMap';
-import { DriftingCloud, FarmScene, SkyBackdrop, Soil } from './Scenery';
+import { DriftingCloud, SkyBackdrop, Soil } from './Scenery';
+import { display, GlassPanel, GOLD, GoldButton, GoldChip, tagStyle } from './ui/Gold';
 import { makeCamera } from './camera';
 import { useWorld } from './store';
 
@@ -50,6 +54,10 @@ export function World() {
   const { col, row, go, previewStage, setPreviewStage } = useWorld();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const [pick, setPick] = useState<RootPick | null>(null);
+  const [skyMood, setSkyMood] = useState<CloudMood>('happy');
+  const [skyEffect, setSkyEffect] = useState<CloudEffect>('none');
+  const [lastEvent, setLastEvent] = useState<string | null>(null);
+  const [eventTurn, setEventTurn] = useState(0);
 
   const path = buildPath(defaultCourse, data);
   const next = nextUp(path);
@@ -60,7 +68,13 @@ export function World() {
   const shape = path.map((u) => `${u.complete}:${u.testOut?.id ?? ''}:${u.lessons.map((l) => l.state + (l.inProgress ? '*' : '')).join(',')}`).join('|');
   const w = size?.w ?? 0;
   const h = size?.h ?? 0;
-  const ground = h + h * ABOVE; // the soil line, in the painting's own coordinates
+  const farmH = h * ABOVE; // the farm's above-ground height
+  const ground = h + farmH; // the soil line, in the painting's own coordinates
+  const geo = farmGeometry(w, farmH);
+  const plantW = (Math.min(farmH * 0.66, w * 1.15) * 200) / 280;
+  const cloudSize = Math.min(w * 0.27, 120);
+  // Ambient life (birds, worm, Cell wandering) only runs while the farm is what you see.
+  const onFarm = col === 0 && row === 0;
   const layout = useMemo(() => (w > 0 ? layoutRoots(path, w, Math.max(h * 0.3, 190)) : null), [w, h, shape]); // eslint-disable-line react-hooks/exhaustive-deps
   const soilH = Math.max(layout?.height ?? 0, h);
   const rootsTop = ground - h * ROOTS_SURFACE;
@@ -97,6 +111,16 @@ export function World() {
     else openLesson(pick.node);
   };
 
+  /** Development only: plays every ambient event in turn, for review. */
+  const fireNextEvent = () => {
+    const all = ambientScenes().flatMap(({ scene, events }) => events.map((event) => ({ scene, event })));
+    if (all.length === 0) return;
+    const { scene, event } = all[eventTurn % all.length];
+    triggerAmbient(scene, event);
+    setLastEvent(`${scene}: ${event}`);
+    setEventTurn(eventTurn + 1);
+  };
+
   let mainLabel = 'Start';
   if (next?.state === 'practice') mainLabel = 'Practise';
   else if (next?.inProgress) mainLabel = 'Continue';
@@ -120,7 +144,7 @@ export function World() {
           <View style={{ width: w, height: h, overflow: 'hidden' }} testID="world-centre">
             <Animated.View style={{ width: w, height: ground + soilH, transform: [{ translateY: cam.y }] }}>
               <View style={[styles.abs, { top: 0, width: w, height: ground }]}>
-                <SkyBackdrop width={w} height={ground} skyPanel={h} />
+                <SkyBackdrop width={w} height={ground} skyPanel={h} horizon={h + farmH * 0.6} />
               </View>
               <DriftingCloud y={h * 0.62} size={Math.min(w * 0.42, 200)} width={w} seconds={110} start={0.55} />
               <DriftingCloud y={h * 0.16} size={Math.min(w * 0.3, 150)} width={w} seconds={140} start={0.05} />
@@ -130,8 +154,8 @@ export function World() {
               {/* Above: Cell's sky. */}
               <View style={[styles.abs, styles.sky, { top: 0, width: w, height: h, paddingTop: insets.top + 24 }]} testID="world-sky">
                 <View style={styles.skyColumn}>
-                  <CloudMascot mood={next ? 'happy' : 'cheering'} size={Math.min(w * 0.52, 230)} />
-                  <View style={styles.bubble}>
+                  <CloudMascot mood={skyMood} effect={skyEffect} size={Math.min(w * 0.5, 220)} alive={row === -1} />
+                  <GlassPanel tone="light" glow style={styles.bubble}>
                     <Text style={styles.bubbleTitle}>
                       {hello}
                       {name ? `, ${name}` : ''}!
@@ -139,16 +163,24 @@ export function World() {
                     <Text style={styles.bubbleText}>
                       {next ? `Next up is “${next.lesson.title}”. Every lesson you finish grows your roots a little deeper.` : 'Every root is grown. Games keep the skills fresh.'}
                     </Text>
-                    {next ? <Button testID="sky-next" label="Show me my roots" onPress={() => go(0, 1)} /> : null}
-                  </View>
-                  <View style={styles.tip}>
-                    <Text style={styles.tipTag}>QUICK TIP</Text>
+                    {next ? <GoldButton testID="sky-next" label="Show me my roots" onPress={() => go(0, 1)} /> : null}
+                  </GlassPanel>
+                  <GlassPanel tone="light" style={styles.tip}>
+                    <Text style={[styles.tipTag, tagStyle]}>QUICK TIP</Text>
                     <Text style={styles.tipText}>{tip}</Text>
-                  </View>
+                  </GlassPanel>
+                  {__DEV__ ? (
+                    <View style={styles.devRow}>
+                      <Pressable testID="mood-preview" onPress={() => setSkyMood(CLOUD_MOODS[(CLOUD_MOODS.indexOf(skyMood) + 1) % CLOUD_MOODS.length])} style={[styles.devChip, styles.devInline]}>
+                        <Text style={styles.devText}>Mood: {skyMood} ▸</Text>
+                      </Pressable>
+                      <Pressable testID="effect-preview" onPress={() => setSkyEffect(CLOUD_EFFECTS[(CLOUD_EFFECTS.indexOf(skyEffect) + 1) % CLOUD_EFFECTS.length])} style={[styles.devChip, styles.devInline]}>
+                        <Text style={styles.devText}>Effect: {skyEffect} ▸</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
                 </View>
-                <Pressable onPress={() => go(0, 0)} style={styles.downHint} accessibilityRole="button" accessibilityLabel="Back down to the farm">
-                  <Text style={styles.hintText}>Back down to the farm ↓</Text>
-                </Pressable>
+                <GoldChip label="Back down to the farm ↓" onPress={() => go(0, 0)} style={styles.downHint} />
               </View>
 
               {/* Below: the soil and its roots. */}
@@ -168,14 +200,25 @@ export function World() {
                 />
               </View>
 
-              {/* The farm, and the plant standing on the soil line. */}
-              <View pointerEvents="none" style={[styles.abs, { top: h, width: w, height: h * ABOVE + 20 }]}>
-                <FarmScene width={w} ground={h * ABOVE} lip={20} />
+              {/* The farm: hills behind, the scarecrow and its birds, the fence and field in front. */}
+              <View pointerEvents="none" style={[styles.abs, { top: h, width: w, height: farmH + 20 }]}>
+                <FarmBackdrop width={w} ground={farmH} />
+                <ScarecrowScene width={w} ground={farmH} at={geo.scarecrow} active={onFarm}>
+                  <FarmForeground width={w} ground={farmH} lip={20} />
+                </ScarecrowScene>
               </View>
               <PlantOnGround stage={growth.stage} ripe={growth.ripe} ground={ground} w={w} h={h} />
+              <Earthworm x={w / 2 + plantW * 0.33} ground={ground} active={onFarm} scale={Math.min(1.2, h / 700)} />
 
               {/* Main 1's own controls, painted into the farm's sky and soil. */}
               <View pointerEvents="box-none" style={[styles.abs, { top: h, width: w, height: h }]} testID="world-farm">
+                <WanderingCloud
+                  size={cloudSize}
+                  active={onFarm}
+                  onPress={() => go(0, -1)}
+                  area={{ x0: 10, x1: Math.max(12, w - cloudSize - 10), y0: insets.top + 66, y1: Math.max(insets.top + 70, h * 0.3) }}
+                />
+
                 <WorldHud
                   top={insets.top + 8}
                   name={data.profile.name}
@@ -186,47 +229,42 @@ export function World() {
                   goal={data.profile.dailyGoal}
                 />
 
-                <View style={[styles.cloudSpot, { left: w * 0.6, top: insets.top + h * 0.25 }]}>
-                  <CloudMascot mood="neutral" size={Math.min(w * 0.27, 120)} onPress={() => go(0, -1)} accessibilityLabel="Cell. Tap to go up to the sky for help" />
-                </View>
-
                 {__DEV__ ? (
-                  <Pressable
-                    testID="stage-preview"
-                    onPress={() => setPreviewStage(previewStage === null ? 0 : previewStage >= LAST_STAGE ? null : previewStage + 1)}
-                    style={[styles.chip, styles.devChip, { top: insets.top + h * 0.25 + Math.min(w * 0.27, 120) * 0.75 + 14, right: 12 }]}
-                  >
-                    <Text style={styles.chipText}>
-                      {previewStage === null ? `Stage: ${GROWTH_STAGES[real.stage]} · preview ▸` : `Preview ${previewStage}: ${GROWTH_STAGES[previewStage]} ▸`}
-                    </Text>
-                  </Pressable>
+                  <View style={[styles.devColumn, { top: insets.top + 64 }]}>
+                    <Pressable testID="stage-preview" onPress={() => setPreviewStage(previewStage === null ? 0 : previewStage >= LAST_STAGE ? null : previewStage + 1)} style={styles.devChip}>
+                      <Text style={styles.devText}>{previewStage === null ? `Stage: ${GROWTH_STAGES[real.stage]} ▸` : `Preview ${previewStage}: ${GROWTH_STAGES[previewStage]} ▸`}</Text>
+                    </Pressable>
+                    <Pressable testID="event-preview" onPress={fireNextEvent} style={styles.devChip}>
+                      <Text style={styles.devText}>▶ {lastEvent ?? 'Play an event'}</Text>
+                    </Pressable>
+                  </View>
                 ) : null}
 
-                <Pressable onPress={() => go(-1)} style={[styles.chip, styles.edgeLeft, { top: h * 0.55 }]} accessibilityRole="button" accessibilityLabel="Games">
-                  <Text style={styles.chipText}>‹ Games</Text>
-                </Pressable>
-                <Pressable onPress={() => go(1)} style={[styles.chip, styles.edgeRight, { top: h * 0.55 }]} accessibilityRole="button" accessibilityLabel="Profile">
-                  <Text style={styles.chipText}>Profile ›</Text>
-                </Pressable>
+                <GoldChip label="‹ Games" onPress={() => go(-1)} style={[styles.edgeLeft, { top: h * 0.5 }]} accessibilityLabel="Games" />
+                <GoldChip label="Profile ›" onPress={() => go(1)} style={[styles.edgeRight, { top: h * 0.5 }]} accessibilityLabel="Profile" />
 
-                <View pointerEvents={row === 1 ? 'none' : 'auto'} style={[styles.next, { opacity: row === 1 ? 0 : 1, top: h * ABOVE + (h * (1 - ABOVE) - 64) / 2 + 10 }]}>
+                <GlassPanel
+                  glow
+                  pointerEvents={row === 1 ? 'none' : 'auto'}
+                  style={[styles.next, { opacity: row === 1 ? 0 : 1, top: farmH + (h * (1 - ABOVE) - 66) / 2 + 8 }]}
+                >
                   {next ? (
                     <>
                       <View style={styles.nextWords}>
-                        <Text style={styles.nextTag}>{next.state === 'practice' ? 'PRACTICE ROUND' : 'UP NEXT'}</Text>
-                        <Text style={styles.nextTitle} numberOfLines={1}>
+                        <Text style={[styles.nextTag, tagStyle]}>{next.state === 'practice' ? 'PRACTICE ROUND' : 'UP NEXT'}</Text>
+                        <Text style={[styles.nextTitle, display]} numberOfLines={2}>
                           {next.lesson.title}
                         </Text>
                       </View>
-                      <Button testID="start-lesson-farm" label={mainLabel} onPress={() => openLesson(next)} style={styles.nextButton} />
+                      <GoldButton testID="start-lesson-farm" label={mainLabel} onPress={() => openLesson(next)} small={w < 400} />
                     </>
                   ) : (
                     <>
-                      <Text style={[styles.nextTitle, styles.nextWords]}>Every lesson is done.</Text>
-                      <Button testID="go-practice" label="Games" onPress={() => go(-1)} style={styles.nextButton} />
+                      <Text style={[styles.nextTitle, styles.nextWords, display]}>Every lesson is done.</Text>
+                      <GoldButton testID="go-practice" label="Games" onPress={() => go(-1)} />
                     </>
                   )}
-                </View>
+                </GlassPanel>
               </View>
             </Animated.View>
 
@@ -273,7 +311,8 @@ function WorldHud({ top, name, xp, streak, atRisk, todayXp, goal }: HudProps) {
   const { level, into, needed } = levelFor(xp);
   const share = Math.min(1, goal > 0 ? todayXp / goal : 0);
   return (
-    <View style={[styles.hud, { marginTop: top }]} testID="level-bar" accessibilityLabel={`Level ${level}, ${into} of ${needed} XP to the next. ${streak} days in a row. ${todayXp} of ${goal} XP today.`}>
+    <GlassPanel tone="light" style={[styles.hud, { marginTop: top }]} testID="level-bar">
+      <View style={styles.hudRow} accessible accessibilityLabel={`Level ${level}, ${into} of ${needed} XP to the next. ${streak} days in a row. ${todayXp} of ${goal} XP today.`}>
       <View style={styles.ring}>
         <Text style={styles.ringText}>{level}</Text>
       </View>
@@ -297,7 +336,8 @@ function WorldHud({ top, name, xp, streak, atRisk, todayXp, goal }: HudProps) {
           {todayXp}/{goal}
         </Text>
       </View>
-    </View>
+      </View>
+    </GlassPanel>
   );
 }
 
@@ -318,45 +358,32 @@ const styles = StyleSheet.create({
   abs: { position: 'absolute', left: 0 },
   sky: { alignItems: 'center', justifyContent: 'center', paddingBottom: 64 },
   skyColumn: { width: '100%', maxWidth: 440, paddingHorizontal: 16, alignItems: 'center', gap: 14 },
-  bubble: { alignSelf: 'stretch', backgroundColor: W.card, borderRadius: 20, padding: 16, gap: 10, borderWidth: 2, borderColor: W.cardLine },
-  bubbleTitle: { color: W.cardInk, fontSize: 20, fontWeight: '800' },
-  bubbleText: { color: W.cardSoft, fontSize: 15, lineHeight: 21 },
-  tip: { alignSelf: 'stretch', backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 16, padding: 14, gap: 4 },
-  tipTag: { color: '#1E5FA8', fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  tipText: { color: '#173A63', fontSize: 15, lineHeight: 21, fontWeight: '600' },
-  downHint: { position: 'absolute', bottom: 16, paddingVertical: 10, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.6)' },
-  hintText: { color: '#173A63', fontWeight: '800', fontSize: 13 },
-  hud: {
-    alignSelf: 'center',
-    width: '94%',
-    maxWidth: 460,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: W.chip,
-    borderRadius: radius.pill,
-    paddingVertical: 6,
-    paddingLeft: 6,
-    paddingRight: 8,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.9)',
-  },
-  ring: { width: 34, height: 34, borderRadius: 17, borderWidth: 3, borderColor: W.gold, backgroundColor: W.card, alignItems: 'center', justifyContent: 'center' },
+  bubble: { alignSelf: 'stretch', padding: 16, gap: 10 },
+  bubbleTitle: { ...display, color: GOLD.onLight, fontSize: 23 },
+  bubbleText: { color: GOLD.onLightSoft, fontSize: 15, lineHeight: 21 },
+  tip: { alignSelf: 'stretch', padding: 14, gap: 4 },
+  tipTag: { color: GOLD.tagOnLight },
+  tipText: { color: GOLD.onLight, fontSize: 15, lineHeight: 21, fontWeight: '600' },
+  downHint: { bottom: 16, alignSelf: 'center' },
+  hud: { alignSelf: 'center', width: '94%', maxWidth: 460, borderRadius: 999, paddingVertical: 6, paddingLeft: 6, paddingRight: 8 },
+  hudRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ring: { width: 34, height: 34, borderRadius: 17, borderWidth: 2.5, borderColor: GOLD.edge, backgroundColor: W.card, alignItems: 'center', justifyContent: 'center' },
   ringText: { color: W.cardInk, fontSize: 14, fontWeight: '900' },
   hudWords: { flex: 1, gap: 4 },
   hudName: { color: W.cardInk, fontSize: 14, fontWeight: '800' },
   track: { height: 7, borderRadius: 4, backgroundColor: W.cardLine, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4, backgroundColor: W.gold },
-  stat: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: W.card, borderRadius: radius.pill, paddingHorizontal: 9, paddingVertical: 5 },
+  stat: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: radius.pill, paddingHorizontal: 9, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(242,193,78,0.6)' },
   statWarn: { borderWidth: 1.5, borderColor: W.fruitShade },
   statIcon: { color: W.fruitShade, fontSize: 13, fontWeight: '900' },
   statText: { color: W.cardInk, fontSize: 13, fontWeight: '800' },
   goalTrack: { width: 22, height: 6, borderRadius: 3, backgroundColor: W.cardLine, overflow: 'hidden' },
   goalFill: { height: '100%', backgroundColor: '#3FAE5A' },
-  cloudSpot: { position: 'absolute' },
-  chip: { position: 'absolute', backgroundColor: W.chip, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 7 },
-  chipText: { color: W.chipInk, fontSize: 12, fontWeight: '800' },
-  devChip: { borderWidth: 1.5, borderColor: W.awning, borderStyle: 'dashed' },
+  devColumn: { position: 'absolute', right: 10, alignItems: 'flex-end', gap: 6 },
+  devRow: { flexDirection: 'row', gap: 6 },
+  devChip: { backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1.5, borderColor: W.awning, borderStyle: 'dashed' },
+  devInline: {},
+  devText: { color: W.chipInk, fontSize: 11, fontWeight: '800' },
   edgeLeft: { left: 6 },
   edgeRight: { right: 6 },
   next: {
@@ -367,13 +394,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: W.soilChip,
-    borderRadius: 18,
-    padding: 8,
-    paddingLeft: 14,
+    borderRadius: 22,
+    padding: 9,
+    paddingLeft: 16,
   },
   nextWords: { flex: 1 },
-  nextTag: { color: W.fruit, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-  nextTitle: { color: W.soilInk, fontSize: 16, fontWeight: '800' },
-  nextButton: { minWidth: 118 },
+  nextTag: { color: GOLD.tag },
+  nextTitle: { color: GOLD.onDark, fontSize: 17, lineHeight: 21, marginTop: 1 },
 });

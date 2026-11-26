@@ -1,10 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Button } from '@/components/Button';
 import { STAGE_INFO } from '@/progress/path';
 
-import { W } from './palette';
 import type { RootPick } from './RootMap';
+import { display, GlassPanel, GOLD, GoldButton, GoldLink, tagStyle } from './ui/Gold';
 
 interface Props {
   pick: RootPick;
@@ -54,11 +53,11 @@ export function LessonCard({ pick, onOpen, onRestart, onClose, bottom }: Props) 
   }
 
   return (
-    <View style={[styles.card, { bottom }]} testID="lesson-card">
+    <GlassPanel glow style={[styles.card, { bottom }]} testID="lesson-card">
       <View style={styles.head}>
         <View style={styles.words}>
-          <Text style={styles.tag}>{tag}</Text>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={[styles.tag, tagStyle]}>{tag}</Text>
+          <Text style={[styles.title, display]} numberOfLines={2}>
             {title}
           </Text>
         </View>
@@ -67,9 +66,9 @@ export function LessonCard({ pick, onOpen, onRestart, onClose, bottom }: Props) 
         </Pressable>
       </View>
       <Text style={styles.body}>{body}</Text>
-      <Button testID={action.testID} label={action.label} disabled={action.disabled} onPress={onOpen} />
-      {restart ? <Button testID="start-again" kind="quiet" label="Start this lesson again" onPress={() => onRestart(restart!)} /> : null}
-    </View>
+      <GoldButton testID={action.testID} label={action.label} disabled={action.disabled} onPress={onOpen} arrow={!action.disabled} />
+      {restart ? <GoldLink testID="start-again" tone="dark" label="Start this lesson again" onPress={() => onRestart(restart!)} /> : null}
+    </GlassPanel>
   );
 }
 
@@ -81,23 +80,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     maxWidth: 460,
     marginHorizontal: 'auto',
-    backgroundColor: W.card,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: W.cardLine,
+    backgroundColor: 'rgba(30, 18, 6, 0.8)',
+    borderRadius: 22,
     padding: 16,
     gap: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
   },
   head: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   words: { flex: 1, gap: 2 },
-  tag: { color: W.fruitEdge, fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  title: { color: W.cardInk, fontSize: 20, fontWeight: '800', lineHeight: 25 },
-  body: { color: W.cardSoft, fontSize: 15, lineHeight: 21 },
-  close: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: W.cardLine },
-  closeText: { color: W.cardSoft, fontSize: 14, fontWeight: '800' },
+  tag: { color: GOLD.tag },
+  title: { color: GOLD.onDark, fontSize: 22, lineHeight: 27 },
+  body: { color: GOLD.onDarkSoft, fontSize: 15, lineHeight: 21 },
+  close: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: GOLD.edge, backgroundColor: 'rgba(255,230,160,0.12)' },
+  closeText: { color: GOLD.onDark, fontSize: 14, fontWeight: '800' },
 });

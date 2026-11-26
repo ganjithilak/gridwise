@@ -7,6 +7,7 @@ import { STAGE_INFO, type LessonNode, type UnitNode } from '@/progress/path';
 
 import { polyline, resample, sampleCubic, seeded, type Pt } from './geometry';
 import { W } from './palette';
+import { display, GOLD, tagStyle } from './ui/Gold';
 
 /** What a tap on the roots picked: a lesson, or a unit's test at its junction. */
 export type RootPick = { kind: 'lesson'; node: LessonNode; unit: UnitNode } | { kind: 'test'; checkpoint: Checkpoint; unit: UnitNode };
@@ -365,9 +366,22 @@ const styles = StyleSheet.create({
   },
   podText: { fontSize: 15, fontWeight: '900' },
   ring: { position: 'absolute', width: NODE, height: NODE, borderRadius: NODE / 2, borderWidth: 3, borderColor: W.fruit },
-  label: { position: 'absolute', backgroundColor: W.soilChip, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5, maxWidth: LABEL_W },
-  labelTag: { color: W.fruit, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-  labelTitle: { color: W.soilInk, fontSize: 14, fontWeight: '800' },
+  label: {
+    position: 'absolute',
+    backgroundColor: GOLD.glassDark,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(242, 193, 78, 0.75)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    maxWidth: LABEL_W,
+    shadowColor: GOLD.glow,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  labelTag: { ...tagStyle, color: GOLD.tag, fontSize: 9.5 },
+  labelTitle: { ...display, color: GOLD.onDark, fontSize: 15 },
   testHit: { position: 'absolute', width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
   test: {
     width: 26,

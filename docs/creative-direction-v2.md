@@ -183,6 +183,42 @@ Known issues:
 - A page in a hidden browser window gets no sizes (see README); the world stays blank there
   unless `gridwise.pollLayout` is set.
 
+### Stage 1b refinements (26 Nov 2026)
+
+From the second brief (environmental detail and interface styling, with a reference image
+for level of detail, not to copy). Same art style, proportions, navigation and architecture.
+
+Built:
+
+- **Spreadsheet atmosphere:** a fine white grid on the inside of a sphere round the world
+  (`env/SkyDome.tsx`). It is a real perspective projection: columns fan out from the zenith
+  overhead and rows bow, flattening into the horizon. Column letters run across the farm's sky,
+  row numbers down the first column. Faint enough to leave the sky in charge. Not interactive yet.
+- **Hills planted:** a far orchard and a vineyard; on the near hill an apple orchard (with a
+  pear or two), staked tomatoes, grapevines, oranges and plums; rim light and ploughed lines for
+  shading and texture. The centre of the field stays clear for the tree and a future farmer.
+- **Stall upgraded:** "Golden Apples" board, shelves of jam, oil and milk, pies, a basket of
+  pears, crates of apples, golden apples, pears and plums, hanging grapes, a lantern, a potato
+  sack and a crate of carrots and tomatoes. The produce is the lessons' produce.
+- **Foreground:** a watering can and a pumpkin. An **earthworm** pops out near the seed now and then.
+- **Scarecrow and birds:** behind the fence, with intermittent events: fly-bys, flocks,
+  perching (and hopping to the hat), circling, a gathering that scatters, hat stolen and
+  dropped, hat blown off, and the occasional dropping on the hat. The scarecrow wobbles and
+  startles.
+- **Cell:** rebuilt from the original icon (`assets/icon.png`): Cell's blue and deep rim, its
+  arch eyes, half-moon grin and corner handle, on a rounder, shaded, fluffier body. 11 moods and
+  5 effects (rain, sunshine, rainbow, sparkles), blinking, glancing, bouncing, colour shifts.
+  On the farm it wanders the sky and has its own moments (a shower that ends in a rainbow).
+- **Interface:** translucent glass panels with thin gold edges and a soft golden glow, a
+  dimensional gold button, a serif italic display face for titles, and gold-accented bar icons.
+  Applied to the farm, the sky, the roots card and labels, and the bar. Four tabs kept.
+
+Details of every animation component, how to extend them, and their limits:
+[world-animation-components.md](world-animation-components.md).
+
+Not done in this pass (next, per "Consistency across Gridwise"): Games, Profile and the lesson
+screens still use the navy theme. The gold kit (`src/world/ui/Gold.tsx`) is ready to apply.
+
 ### Still to design or build
 
 - Production art and animation. Recommended route: painted background layers as images
@@ -193,7 +229,9 @@ Known issues:
 - The seed reveal and more species; a collection on the Profile side.
 - Weather, day/night, wet soil, grass growth (atmosphere only).
 - Cloud expressions beyond the current set, rain / sun / rainbow effects.
-- Games and Profile restyled to match the world.
+- Games, Profile and the lesson screens restyled with the world's gold kit.
+- The sky grid as navigation into above-ground Branches and Fruit exercises.
+- Stall stock driven by the learner's own spreadsheet work.
 - The farm stall has no job yet (a future home for fruit / rewards?).
 - The content review in section 7, and the six-step lesson method across every lesson.
 - The simple games in section 8.
