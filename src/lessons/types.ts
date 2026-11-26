@@ -19,7 +19,9 @@ export type ScriptStep =
   /** Press a toolbar button. */
   | { tool: ToolId; say?: string }
   /** Press a keyboard shortcut. */
-  | { combo: ShortcutId; say?: string };
+  | { combo: ShortcutId; say?: string }
+  /** Cell only speaks: nothing on the sheet changes, so the selection stays where it was. */
+  | { say: string };
 
 export type Check =
   /**

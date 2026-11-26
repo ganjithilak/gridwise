@@ -26,10 +26,11 @@ import {
   type CellAlign,
   type RangeAddr,
 } from '@/engine';
-import { MOTION_MS, TOUCH, useTheme } from '@/theme';
+import { MOTION_MS, useTheme } from '@/theme';
 
 import { Cell } from './Cell';
 import { fillArea, type SheetController, type SheetViewState } from './controller';
+import { columnAt, COL_HEADER_H, layoutSheet, ROW_HEADER_W, rowAt, type SheetLayout } from './layout';
 import { SelectionOverlay, type Rect } from './SelectionOverlay';
 
 interface Props {
@@ -45,15 +46,16 @@ interface Props {
   celebrate?: { cell: string; nonce: number } | null;
 }
 
-const COL_HEADER_H = 20;
-const ROW_HEADER_W = 26;
-const MIN_ROW_H = 28;
 /** How far a finger must travel before a touch counts as a drag and not a wobbly tap. */
 const DRAG_SLOP = 8;
 /** The touchable square around the fill handle. The handle itself is much smaller. */
 const HANDLE_REACH = 36;
 
-/** The mini spreadsheet. It sizes its rows to the space it is given, up to a comfortable 44 pt. */
+/**
+ * The spreadsheet. It fills the space it is given: columns as wide as what they hold, rows
+ * up to a comfortable 44 pt, and past the data the empty rows and columns a real sheet has
+ * (see layout.ts). The column and row headings of whatever is selected are lit, as in Excel.
+ */
 export function Grid({ controller, state, locked = false, fillHandle = false, ghostCell, celebrate }: Props) {
   const c = useTheme();
   const { sheet } = controller;
@@ -118,8 +120,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
   const live = useRef({
     originX: 0,
     originY: 0,
-    colW: 1,
-    rowH: 1,
+    layout: null as SheetLayout | null,
     startX: 0,
     startY: 0,
     /** The cell a drag began on, once it has become a drag. */
@@ -131,10 +132,10 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
 
   const cellAt = (pageX: number, pageY: number): CellAddr => {
     const g = live.current;
-    const clamp = (n: number, max: number) => Math.max(0, Math.min(max, n));
+    if (!g.layout) return { col: 0, row: 0 };
     return {
-      col: clamp(Math.floor((pageX - g.originX - ROW_HEADER_W) / g.colW), sheet.cols - 1),
-      row: clamp(Math.floor((pageY - g.originY - COL_HEADER_H) / g.rowH), sheet.rows - 1),
+      col: Math.min(sheet.cols - 1, columnAt(g.layout, pageX - g.originX - ROW_HEADER_W)),
+      row: Math.min(sheet.rows - 1, rowAt(g.layout, pageY - g.originY - COL_HEADER_H)),
     };
   };
 
@@ -194,22 +195,28 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
     setFillTo(null);
   };
 
-  const colW = size ? (size.w - ROW_HEADER_W) / sheet.cols : 1;
-  const rowH = size ? Math.max(MIN_ROW_H, Math.min(TOUCH.ideal, Math.floor((size.h - COL_HEADER_H) / sheet.rows))) : 1;
+  // Columns are sized by what they show (as entered, not as being typed), so they don't
+  // jump about with every key press.
+  const columns: string[][] = [];
+  for (let col = 0; col < sheet.cols; col++) {
+    const texts: string[] = [];
+    for (let row = 0; row < sheet.rows; row++) texts.push(sheet.getDisplay({ col, row }));
+    columns.push(texts);
+  }
+  const layout = size ? layoutSheet(size.w, size.h, columns, sheet.rows) : null;
   useEffect(() => {
-    live.current.colW = colW;
-    live.current.rowH = rowH;
-  }, [colW, rowH]);
+    live.current.layout = layout;
+  });
 
-  if (!size) return <View style={styles.fill} onLayout={onLayout} />;
+  if (!size || !layout) return <View style={styles.fill} onLayout={onLayout} />;
 
-  const fontSize = rowH >= 40 ? 15 : 13;
-  const maxChars = Math.max(3, Math.floor((colW - 12) / (fontSize * 0.58)));
+  const { colX, colW: widths, rowH, fontSize } = layout;
+  const maxChars = (col: number) => Math.max(3, Math.floor((widths[col] - 12) / (fontSize * 0.58)));
 
   const rectOf = (r: RangeAddr): Rect => ({
-    left: ROW_HEADER_W + r.start.col * colW,
+    left: ROW_HEADER_W + colX[r.start.col],
     top: COL_HEADER_H + r.start.row * rowH,
-    width: (r.end.col - r.start.col + 1) * colW,
+    width: colX[r.end.col] + widths[r.end.col] - colX[r.start.col],
     height: (r.end.row - r.start.row + 1) * rowH,
   });
 
@@ -237,7 +244,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
         text = editing.text;
         align = 'left';
       } else if (typeof value === 'number') {
-        text = fitNumber(value, format.numFmt ?? 'general', maxChars);
+        text = fitNumber(value, format.numFmt ?? 'general', maxChars(col));
         align = 'right';
       } else {
         text = sheet.getDisplay(addr);
@@ -253,7 +260,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
           align={align}
           bold={!!format.bold}
           isError={!here && isError(value)}
-          width={colW}
+          width={widths[col]}
           height={rowH}
           fontSize={fontSize}
           disabled={locked}
@@ -261,6 +268,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
         />,
       );
     }
+    for (let col = sheet.cols; col < widths.length; col++) cells.push(<EmptyCell key={col} width={widths[col]} height={rowH} line={c.line} />);
     const activeRow = row >= range.start.row && row <= range.end.row;
     rows.push(
       <View key={row} style={styles.row}>
@@ -268,11 +276,25 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
           style={[
             styles.rowHeader,
             { height: rowH, backgroundColor: activeRow ? c.accentSoft : c.sunken, borderColor: c.line },
+            activeRow && { borderRightWidth: 2, borderRightColor: c.accent },
           ]}
         >
           <Text style={[styles.headerText, { color: activeRow ? c.accent : c.inkSoft }]}>{row + 1}</Text>
         </View>
         {cells}
+      </View>,
+    );
+  }
+  // The sheet carries on below the data: quieter, and not part of the exercise.
+  for (let row = sheet.rows; row < layout.rows; row++) {
+    rows.push(
+      <View key={row} style={styles.row} pointerEvents="none">
+        <View style={[styles.rowHeader, { height: rowH, backgroundColor: c.sunken, borderColor: c.line }]}>
+          <Text style={[styles.headerText, { color: c.inkFaint }]}>{row + 1}</Text>
+        </View>
+        {widths.map((w, col) => (
+          <EmptyCell key={col} width={w} height={rowH} line={c.line} />
+        ))}
       </View>,
     );
   }
@@ -282,7 +304,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
       <View
         ref={sheetView}
         testID="grid"
-        style={[styles.sheet, { borderColor: c.outline, width: size.w, height: COL_HEADER_H + rowH * sheet.rows + 1 }]}
+        style={[styles.sheet, { width: size.w, height: size.h }]}
         onStartShouldSetResponderCapture={noteTouch}
         onMoveShouldSetResponderCapture={becomesDrag}
         onResponderGrant={dragStart}
@@ -293,17 +315,19 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
       >
         <View style={styles.row}>
           <View style={[styles.corner, { backgroundColor: c.sunken, borderColor: c.line }]} />
-          {Array.from({ length: sheet.cols }, (_, col) => {
+          {widths.map((width, col) => {
             const active = col >= range.start.col && col <= range.end.col;
+            const empty = col >= sheet.cols;
             return (
               <View
                 key={col}
                 style={[
                   styles.colHeader,
-                  { width: colW, backgroundColor: active ? c.accentSoft : c.sunken, borderColor: c.line },
+                  { width, backgroundColor: active ? c.accentSoft : c.sunken, borderColor: c.line },
+                  active && { borderBottomWidth: 2, borderBottomColor: c.accent },
                 ]}
               >
-                <Text style={[styles.headerText, { color: active ? c.accent : c.inkSoft }]}>{colToLetters(col)}</Text>
+                <Text style={[styles.headerText, { color: active ? c.accent : empty ? c.inkFaint : c.inkSoft }]}>{colToLetters(col)}</Text>
               </View>
             );
           })}
@@ -412,7 +436,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
               styles.ghost,
               {
                 // For a block, the finger is shown where the drag ends.
-                left: rectOf(singleCell(ghostRange.end)).left + colW / 2 - 15,
+                left: rectOf(singleCell(ghostRange.end)).left + widths[ghostRange.end.col] / 2 - 15,
                 top: rectOf(singleCell(ghostRange.end)).top + rowH / 2 - 15,
                 backgroundColor: `${c.spark}55`,
                 borderColor: c.spark,
@@ -429,7 +453,7 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
 
 const styles = StyleSheet.create({
   fill: { flex: 1, alignSelf: 'stretch' },
-  sheet: { borderWidth: 1, borderRadius: 4, overflow: 'hidden' },
+  sheet: { overflow: 'hidden' },
   row: { flexDirection: 'row' },
   corner: {
     width: ROW_HEADER_W,
@@ -451,8 +475,14 @@ const styles = StyleSheet.create({
     borderRightWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerText: { fontSize: 11, fontWeight: '700', userSelect: 'none' },
+  headerText: { fontSize: 12, fontWeight: '700', userSelect: 'none' },
+  empty: { borderRightWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, opacity: 0.55 },
   overlay: { position: 'absolute' },
   reach: { position: 'absolute', width: HANDLE_REACH, height: HANDLE_REACH },
   ghost: { position: 'absolute', width: 30, height: 30, borderRadius: 15, borderWidth: 2 },
 });
+
+/** A cell past the end of the exercise's data: gridlines only, as in an empty part of a real sheet. */
+function EmptyCell({ width, height, line }: { width: number; height: number; line: string }) {
+  return <View style={[styles.empty, { width, height, borderColor: line }]} />;
+}

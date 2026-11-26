@@ -15,12 +15,14 @@ import { capSetFor, comboLabel, forComputer, modifierKey, type Computer } from '
 import { TokenTray } from '@/spreadsheet/TokenTray';
 import { Toolbar } from '@/spreadsheet/Toolbar';
 import { useSheet } from '@/spreadsheet/useSheet';
+import { Workbench } from '@/spreadsheet/Workbench';
 import { space } from '@/theme';
 
 import { checkController, type CheckOutcome } from '../checks';
 import { applyScript } from '../script';
 import { SHOW_ME_AFTER, XP_PER_FIRST_TRY, type Attempt } from '../session';
 import { isTurn, type ExerciseSnapshot, type Phase, type Work } from '../snapshot';
+import { notYetFor, praiseFor, RIGHT_RESULT, shownFor } from '../voice';
 import type { ScriptStep, SheetExercise } from '../types';
 import { FeedbackSheet } from './FeedbackSheet';
 import { MessageCard, type Tone } from './MessageCard';
@@ -76,9 +78,6 @@ export interface GridExerciseProps {
   /** In the split layout: the lesson side was swiped across, so the sheet goes to this side. */
   onSheetSide?: (side: Side) => void;
 }
-
-/** Calm, factual confirmation; the explanation underneath carries the learning (docs/editorial-standards.md). */
-const PRAISE = ['Correct', 'Correct', 'That’s right'];
 
 /** The cell an exercise opens on: the one named, or for a built formula, the one it goes in. */
 const openingCell = (exercise: SheetExercise): string =>
@@ -197,8 +196,9 @@ export function GridExercise({
   /** A word about a key press that did nothing: the wrong modifier, or a cell still being typed in. */
   const [keyNote, setKeyNote] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState<{ cell: string; nonce: number } | null>(null);
-  // Varies from one exercise to the next, but is always the same for a given exercise.
-  const praise = exercise.praise ?? PRAISE[[...exercise.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % PRAISE.length];
+  // Cell's words vary with the exercise and with how it went, but never change on a second look.
+  const praise = praiseFor(exercise.id, attempt, exercise.praise);
+  const shown = shownFor(willComeBack);
 
   const setPhase = useCallback(
     (next: Phase) => {
@@ -556,8 +556,8 @@ export function GridExercise({
     bottom = (
       <FeedbackSheet
         tone="plain"
-        title="That's how it's done."
-        message={willComeBack ? "You'll get another go at this one at the end." : 'On to the next one.'}
+        title={shown.title}
+        message={shown.message}
         primary={{ label: 'Continue', onPress: onContinue, testID: 'continue' }}
       />
     );
@@ -574,13 +574,13 @@ export function GridExercise({
     );
   } else if (liveOutcome?.status === 'fail') {
     bottom = (
-      <FeedbackSheet tone="bad" title="Not quite" message={say(liveOutcome.message)} top={top} primary={checkAction} secondary={showMeAction} />
+      <FeedbackSheet tone="bad" title={notYetFor(exercise.id, attempt.wrongChecks)} message={say(liveOutcome.message)} top={top} primary={checkAction} secondary={showMeAction} />
     );
   } else if (liveOutcome?.status === 'soft') {
     bottom = (
       <FeedbackSheet
         tone="good"
-        title="Right answer!"
+        title={RIGHT_RESULT}
         message={say(liveOutcome.message.replace('Right answer. ', ''))}
         top={top}
         primary={checkAction}
@@ -627,13 +627,10 @@ export function GridExercise({
         layout={metrics.layout}
         onSheetSide={onSheetSide}
         sheet={
-          <>
-            {barView}
-            <View style={styles.stage}>
-              {gridView}
-              {nextAnywhere}
-            </View>
-          </>
+          <Workbench bar={barView}>
+            {gridView}
+            {nextAnywhere}
+          </Workbench>
         }
         lesson={
           <>
@@ -648,19 +645,17 @@ export function GridExercise({
   return (
     <View style={styles.fill}>
       {cardView}
-      {barView}
-      <View style={styles.stage}>
+      <Workbench bar={barView}>
         {gridView}
-        <View style={{ height: keyboardHeight(metrics.keyHeight, chips.length > 0) }}>{bottom}</View>
         {nextAnywhere}
-      </View>
+      </Workbench>
+      <View style={{ height: keyboardHeight(metrics.keyHeight, chips.length > 0) }}>{bottom}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1, gap: space.sm },
-  stage: { flex: 1, gap: space.sm },
   // Beside the sheet, the keys or the result sit at the bottom of their half, under the card.
   under: { flex: 1, justifyContent: 'flex-end' },
 });

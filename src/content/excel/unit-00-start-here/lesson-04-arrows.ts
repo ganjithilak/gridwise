@@ -48,7 +48,8 @@ export const arrows: Lesson = {
       skill: MOVE,
       sheet: inventory,
       script: [
-        { tap: 'A2', say: 'Arrow keys move the active cell. Start at Carrots.' },
+        { say: 'On a computer, arrow keys move without the mouse.' },
+        { tap: 'A2', say: 'Each press moves the active cell. Start at Carrots.' },
         { combo: 'moveDown', say: '↓ moves one cell down.' },
         { combo: 'moveRight', say: '→ moves one cell right.' },
       ],
@@ -93,6 +94,7 @@ export const arrows: Lesson = {
       skill: EXTEND,
       sheet: inventory,
       script: [
+        { say: 'To work on several cells, select them as a block.' },
         { tap: 'B2', say: 'Select the first cell of the block you need.' },
         { combo: 'extendDown', say: 'Hold Shift and press ↓. The selection grows.' },
         { combo: 'extendDown', say: 'Each press adds one more cell.' },

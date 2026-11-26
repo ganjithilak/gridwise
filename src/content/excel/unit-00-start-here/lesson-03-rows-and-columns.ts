@@ -63,6 +63,7 @@ export const rowsAndColumns: Lesson = {
       skill: COLUMN,
       sheet: inventory,
       script: [
+        { say: 'To review a whole column, select all of it at once.' },
         { tap: 'C3', say: 'Select any cell in the column you need.' },
         { combo: 'selectColumn', say: 'Hold Ctrl and press Space: the whole column.' },
       ],
@@ -72,7 +73,7 @@ export const rowsAndColumns: Lesson = {
         { type: 'selectionEquals', range: 'B1:B5' },
       ],
       hints: ['First select any cell in the Stock (kg) column.', 'Tap Ctrl on the keys below the grid. It stays held. Then tap Space.', 'Select B2, then press Ctrl + Space.'],
-      explain: 'Ctrl + Space selects the entire column of the active cell, however long it is.',
+      explain: 'You selected B1:B5: every cell from B1 to B5. The colon means “to”.',
       tips: ['A shortcut is two keys: hold the first, then press the second.', 'On the keys below the grid, Ctrl stays held until used.'],
       solution: [
         { tap: 'B2', say: 'Select a cell in the Stock (kg) column.' },
@@ -81,21 +82,17 @@ export const rowsAndColumns: Lesson = {
     },
     {
       id: 'xl.u0.l3.e2',
-      // Dragging is shown here, not tested: it is taught in "Getting around faster".
-      type: 'demo',
+      // The same shortcut with less help: the prompt no longer names the keys.
+      type: 'shortcut-press',
       skill: COLUMN,
       sheet: inventory,
-      script: [
-        { drag: 'C1:C5', say: 'You could also drag down a column to select it.' },
-        { tap: 'A1', say: 'The shortcut is quicker, and works on any length.' },
-      ],
-      prompt: 'Your turn. Select the whole Price per kg column with Ctrl + Space.',
+      prompt: 'Before changing prices, select the whole Price per kg column.',
       checks: [
         { type: 'usedShortcut', id: 'selectColumn' },
         { type: 'selectionEquals', range: 'C1:C5' },
       ],
       hints: ['First select any cell in the Price per kg column.', 'Columns use Ctrl. Tap it, then tap Space.', 'Select C2, then press Ctrl + Space.'],
-      explain: 'Dragging and Ctrl + Space give the same selection, C1:C5. The shortcut takes one step.',
+      explain: 'C1:C5 is selected. On a sheet of a thousand rows, the same two keys select them all.',
       tips: ['A selected block is named by its corners, such as B1:B5.', 'The column letter is highlighted when its column is selected.'],
       solution: [
         { tap: 'C2', say: 'Select a cell in the Price per kg column.' },
@@ -108,7 +105,8 @@ export const rowsAndColumns: Lesson = {
       skill: ROW,
       sheet: inventory,
       script: [
-        { tap: 'B3', say: 'Now rows. Select any cell in the row you need.' },
+        { say: 'A row holds one complete record: a single product.' },
+        { tap: 'B3', say: 'Select any cell in the row you need.' },
         { combo: 'selectRow', say: 'Hold Shift and press Space: the whole row.' },
       ],
       prompt: 'Your turn. Select the whole Tomatoes row with Shift + Space.',
@@ -122,24 +120,6 @@ export const rowsAndColumns: Lesson = {
       solution: [
         { tap: 'A4', say: 'Select a cell in the Tomatoes row.' },
         { combo: 'selectRow', say: 'Hold Shift and press Space.' },
-      ],
-    },
-    {
-      id: 'xl.u0.l3.e4',
-      type: 'shortcut-press',
-      skill: COLUMN,
-      sheet: customers,
-      prompt: 'The customer orders sheet. Select the whole Orders column with the keys.',
-      checks: [
-        { type: 'usedShortcut', id: 'selectColumn' },
-        { type: 'selectionEquals', range: 'B1:B4' },
-      ],
-      hints: ['First select a cell in the Orders column.', 'Columns use Ctrl. Hold it and press Space.', 'Select B2, then press Ctrl + Space.'],
-      explain: 'Ctrl + Space works on any sheet, whichever cell in the column is active.',
-      tips: [BASICS.headings, 'Any cell in the column will do as a starting point.'],
-      solution: [
-        { tap: 'B2', say: 'Select a cell in the Orders column.' },
-        { combo: 'selectColumn', say: 'Hold Ctrl and press Space.' },
       ],
     },
     choice({
@@ -157,7 +137,7 @@ export const rowsAndColumns: Lesson = {
       type: 'shortcut-press',
       skill: ROW,
       sheet: customers,
-      prompt: 'Hill Market wants a delivery. Select its whole row with the keys.',
+      prompt: 'Before Hill Market’s delivery, review its record. Select its whole row.',
       checks: [
         { type: 'usedShortcut', id: 'selectRow' },
         { type: 'selectionEquals', range: 'A3:C3' },
@@ -191,6 +171,24 @@ export const rowsAndColumns: Lesson = {
     },
   ],
   practice: [
+    {
+      id: 'xl.u0.l3.e4',
+      type: 'shortcut-press',
+      skill: COLUMN,
+      sheet: customers,
+      prompt: 'The customer orders sheet. Select the whole Orders column.',
+      checks: [
+        { type: 'usedShortcut', id: 'selectColumn' },
+        { type: 'selectionEquals', range: 'B1:B4' },
+      ],
+      hints: ['First select a cell in the Orders column.', 'Columns use Ctrl. Hold it and press Space.', 'Select B2, then press Ctrl + Space.'],
+      explain: 'Ctrl + Space works on any sheet, whichever cell in the column is active.',
+      tips: [BASICS.headings, 'Any cell in the column will do as a starting point.'],
+      solution: [
+        { tap: 'B2', say: 'Select a cell in the Orders column.' },
+        { combo: 'selectColumn', say: 'Hold Ctrl and press Space.' },
+      ],
+    },
     {
       id: 'xl.u0.l3.p1',
       type: 'shortcut-press',

@@ -37,7 +37,7 @@ export const meetTheGrid: Lesson = {
   recap: [
     'A spreadsheet is a grid of cells. Each cell holds one piece of information.',
     'Columns run down and are lettered. Rows run across and are numbered.',
-    'A cell reference names a cell by its column, then its row: B3.',
+    'A cell reference names a cell by column, then row: B3. Formulas rely on them.',
   ],
   newSkills: [ADDRESS],
   exercises: [
@@ -48,10 +48,10 @@ export const meetTheGrid: Lesson = {
       skill: ADDRESS,
       sheet: stall,
       script: [
-        { tap: 'A2', say: 'This season the stall also sells orchard fruit.' },
-        { tap: 'A1', say: 'Before you update its prices, learn the layout.' },
-        { tap: 'B2', say: 'Each box is a cell. It holds one piece of data.' },
-        { tap: 'C3', say: 'The selected cell is the active cell.' },
+        { say: 'This season the stall also sells orchard fruit.' },
+        { say: 'To update its prices, you must name cells exactly.' },
+        { tap: 'B2', say: 'Each cell holds one piece of data: a price, here.' },
+        { tap: 'C3', say: 'The outlined cell is the active cell.' },
       ],
       prompt: 'Your turn. Select the cell that says Pears.',
       checks: [{ type: 'selectionEquals', range: 'A3' }],
@@ -67,8 +67,8 @@ export const meetTheGrid: Lesson = {
       skill: ADDRESS,
       sheet: stall,
       script: [
-        { tap: 'B1', say: 'Columns run down the sheet and are lettered.' },
-        { tap: 'A3', say: 'Rows run across the sheet and are numbered.' },
+        { drag: 'B1:B5', say: 'Columns run down the sheet and are lettered.' },
+        { drag: 'A3:C3', say: 'Rows run across the sheet and are numbered.' },
         { tap: 'C4', say: 'A cell sits where a column and a row meet.' },
         { tap: 'B3', say: 'Column B meets row 3 here, so this cell is B3.' },
       ],
@@ -76,7 +76,7 @@ export const meetTheGrid: Lesson = {
       checks: [{ type: 'selectionEquals', range: 'C2' }],
       hints: ['Find column C along the top.', 'Follow column C down to row 2.', 'Row 2 is the first row below the headings.'],
       explain: 'C2 is where column C meets row 2. That name is its cell reference.',
-      tips: ['A name such as B3 is a cell reference.', 'The active cell’s reference appears at the top left.'],
+      tips: ['A name such as B3 is a cell reference.', 'The Name Box, at the top left, shows the active cell’s reference.'],
       solution: [{ tap: 'C2', say: 'Column C, row 2: C2.' }],
     },
     {
@@ -111,7 +111,7 @@ export const meetTheGrid: Lesson = {
       checks: [{ type: 'selectionEquals', range: 'C5' }],
       hints: ['C is the third column.', 'Row 5 is the last row of data.', 'C5 holds the number 30.'],
       explain: 'C5 holds 30: the stall has 30 kg of golden apples in stock.',
-      tips: [BASICS.name, 'Check the reference at the top left after you select.'],
+      tips: [BASICS.name, 'Check the Name Box after you select.'],
       solution: [{ tap: 'C5', say: 'Column C, row 5.' }],
     },
     {

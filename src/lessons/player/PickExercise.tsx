@@ -6,7 +6,9 @@ import type { Expression } from '@/components/Mascot';
 import { buzz } from '@/lib/feedback';
 import type { Side } from '@/progress/saved';
 import { SheetController } from '@/spreadsheet/controller';
+import { BarFrame, Fx } from '@/spreadsheet/FormulaBar';
 import { Grid } from '@/spreadsheet/Grid';
+import { Workbench } from '@/spreadsheet/Workbench';
 import { forComputer, type Computer } from '@/spreadsheet/shortcuts';
 import { useSheet } from '@/spreadsheet/useSheet';
 import { mono, radius, space, useTheme } from '@/theme';
@@ -16,6 +18,7 @@ import { correctOptions, isRightPick, picksSeveral } from '../pick';
 import { SHOW_ME_AFTER, type Attempt } from '../session';
 import type { ExerciseSnapshot, Phase } from '../snapshot';
 import type { PickExercise as PickKind } from '../types';
+import { praiseFor } from '../voice';
 import type { Metrics, StepNav } from './GridExercise';
 import { MessageCard, type Tone } from './MessageCard';
 import { SplitScreen } from './SplitScreen';
@@ -37,8 +40,6 @@ export interface PickExerciseProps {
   onSheetSide?: (side: Side) => void;
 }
 
-/** Calm, factual confirmation; the explanation underneath carries the learning (docs/editorial-standards.md). */
-const PRAISE = ['Correct', 'Correct', 'That’s right'];
 const BLANK_SHEET = { cols: 1, rows: 1 };
 
 /**
@@ -79,7 +80,7 @@ export function PickExercise({
   /** The options that were checked and found wrong, so they can be marked. */
   const [wrong, setWrong] = useState<number[]>([]);
   const [latest, setLatest] = useState<'outcome' | 'hint' | null>(opened === 'do' && attempt.hintsShown > 0 ? 'hint' : null);
-  const praise = exercise.praise ?? PRAISE[[...exercise.id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % PRAISE.length];
+  const praise = praiseFor(exercise.id, attempt, exercise.praise);
 
   const setPhase = useCallback(
     (next: Phase) => {
@@ -167,21 +168,20 @@ export function PickExercise({
 
   const cardView = <MessageCard mood={card.mood} tone={card.tone} text={say(card.text)} height={metrics.cardHeight} lines={metrics.cardLines} />;
 
+  // "What will this show?" puts the formula in the bar; a question about a sheet only reads it.
   const formulaView = predicting ? (
-    <View style={[styles.formula, { height: metrics.barHeight, backgroundColor: c.surface, borderColor: c.outline }]}>
-      <View style={[styles.cellName, { backgroundColor: c.sunken, borderColor: c.line }]}>
-        <Text style={[styles.cellNameText, { color: c.inkSoft }]}>{exercise.cell}</Text>
-      </View>
+    <BarFrame name={exercise.cell} height={metrics.barHeight}>
+      <Fx />
       <Text testID="predict-formula" numberOfLines={1} style={[styles.formulaText, { color: c.ink, fontFamily: mono }]}>
         {exercise.formula}
       </Text>
-    </View>
+    </BarFrame>
   ) : null;
 
   const sheetView = exercise.sheet ? (
-    <View style={styles.sheet}>
+    <Workbench bar={formulaView}>
       <Grid controller={controller} state={sheetState} locked />
-    </View>
+    </Workbench>
   ) : null;
 
   const optionsView = (
@@ -255,12 +255,7 @@ export function PickExercise({
       <SplitScreen
         layout={metrics.layout}
         onSheetSide={onSheetSide}
-        sheet={
-          <>
-            {formulaView}
-            {sheetView}
-          </>
-        }
+        sheet={sheetView}
         lesson={answering}
       />
     );
@@ -269,7 +264,6 @@ export function PickExercise({
   return (
     <View style={styles.fill}>
       {cardView}
-      {formulaView}
       {sheetView ?? <View style={styles.sheet} />}
       {optionsView}
       {noteView}
@@ -284,10 +278,7 @@ const styles = StyleSheet.create({
   alone: { flex: 1, width: '100%', maxWidth: 520, alignSelf: 'center', gap: space.sm },
   scroll: { flex: 1 },
   scrollContent: { gap: space.sm },
-  formula: { flexDirection: 'row', alignItems: 'stretch', borderWidth: 1.5, borderRadius: radius.sm, overflow: 'hidden' },
-  cellName: { width: 46, alignItems: 'center', justifyContent: 'center', borderRightWidth: 1 },
-  cellNameText: { fontSize: 13, fontWeight: '700' },
-  formulaText: { flex: 1, alignSelf: 'center', paddingHorizontal: 10, fontSize: 16 },
+  formulaText: { flex: 1, alignSelf: 'center', paddingRight: 10, fontSize: 16 },
   sheet: { flex: 1, minHeight: 0 },
   options: { gap: 6 },
   option: {

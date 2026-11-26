@@ -11,10 +11,10 @@ behind it, and where each stage stands. Visual direction lives in
 | Stage | Scope | Status |
 |---|---|---|
 | 1 | Audit content, components, games, transitions | **Done** (below) |
-| 2 | Roots content overhaul; permanent editorial standards | **Done**: 5 lessons rewritten, standards and curriculum map written |
+| 2 | Roots content overhaul; permanent editorial standards | **Done**: 5 lessons rewritten, then revised after a beginner walkthrough (27 Nov) |
 | 3 | Spreadsheet atmosphere; seamless lesson-entry transition (farm and roots routes) | Not started. A first transition exists (`src/world/transition/`) |
-| 4 | New spreadsheet presentation, same engine | Not started. One fix done: keys open on selection for value entry |
-| 5 | Core games: Match Pairs, Shortcut Match, Cell Hunter, Formula Builder, Error Detective; Speed Trial overhaul | Not started |
+| 4 | New spreadsheet presentation, same engine | **Done** (27 Nov): Workbench, fitted columns, continuing sheet, Name Box and fx, ✕ ✓ |
+| 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | Not started (list revised 27 Nov) |
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
 | 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | Partly: palette, sky, type and buttons done in the Refined pass |
 | 8 | Editorial overhaul of the remaining units | Not started |
@@ -32,7 +32,7 @@ parallel with any of them.
   selecting and typing, and edits with F2 or a double-click. The controller already behaved
   like Excel; the phone keypad only opened in edit mode. Fixed: content rewritten, and the keys
   open on selection for value-entry tasks.
-- Story breaks: figs (not farm produce), a pets practice sheet, an abrupt opening ("The farm
+- Story breaks: figs (farm produce, but outside the established stall inventory), a pets practice sheet, an abrupt opening ("The farm
   is now yours"), produce that did not match the stall.
 - Tone: celebratory praise ("Excellent work!", "You got it!"), prompts mentioning untaught
   skills ("To copy the Potatoes row").
@@ -53,6 +53,51 @@ layer shared with the farm, and it ends on a generic flat grid rather than the l
 
 **Components:** the spreadsheet engine, controller, keyboard, checks and 2,600+ tests are
 solid and stay. The lesson screen's layout is the part to replace (Stage 4).
+
+## Roots walkthrough (27 Nov 2026)
+
+All five lessons played through on a 375 × 812 and 375 × 667 screen as a first-time user.
+
+| Finding | Fix |
+|---|---|
+| The opening story moved the selection between unrelated cells on every line | Cell can now speak without touching the sheet (`{ say }` script step); the story is told over a still sheet, then a row, a column and a cell are highlighted as each is named |
+| "Cell" and "select" were used in lesson 0 before being defined | Lesson 0 now names rows, columns and cells and says how to select; lesson 1 builds on it instead of repeating it |
+| Lesson 1 never said why references matter | Its opening and recap now say: prices are updated by naming cells exactly; formulas rely on references |
+| The Name Box was "the top left" | Named as the Name Box (Excel's term) |
+| Editing was taught on a value it is quicker to retype; the F2 note was spoken over the Enter step | Captions re-paired; the explanation now gives the real reason (long entries). Practice ends on a correction (500 → 50) instead of a bare selection |
+| "You will write formulas next" (the next lesson is rows and columns) | "Formulas come in the next unit" |
+| Lesson 3 taught "column" three times running, the second as a repeat demonstration | The repeat demo became a task with less help; the third column task moved to the practice round |
+| Ranges such as B1:B5 appeared in explanations without the colon ever being explained | Explained the first time it appears ("The colon means “to”") |
+| Lessons 3 and 4 opened on the keys without saying why | Each opens with one line of purpose |
+
+Still true and accepted: lesson 0 is recognition only (select the right cell), by design for an
+orientation lesson; every selection task needs a Check press, which keeps the rhythm consistent
+with typed tasks.
+
+## Stage 4: the spreadsheet (27 Nov 2026)
+
+One reusable sheet surface for lessons, questions and (Stage 5) games:
+
+- `src/spreadsheet/Workbench.tsx`: the framed window, formula bar on top, grid filling the rest.
+- `src/spreadsheet/layout.ts`: columns fitted to their contents (as after an AutoFit in Excel),
+  rows up to 44 pt, and the empty rows and columns that follow the data drawn quieter so the
+  sheet reads as a real, continuing sheet. Tested in `__tests__/layout.test.ts`.
+- `FormulaBar`: Excel's Name Box and fx; ✕ and ✓ while typing (✓ commits without moving, as in
+  Excel). `BarFrame` + `Fx` serve screens that show a formula without a live sheet.
+- Headings of the selection are lit with a gold bar, as Excel underlines them.
+- Keys not yet taught stay in place as faint dashed outlines (the board never moves).
+- Engine, controller, checks and keyboard handling unchanged.
+
+**Compromises and departures, reported:**
+- Empty rows and columns past the data cannot be selected. The exercise's sheet ends at its
+  data so that checks such as "the whole column is B1:B5" stay exact.
+- Collapsible instructions (from the earlier brief) were not built. The card is already two or
+  three lines and fixed in height; collapsing it would hide the task to gain space the grid
+  does not currently need. Revisit if later units need taller sheets.
+- During a demonstration the space reserved for the keys stays empty, so the grid does not
+  jump when the learner's turn begins.
+- Not yet checked on a physical phone; verified in the browser at 375 × 812, 375 × 667 and
+  812 × 375 (landscape split).
 
 ## Approved vs deferred
 

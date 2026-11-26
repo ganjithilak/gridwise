@@ -107,7 +107,11 @@ export function FormulaKeyboard({ onKey, hidden = [], chips, onChip, flashKey, l
       {LAYOUT.map((row, r) => (
         <View key={r} style={styles.row}>
           {row.map((key) => {
-            if (hidden.includes(key)) return <View key={key} style={[styles.key, { height: keyHeight }]} />;
+            // A key not taught yet keeps its place as a faint outline: the board never moves,
+            // and it reads as keys still to come rather than a gap.
+            if (hidden.includes(key)) {
+              return <View key={key} style={[styles.key, styles.later, { height: keyHeight, borderColor: c.line }]} accessibilityElementsHidden />;
+            }
             const flashing = flashKey === key;
             const kind = key === 'enter' ? 'enter' : key === 'SUM' || key === '=' ? 'special' : isDigit(key) || key === '.' ? 'digit' : 'symbol';
             const bg = { enter: c.accent, special: c.accentSoft, digit: c.surface, symbol: c.sunken }[kind];
@@ -161,6 +165,7 @@ export function keyboardHeight(keyHeight: number, withChips = false): number {
 
 const styles = StyleSheet.create({
   board: { gap: KEY_GAP },
+  later: { borderWidth: 1, borderStyle: 'dashed', opacity: 0.5 },
   row: { flexDirection: 'row', gap: KEY_GAP },
   key: {
     flex: 1,

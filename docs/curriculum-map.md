@@ -20,10 +20,10 @@ The learner has been entrusted with running Golden Apples Farm for a growing sea
 
 | Lesson | Story | I | R | Q |
 |---|---|---|---|---|
-| 0 Welcome to Golden Apples Farm | A new season; why the farm needs records | spreadsheet purpose | — | — |
+| 0 Welcome to Golden Apples Farm | A new season; why the farm needs records | spreadsheet purpose; the words row, column, cell, select | — | — |
 | 1 Cells and References | The stall's fruit price list | cell address | purpose | — |
 | 2 Entering and Correcting Data | Keeping the stock record up to date | cell type (replace, edit, confirm, cancel) | cell address | cell address |
-| 3 Selecting Rows and Columns | Reviewing stock and wholesale customers | select column, select row | cell address | cell address |
+| 3 Selecting Rows and Columns | Reviewing stock and wholesale customers | select column, select row; range notation (B1:B5) | cell address | cell address |
 | 4 Moving Around the Sheet | Navigating the stock record and customer orders | arrow keys, extend selection | select row/column (in a choice) | cell address |
 
 **Dataset continuity (stock record, kg / price per kg):**
@@ -77,12 +77,15 @@ A farm project (season summary: harvest, sales, expenses, profit) is a candidate
 
 ## Game-to-curriculum map
 
+Approved list (27 Nov 2026). Games test only what has been taught, and get harder as the
+course progresses. All reuse the Workbench sheet (Stage 4).
+
 | Game | Status | Reinforces | Unlocks after |
 |---|---|---|---|
-| Match Pairs | planned (Stage 5) | terms, functions, errors, symbols, shortcuts | per category: the lesson that teaches it |
-| Shortcut Match | planned (Stage 5) | shortcuts taught so far, Windows or Mac | each shortcut's lesson |
-| Cell Hunter | planned (Stage 5) | cell address, select row/column, ranges, arrows | Cells and References |
+| Match Pairs | planned (Stage 5) | references, functions, definitions, shortcuts and what they do | per category: the lesson that teaches it |
+| Speed Trial | built; overhaul planned | in order: navigation, selection, data entry, then shortcuts | each tier after its lessons. **Issue:** level 1 currently tests copy/paste/undo before they are taught |
 | Formula Builder | planned (Stage 5) | arithmetic, SUM, AVERAGE, MIN/MAX, COUNT, then later functions | First formulas |
-| Error Detective | planned (Stage 5) | ranges, references, IFERROR, error values | First formulas; harder after Make it think |
-| Speed Trial | built; overhaul planned | shortcut recognition and execution | **issue:** level 1 tests copy/paste/undo before they are taught |
+| Find the Error | planned (Stage 5) | wrong values, wrong ranges and references, error values, IFERROR | Entering and Correcting Data (values); First formulas (formulas) |
+| Cell Hunt | planned (Stage 5) | cell references, rows/columns, ranges | Cells and References |
+| Predict the Result | planned (Stage 5) | what a formula returns | First formulas |
 | Grid Master | locked in Advanced Arcade | cell references, Shift + arrows | — |

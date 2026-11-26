@@ -11,7 +11,8 @@ export function applyStep(controller: SheetController, step: ScriptStep): void {
   else if ('drag' in step) controller.selectRange(step.drag);
   else if ('fill' in step) controller.fill(step.fill);
   else if ('tool' in step) controller.runTool(step.tool);
-  else controller.runShortcut(step.combo);
+  else if ('combo' in step) controller.runShortcut(step.combo);
+  // A step that only speaks changes nothing.
 }
 
 export function applyScript(controller: SheetController, steps: readonly ScriptStep[]): void {

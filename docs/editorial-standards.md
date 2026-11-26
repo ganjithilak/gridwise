@@ -33,9 +33,23 @@ enthusiasm. The explanation (`explain`) never starts with "Correct": the title s
 
 ## Cell, the mascot
 
-A knowledgeable companion, not a cheerleader. Warm, brief, specific. Cell introduces what is
-coming, points out what matters, and stays calm when something goes wrong. It never punishes,
-never gushes, and never talks down. Cell's sky speech uses the same voice as lessons.
+A knowledgeable, patient tutor: not a children's mascot and not an automated marker. Warm,
+brief, specific. Cell introduces what is coming, points out what matters, and stays calm when
+something goes wrong. It never punishes, never gushes, and never talks down. Cell's sky speech
+uses the same voice as lessons.
+
+Feedback titles come from `src/lessons/voice.ts` so they vary without becoming mechanical. Each
+exercise always gets the same line for the same situation:
+
+| Situation | Lines |
+|---|---|
+| Right first time | Correct · That's right · Exactly · Spot on · Yes, that's it · Precisely |
+| Right after a hint or a miss | That's it · There it is · Got it now · That's the one · Correct |
+| Not passed | Not quite · Not yet · Have another look · Check that again (never "nearly": the message says what to check) |
+| Right result, other method | Right result, different method |
+
+Demonstrations may have Cell speak without touching the sheet (`{ say: '…' }`). Use it for
+story and context so the selection only moves when the movement means something.
 
 ## Approved terminology
 
@@ -48,6 +62,7 @@ never gushes, and never talks down. Cell's sky speech uses the same voice as les
 | enter (a value) / type | put, write | |
 | replace (typing over) / edit (part of an entry) | change | Excel's distinction: typing replaces; F2 or double-click edits |
 | formula bar | the bar | Shows what a cell actually contains |
+| Name Box | top left, the box | Shows the active cell's reference |
 | heading | title, label | Row 1 |
 | extend (a selection) | stretch, grow | Shift + arrow |
 | currency format | money format | Excel's Number Format name is "Currency" |
