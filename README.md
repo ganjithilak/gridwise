@@ -1,6 +1,6 @@
 # Gridwise (working title)
 
-A hands-on spreadsheet learning app: short lessons where you do the task in a real working grid instead of answering trivia about it. The full plan, and where the build stands against it, is in [gridwise-plan.md](gridwise-plan.md).
+A hands-on spreadsheet learning app: short lessons where you do the task in a real working grid instead of answering trivia about it. The full plan, and where the build stands against it, is in [gridwise-plan.md](gridwise-plan.md). The design direction from 26 Nov 2026 on is [docs/creative-direction-v2.md](docs/creative-direction-v2.md).
 
 ## Run it
 
@@ -39,7 +39,7 @@ npm run lint
 
 The app is developed on Windows with no paid Apple Developer account, so **Expo Go is the only way to run it on an iPhone**. That means:
 
-- Only add libraries that run inside Expo Go: Expo SDK modules, AsyncStorage, Zustand.
+- Only add libraries that run inside Expo Go: Expo SDK modules, AsyncStorage, Zustand, react-native-svg.
 - Nothing that needs a custom native build.
 - Install Expo packages with `npx expo install <name>` so the version matches the SDK.
 - Expo Go on the phone follows the newest Expo SDK. If a new SDK ships and Expo Go updates, upgrade the project to match.
@@ -49,7 +49,7 @@ Gestures use React Native's own responder system, so `react-native-gesture-handl
 ## Layout
 
 ```
-app/                Expo Router screens: welcome, Learn / Practice / Profile, lesson, results
+app/                Expo Router screens: welcome, the world (home), lesson, results
 src/engine/         formula + sheet model, pure TypeScript, no React
 src/spreadsheet/    the grid, formula bar, keyboard, toolbar, key caps
 src/lessons/        exercise types, checks, mistake messages, session queue, lesson player
@@ -58,6 +58,8 @@ src/progress/       saved progress, streak, review schedule, practice rounds, wh
 src/game/           the games: Speed Trial and Grid Master, their rules (tested) and their boards
 src/lib/            clock (fakeable), sound and vibration
 src/theme/          colours, spacing, type
+src/world/          the world: farm, roots, sky, plant, cloud, camera (docs/creative-direction-v2.md)
+src/screens/        Practice and Profile, shown at the world's sides
 test/fixtures/      excel-parity.xlsx: test cases computed by real Excel
 scripts/            builds the parity workbook, the sounds and the icon
 ```

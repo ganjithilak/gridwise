@@ -71,4 +71,4 @@ What is in the app today (see `gridwise-plan.md`, "The full brief and the sample
 | Fruit: produced by practical challenges | One final unit, "Put it to work", is tagged Fruit |
 | A customisable plant or flower avatar | The "Cell" mascot, and a plant drawn on the Learn screen that colours in as stages are reached. A colour for Cell is the only customisation |
 
-Open question for review: is this document the next version of the design (branching roots, fruit from every unit, a plant avatar), or should it be updated to describe the current build?
+Answered 26 Nov 2026: superseded by [docs/creative-direction-v2.md](docs/creative-direction-v2.md). Branching roots are built; the plant is a collectible, non-anthropomorphic species rather than a customisable avatar.

@@ -7,20 +7,24 @@ import { dayKey } from '@/lib/clock';
 import { dueSkills } from '@/progress/srs';
 import { useProgress } from '@/progress/store';
 import { radius, space, useTheme } from '@/theme';
+import { useWorld } from '@/world/store';
 
+/** Places in the world (Creative Direction V2, section 4). Gestures do the same; the bar means they are never required. */
 const TABS = [
-  { path: '/', label: 'Learn', side: 'Home' },
-  { path: '/practice', label: 'Practice', side: 'Practice' },
-  { path: '/profile', label: 'Profile', side: 'Profile' },
+  { id: 'games', label: 'Games', col: -1, row: null },
+  { id: 'farm', label: 'Farm', col: 0, row: 0 },
+  { id: 'roots', label: 'Roots', col: 0, row: 1 },
+  { id: 'profile', label: 'Profile', col: 1, row: null },
 ] as const;
+type Tab = (typeof TABS)[number];
 
 /** A screen at least this wide, and wider than it is tall, gets the menu down its left side. */
 const SIDE_MENU_FROM = 640;
 
 /**
- * Learn, Practice and Profile. On a phone held upright there is a plain bar along the
- * bottom to move between them. On its side, or on a computer, the same three sit in a
- * menu down the left, under the app's name.
+ * Games, Farm, Roots and Profile: the places in the world. On a phone held upright there is
+ * a plain bar along the bottom to move between them. On its side, or on a computer, the
+ * same four sit in a menu down the left, under the app's name.
  */
 export default function TabsLayout() {
   const c = useTheme();
@@ -32,8 +36,14 @@ export default function TabsLayout() {
   // A small dot on Practice when something is waiting there.
   const waiting = dueSkills(skills, dayKey()).length > 0;
   const sideMenu = width > height && width >= SIDE_MENU_FROM;
-  const go = (path: (typeof TABS)[number]['path'], active: boolean) => {
-    if (!active) router.replace(path);
+  const col = useWorld((s) => s.col);
+  const row = useWorld((s) => s.row);
+  const move = useWorld((s) => s.go);
+  // The sky above the farm counts as the farm.
+  const isActive = (tab: Tab) => pathname === '/' && tab.col === col && (tab.row === null || (tab.row === 1) === (row === 1));
+  const go = (tab: Tab) => {
+    move(tab.col, tab.row ?? undefined);
+    if (pathname !== '/') router.replace('/');
   };
 
   if (sideMenu) {
@@ -54,20 +64,20 @@ export default function TabsLayout() {
             <Text style={[styles.motto, { color: c.inkSoft }]}>LEARN · PRACTICE · MASTER</Text>
           </View>
           {TABS.map((tab) => {
-            const active = pathname === tab.path;
+            const active = isActive(tab);
             return (
               <Pressable
-                key={tab.path}
-                testID={`tab-${tab.label.toLowerCase()}`}
+                key={tab.id}
+                testID={`tab-${tab.id}`}
                 accessibilityRole="tab"
                 accessibilityLabel={tab.label}
                 accessibilityState={{ selected: active }}
                 aria-selected={active}
-                onPress={() => go(tab.path, active)}
+                onPress={() => go(tab)}
                 style={[styles.link, { backgroundColor: active ? c.accentSoft : 'transparent', borderColor: active ? c.accent : 'transparent' }]}
               >
-                <Text style={[styles.linkText, { color: active ? c.ink : c.inkSoft, fontWeight: active ? '800' : '600' }]}>{tab.side}</Text>
-                {tab.path === '/practice' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
+                <Text style={[styles.linkText, { color: active ? c.ink : c.inkSoft, fontWeight: active ? '800' : '600' }]}>{tab.label}</Text>
+                {tab.id === 'games' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
               </Pressable>
             );
           })}
@@ -90,22 +100,22 @@ export default function TabsLayout() {
         style={[styles.bar, { backgroundColor: c.surface, borderColor: c.line, paddingBottom: Math.max(insets.bottom, 6) }]}
       >
         {TABS.map((tab) => {
-          const active = pathname === tab.path;
+          const active = isActive(tab);
           return (
             <Pressable
-              key={tab.path}
-              testID={`tab-${tab.label.toLowerCase()}`}
+              key={tab.id}
+              testID={`tab-${tab.id}`}
               accessibilityRole="tab"
               accessibilityLabel={tab.label}
               accessibilityState={{ selected: active }}
               aria-selected={active}
-              onPress={() => go(tab.path, active)}
+              onPress={() => go(tab)}
               style={styles.tab}
             >
               <View style={[styles.mark, { backgroundColor: active ? c.accent : 'transparent' }]} />
               <View style={styles.labelRow}>
                 <Text style={[styles.label, { color: active ? c.accent : c.inkSoft, fontWeight: active ? '800' : '600' }]}>{tab.label}</Text>
-                {tab.path === '/practice' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
+                {tab.id === 'games' && waiting ? <View testID="practice-dot" style={[styles.dot, { backgroundColor: c.spark }]} /> : null}
               </View>
             </Pressable>
           );
