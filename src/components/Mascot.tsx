@@ -19,6 +19,9 @@ export const CELL_COLOURS: Record<ProfileColour, { body: string; edge: string; n
   purple: { body: '#7C3AED', edge: '#5B21B6', name: 'Purple' },
 };
 
+/** Cell's original blue and rim (`assets/icon.png`). */
+export const CELL_BLUE = { body: '#2F5BEA', edge: '#1E3FB8', name: 'Blue' };
+
 interface Props {
   expression?: Expression;
   size?: number;
@@ -33,7 +36,9 @@ export function Mascot({ expression = 'neutral', size = 40 }: Props) {
   const theme = useTheme();
   // The learner chooses their Cell's colour on the Profile screen. Blue is the app's own.
   const colour = useProgress((s) => s.profile.colour);
-  const own = CELL_COLOURS[colour];
+  // Blue is Cell's own colour from the original icon; it no longer borrows the theme accent,
+  // so Cell stays Cell on every look.
+  const own = CELL_COLOURS[colour] ?? CELL_BLUE;
   const c = own ? { ...theme, accent: own.body, accentDeep: own.edge, onAccent: '#FFFFFF' } : theme;
   const bounce = useState(() => new Animated.Value(1))[0];
   const first = useRef(true);

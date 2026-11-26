@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,17 +17,19 @@ import { radius, useTheme } from '@/theme';
 import { CLOUD_EFFECTS, CLOUD_MOODS, CloudMascot, WanderingCloud, type CloudEffect, type CloudMood } from './CloudMascot';
 import { ambientScenes, triggerAmbient } from './env/ambient';
 import { Earthworm } from './env/Earthworm';
-import { FarmBackdrop, FarmForeground, farmGeometry } from './env/Farm';
+import { farmGeometry } from './env/Farm';
 import { ScarecrowScene } from './env/ScarecrowScene';
 import { Goldspire } from './Goldspire';
 import { GROWTH_STAGES, growthOf, LAST_STAGE } from './growth';
 import { LessonCard } from './LessonCard';
 import { W } from './palette';
 import { layoutRoots, RootMap, type RootPick } from './RootMap';
-import { DriftingCloud, SkyBackdrop, Soil } from './Scenery';
+import { DriftingCloud, Soil } from './Scenery';
+import { useWorldArt } from './theme';
 import { display, GlassPanel, GOLD, GoldButton, GoldChip, tagStyle } from './ui/Gold';
 import { makeCamera } from './camera';
 import { useWorld } from './store';
+import { useLessonNav } from './transition/nav';
 
 /** Above ground takes this share of the farm view; the rest is the soil cross-section. */
 const ABOVE = 0.78;
@@ -46,12 +47,13 @@ const ROOTS_SURFACE = 0.07;
  */
 export function World() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const nav = useLessonNav();
   const theme = useTheme();
   const store = useProgress();
   const data = dataOf(store);
   const today = dayKey();
   const { col, row, go, previewStage, setPreviewStage } = useWorld();
+  const art = useWorldArt();
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const [pick, setPick] = useState<RootPick | null>(null);
   const [skyMood, setSkyMood] = useState<CloudMood>('happy');
@@ -103,11 +105,11 @@ export function World() {
     }
   };
 
-  const openLesson = (node: LessonNode) =>
-    router.push({ pathname: '/lesson/[lessonId]', params: { lessonId: node.state === 'practice' ? practiceIdFor(node.lesson.id) : node.lesson.id } });
+  // Into a lesson through the spreadsheet sky (see transition/GridTransition).
+  const openLesson = (node: LessonNode) => nav.openLesson(node.state === 'practice' ? practiceIdFor(node.lesson.id) : node.lesson.id);
   const openPick = () => {
     if (!pick) return;
-    if (pick.kind === 'test') router.push({ pathname: '/lesson/[lessonId]', params: { lessonId: pick.checkpoint.id } });
+    if (pick.kind === 'test') nav.openLesson(pick.checkpoint.id);
     else openLesson(pick.node);
   };
 
@@ -144,12 +146,12 @@ export function World() {
           <View style={{ width: w, height: h, overflow: 'hidden' }} testID="world-centre">
             <Animated.View style={{ width: w, height: ground + soilH, transform: [{ translateY: cam.y }] }}>
               <View style={[styles.abs, { top: 0, width: w, height: ground }]}>
-                <SkyBackdrop width={w} height={ground} skyPanel={h} horizon={h + farmH * 0.6} />
+                <art.SkyBackdrop width={w} height={ground} skyPanel={h} horizon={h + farmH * 0.6} />
               </View>
-              <DriftingCloud y={h * 0.62} size={Math.min(w * 0.42, 200)} width={w} seconds={110} start={0.55} />
-              <DriftingCloud y={h * 0.16} size={Math.min(w * 0.3, 150)} width={w} seconds={140} start={0.05} />
-              <DriftingCloud y={h + h * 0.33} size={Math.min(w * 0.34, 170)} width={w} seconds={95} start={0.62} />
-              <DriftingCloud y={h + h * 0.46} size={Math.min(w * 0.22, 110)} width={w} seconds={150} start={0.12} />
+              <DriftingCloud y={h * 0.62} size={Math.min(w * 0.42, 200)} width={w} seconds={110} start={0.55} Shape={art.CloudShape} />
+              <DriftingCloud y={h * 0.16} size={Math.min(w * 0.3, 150)} width={w} seconds={140} start={0.05} Shape={art.CloudShape} />
+              <DriftingCloud y={h + h * 0.33} size={Math.min(w * 0.34, 170)} width={w} seconds={95} start={0.62} Shape={art.CloudShape} />
+              <DriftingCloud y={h + h * 0.46} size={Math.min(w * 0.22, 110)} width={w} seconds={150} start={0.12} Shape={art.CloudShape} />
 
               {/* Above: Cell's sky. */}
               <View style={[styles.abs, styles.sky, { top: 0, width: w, height: h, paddingTop: insets.top + 24 }]} testID="world-sky">
@@ -202,13 +204,13 @@ export function World() {
 
               {/* The farm: hills behind, the scarecrow and its birds, the fence and field in front. */}
               <View pointerEvents="none" style={[styles.abs, { top: h, width: w, height: farmH + 20 }]}>
-                <FarmBackdrop width={w} ground={farmH} />
-                <ScarecrowScene width={w} ground={farmH} at={geo.scarecrow} active={onFarm}>
-                  <FarmForeground width={w} ground={farmH} lip={20} />
+                <art.FarmBackdrop width={w} ground={farmH} />
+                <ScarecrowScene width={w} ground={farmH} at={geo.scarecrow} active={onFarm} refined={art.refined}>
+                  <art.FarmForeground width={w} ground={farmH} lip={20} />
                 </ScarecrowScene>
               </View>
-              <PlantOnGround stage={growth.stage} ripe={growth.ripe} ground={ground} w={w} h={h} />
-              <Earthworm x={w / 2 + plantW * 0.33} ground={ground} active={onFarm} scale={Math.min(1.2, h / 700)} />
+              <PlantOnGround stage={growth.stage} ripe={growth.ripe} ground={ground} w={w} h={h} refined={art.refined} />
+              <Earthworm x={w / 2 + plantW * 0.33} ground={ground} active={onFarm} scale={Math.min(1.2, h / 700)} refined={art.refined} />
 
               {/* Main 1's own controls, painted into the farm's sky and soil. */}
               <View pointerEvents="box-none" style={[styles.abs, { top: h, width: w, height: h }]} testID="world-farm">
@@ -342,12 +344,12 @@ function WorldHud({ top, name, xp, streak, atRisk, todayXp, goal }: HudProps) {
 }
 
 /** The plant, its base on the soil line, sized to the farm. */
-function PlantOnGround({ stage, ripe, ground, w, h }: { stage: number; ripe: boolean; ground: number; w: number; h: number }) {
+function PlantOnGround({ stage, ripe, ground, w, h, refined }: { stage: number; ripe: boolean; ground: number; w: number; h: number; refined: boolean }) {
   const ph = Math.min(h * ABOVE * 0.66, w * 1.15);
   const pw = (ph * 200) / 280;
   return (
     <View pointerEvents="none" style={[styles.abs, { left: w / 2 - pw / 2, top: ground - ph * (258 / 280) }]} testID="world-plant">
-      <Goldspire stage={stage} ripe={ripe} height={ph} />
+      <Goldspire stage={stage} ripe={ripe} height={ph} refined={refined} />
     </View>
   );
 }

@@ -8,6 +8,7 @@ import { Mascot } from '@/components/Mascot';
 import { Plant } from '@/components/Plant';
 import { useProgress } from '@/progress/store';
 import { mono, radius, space, type as typography, useTheme, type Palette } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 interface Stop {
   id: string;
@@ -141,6 +142,7 @@ export default function TourScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg, paddingTop: insets.top + space.md, paddingBottom: insets.bottom + space.lg }]}>
+      <ScreenSky />
       <View style={styles.column}>
         <View style={styles.top}>
           <Text style={[typography.label, { color: c.inkSoft }]} testID="tour-count">

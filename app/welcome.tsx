@@ -8,6 +8,7 @@ import { defaultCourse } from '@/content';
 import type { Level } from '@/progress/saved';
 import { useProgress } from '@/progress/store';
 import { radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 const intro = defaultCourse.units.find((unit) => unit.intro);
 const firstReal = defaultCourse.units.find((unit) => !unit.intro && !unit.optional);
@@ -64,6 +65,7 @@ export default function WelcomeScreen() {
   if (!tourSeen) {
     return (
       <View style={[styles.screen, { backgroundColor: c.bg }]}>
+        <ScreenSky />
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[styles.column, { paddingTop: insets.top + space.xxl, paddingBottom: insets.bottom + space.lg }]}
@@ -89,6 +91,7 @@ export default function WelcomeScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg }]}>
+      <ScreenSky />
       {/* It fits a small phone without scrolling; scrolling is only the safety net for a browser's bars. */}
       <ScrollView
         style={styles.scroll}

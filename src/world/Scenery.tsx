@@ -6,7 +6,7 @@
  * layers or animation files) replaces these components one by one; their props and
  * placement are the contract to keep.
  */
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState, type ComponentType } from 'react';
 import { Animated, Easing, StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
@@ -44,7 +44,7 @@ export const SkyBackdrop = memo(function SkyBackdrop({ width, height, skyPanel, 
 });
 
 /** One fluffy cel-shaded cloud, drawn in a 160 x 70 box. */
-function CloudShape({ w }: { w: number }) {
+export function CloudShape({ w }: { w: number }) {
   const h = (w * 70) / 160;
   const puffs: [number, number, number][] = [
     [36, 46, 22],
@@ -75,7 +75,22 @@ function CloudShape({ w }: { w: number }) {
 }
 
 /** A cloud that drifts across the sky and comes round again. */
-export function DriftingCloud({ y, size, width, seconds, start }: { y: number; size: number; width: number; seconds: number; start: number }) {
+export function DriftingCloud({
+  y,
+  size,
+  width,
+  seconds,
+  start,
+  Shape = CloudShape,
+}: {
+  y: number;
+  size: number;
+  width: number;
+  seconds: number;
+  start: number;
+  /** The theme's cloud drawing. */
+  Shape?: ComponentType<{ w: number }>;
+}) {
   const [x] = useState(() => new Animated.Value(start));
   useEffect(() => {
     const from = -size;
@@ -102,7 +117,7 @@ export function DriftingCloud({ y, size, width, seconds, start }: { y: number; s
   }, [x, size, width, seconds, start]);
   return (
     <Animated.View pointerEvents="none" style={{ position: 'absolute', top: y, left: 0, transform: [{ translateX: x }] }}>
-      <CloudShape w={size} />
+      <Shape w={size} />
     </Animated.View>
   );
 }

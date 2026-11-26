@@ -27,6 +27,7 @@ import { buzz } from '@/lib/feedback';
 import { useHydrated, useProgress } from '@/progress/store';
 import type { Computer, PressKey } from '@/spreadsheet/shortcuts';
 import { mono, radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 const stars = (n: number): string => '★'.repeat(n) + '☆'.repeat(3 - n);
 
@@ -148,6 +149,7 @@ export default function SpeedTrialScreen() {
         { backgroundColor: c.bg, paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md, paddingLeft: insets.left, paddingRight: insets.right },
       ]}
     >
+      <ScreenSky variant="quiet" />
       <View style={styles.column}>{children}</View>
     </View>
   );

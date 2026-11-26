@@ -34,7 +34,13 @@ const BEAK = '#F5A524';
  * wing drawings crossfaded on the native driver); perched, its wings fold. Facing right;
  * the rig's `face` flips it.
  */
-export function Bird({ rig, mode, size = 20 }: { rig: BirdRig; mode: BirdMode; size?: number }) {
+export function Bird({ rig, mode, size = 20, refined = false }: { rig: BirdRig; mode: BirdMode; size?: number; refined?: boolean }) {
+  // Refined: a softer slate-and-buff songbird, painted without an outline.
+  const ink = refined ? 'transparent' : W.ink;
+  const body = refined ? '#56606E' : BODY;
+  const shade = refined ? '#3F4752' : BODY_SHADE;
+  const belly = refined ? '#E6DCC8' : BELLY;
+  const beak = refined ? '#D69A3A' : BEAK;
   const [flap] = useState(() => new Animated.Value(0));
   const flying = mode === 'flying';
   useEffect(() => {
@@ -72,17 +78,17 @@ export function Bird({ rig, mode, size = 20 }: { rig: BirdRig; mode: BirdMode; s
     >
       <Svg width={box} height={box} viewBox="0 0 32 32" style={StyleSheet.absoluteFill}>
         {/* Tail, body, belly, head, beak, eye. */}
-        <Path d="M7,17 L1,14 L3,19 L1,22 L8,20 Z" fill={BODY_SHADE} stroke={W.ink} strokeWidth={0.8} strokeLinejoin="round" />
-        <Ellipse cx={14} cy={18} rx={8.5} ry={6.5} fill={BODY} stroke={W.ink} strokeWidth={0.9} />
-        <Ellipse cx={16} cy={20.5} rx={5.5} ry={3.6} fill={BELLY} />
-        <Circle cx={21} cy={13} r={5} fill={BODY} stroke={W.ink} strokeWidth={0.9} />
-        <Path d="M25.5,12 L30,13.5 L25.5,15 Z" fill={BEAK} stroke={W.ink} strokeWidth={0.7} strokeLinejoin="round" />
-        <Circle cx={22.2} cy={12} r={1.6} fill="#FFFFFF" />
-        <Circle cx={22.7} cy={12.1} r={0.9} fill={W.ink} />
+        <Path d="M7,17 L1,14 L3,19 L1,22 L8,20 Z" fill={shade} stroke={ink} strokeWidth={0.8} strokeLinejoin="round" />
+        <Ellipse cx={14} cy={18} rx={8.5} ry={6.5} fill={body} stroke={ink} strokeWidth={0.9} />
+        <Ellipse cx={16} cy={20.5} rx={5.5} ry={3.6} fill={belly} />
+        <Circle cx={21} cy={13} r={5} fill={body} stroke={ink} strokeWidth={0.9} />
+        <Path d="M25.5,12 L30,13.5 L25.5,15 Z" fill={beak} stroke={ink} strokeWidth={0.7} strokeLinejoin="round" />
+        {refined ? null : <Circle cx={22.2} cy={12} r={1.6} fill="#FFFFFF" />}
+        <Circle cx={22.7} cy={12.1} r={0.9} fill="#1E1A16" />
         {mode === 'perched' ? (
           <G>
-            <Path d="M9,16 Q14,12 19,17 Q14,21 9,16 Z" fill={BODY_SHADE} stroke={W.ink} strokeWidth={0.7} />
-            <Path d="M13,24 v4 m3,-4 v4" stroke={BEAK} strokeWidth={1.2} strokeLinecap="round" />
+            <Path d="M9,16 Q14,12 19,17 Q14,21 9,16 Z" fill={shade} stroke={ink} strokeWidth={0.7} />
+            <Path d="M13,24 v4 m3,-4 v4" stroke={beak} strokeWidth={1.2} strokeLinecap="round" />
           </G>
         ) : null}
       </Svg>
@@ -90,12 +96,12 @@ export function Bird({ rig, mode, size = 20 }: { rig: BirdRig; mode: BirdMode; s
         <>
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: flap }]}>
             <Svg width={box} height={box} viewBox="0 0 32 32">
-              <Path d="M11,15 Q9,4 17,2 Q16,10 18,15 Z" fill={BODY_SHADE} stroke={W.ink} strokeWidth={0.8} strokeLinejoin="round" />
+              <Path d="M11,15 Q9,4 17,2 Q16,10 18,15 Z" fill={shade} stroke={ink} strokeWidth={0.8} strokeLinejoin="round" />
             </Svg>
           </Animated.View>
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: flap.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}>
             <Svg width={box} height={box} viewBox="0 0 32 32">
-              <Path d="M11,18 Q8,28 16,30 Q16,23 18,18 Z" fill={BODY_SHADE} stroke={W.ink} strokeWidth={0.8} strokeLinejoin="round" />
+              <Path d="M11,18 Q8,28 16,30 Q16,23 18,18 Z" fill={shade} stroke={ink} strokeWidth={0.8} strokeLinejoin="round" />
             </Svg>
           </Animated.View>
         </>

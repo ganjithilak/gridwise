@@ -6,6 +6,7 @@ import { CELL_COLOURS } from '@/components/Mascot';
 import { useProgress } from '@/progress/store';
 
 import { useAmbient, type AmbientEvent } from './env/ambient';
+import { usePrefs } from './prefs';
 
 export const CLOUD_MOODS = [
   'neutral',
@@ -100,6 +101,8 @@ const PUFFS: [number, number, number][] = [
 export function CloudMascot({ mood = 'neutral', effect = 'none', size = 120, onPress, accessibilityLabel, alive = true }: Props) {
   const colour = useProgress((s) => s.profile.colour);
   const tone = toneFor(colour, mood, effect);
+  // Refined: a softer rim, deeper form shading and smaller, finer features.
+  const refined = usePrefs((s) => s.theme) !== 'classic';
   const [anim] = useState(() => ({ float: new Animated.Value(0), squash: new Animated.Value(1), first: { done: false } }));
   const [blink, setBlink] = useState(false);
   const [look, setLook] = useState({ x: 0, y: 0 });
@@ -244,15 +247,16 @@ export function CloudMascot({ mood = 'neutral', effect = 'none', size = 120, onP
       <Animated.View style={{ width: size, height: h, transform: [{ translateY }, { scaleY: anim.squash }, { scaleX: Animated.divide(1, anim.squash) }], transformOrigin: 'bottom' }}>
         <Svg width={size} height={h} viewBox="0 0 120 90">
           <Defs>
-            <RadialGradient id="cellGlow" cx="40%" cy="30%" r="70%">
+            <RadialGradient id="cellGlow" cx="40%" cy="28%" r="75%">
               <Stop offset="0" stopColor={tone.light} stopOpacity={1} />
-              <Stop offset="1" stopColor={tone.body} stopOpacity={1} />
+              <Stop offset="0.6" stopColor={tone.body} stopOpacity={1} />
+              <Stop offset="1" stopColor={refined ? tone.shade : tone.body} stopOpacity={1} />
             </RadialGradient>
           </Defs>
           {/* Rim: Cell's deep outline. */}
-          <G fill={tone.rim}>
+          <G fill={tone.rim} opacity={refined ? 0.55 : 1}>
             {PUFFS.map(([x, y, r], i) => (
-              <Circle key={`o${i}`} cx={x} cy={y} r={r + 2.6} />
+              <Circle key={`o${i}`} cx={x} cy={y} r={r + (refined ? 1.3 : 2.6)} />
             ))}
           </G>
           {/* Underside in shadow. */}
@@ -275,8 +279,10 @@ export function CloudMascot({ mood = 'neutral', effect = 'none', size = 120, onP
             <Ellipse cx={20} cy={48} rx={4} ry={2.6} opacity={0.6} />
           </G>
           <Circle cx={53} cy={15} r={2.4} fill="#FFFFFF" opacity={0.9} />
+          {refined ? <Ellipse cx={62} cy={76} rx={44} ry={9} fill={tone.rim} opacity={0.28} /> : null}
+          <G transform={refined ? 'translate(61 56) scale(0.8) translate(-61 -56)' : undefined}>
           {rosy ? (
-            <G fill="#FF9DB8" opacity={0.6}>
+            <G fill="#FF9DB8" opacity={refined ? 0.35 : 0.6}>
               <Ellipse cx={39} cy={60} rx={5} ry={3} />
               <Ellipse cx={84} cy={60} rx={5} ry={3} />
             </G>
@@ -284,8 +290,9 @@ export function CloudMascot({ mood = 'neutral', effect = 'none', size = 120, onP
           {eyes}
           {mouth}
           {extra}
+          </G>
           {/* Cell's selection handle. */}
-          <Rect x={96} y={70} width={15} height={15} rx={3.2} fill={mood === 'celebrating' ? '#FFC93C' : tone.rim} stroke="#FFFFFF" strokeWidth={3} />
+          <Rect x={96} y={70} width={15} height={15} rx={3.2} fill={mood === 'celebrating' ? '#FFC93C' : tone.rim} stroke="#FFFFFF" strokeWidth={refined ? 2.2 : 3} />
         </Svg>
         {mood === 'sleeping' ? <Zzz size={size} /> : null}
       </Animated.View>

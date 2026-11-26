@@ -30,6 +30,7 @@ import { ExerciseView } from './exercises';
 import type { Metrics, Phase, StepNav } from './GridExercise';
 import { HintButton } from './HintButton';
 import { ProgressBar } from './ProgressBar';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 interface Props {
   /** A lesson, a unit test or a practice round. */
@@ -174,6 +175,7 @@ export function LessonPlayer({ lesson, computer = 'win', resume, onSave, onFinis
         },
       ]}
     >
+      <ScreenSky variant="quiet" />
       <View style={[styles.column, split && styles.wideColumn]}>
         <View style={styles.top}>
           <Pressable

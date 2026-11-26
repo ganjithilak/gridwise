@@ -49,6 +49,28 @@ atmosphere), `FarmBackdrop` (hills, orchards, tomatoes, vines), `FarmForeground`
 stall, watering can, pumpkin), `Stall`, and the produce pieces in `env/Produce.tsx`
 (`FruitTree`, `TomatoRow`, `VineRow`, `GrapeBunch`, `Fruit`, `WateringCan`, `Pumpkin`, `PotatoSack`).
 
+## Themes
+
+`src/world/theme.ts` maps each theme (`refined`, `classic`) to its sky, cloud shape, farm
+backdrop and foreground. Shared characters take a `refined` flag: `ScarecrowScene`, `Bird`,
+`Earthworm`, `Goldspire`; `CloudMascot` reads the theme itself. Refined drawings live in
+`src/world/refined/`, with their palette and shared gradients (`rf-*` ids) in `paint.tsx`.
+To add a theme: add an id to `WORLD_THEMES` in `prefs.ts`, its drawings, and an entry in
+`WORLD_ART`.
+
+## Lesson transition (`src/world/transition/`)
+
+`useLessonNav()` gives `openLesson(id)` and `backToWorld('replace' | 'back')`; use them for
+those two journeys. `GridTransition` (mounted once in `app/_layout.tsx`) draws the move: five
+precomputed frames of one mesh blended from the sky dome to a flat sheet, cross-faded with a
+scale on the native driver; navigation happens while the overlay covers the screen. Mode comes
+from Profile → Transitions, softened by the phone's reduce-motion setting.
+
+## Screen backdrop (`src/world/ui/ScreenSky.tsx`)
+
+`<ScreenSky />` (or `variant="quiet"`) as the first child of a screen's root gives it the dusk
+sky and the spreadsheet dome. Refined only; Classic screens stay plain.
+
 ## Interface kit (`src/world/ui/Gold.tsx`)
 
 `GlassPanel` (translucent, thin gold edge, top sheen, gold glow), `GoldButton` (dimensional gold

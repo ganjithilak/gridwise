@@ -15,6 +15,8 @@ import { dataOf, useHydrated, useProgress } from '@/progress/store';
 import { streakToday } from '@/progress/streak';
 import { forComputer, type Computer } from '@/spreadsheet/shortcuts';
 import { radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
+import { useLessonNav } from '@/world/transition/nav';
 
 export default function LessonScreen() {
   const c = useTheme();
@@ -57,6 +59,7 @@ function WhichComputer() {
   ];
   return (
     <View style={[styles.asking, { backgroundColor: c.bg, paddingTop: insets.top + space.xxl }]}>
+      <ScreenSky />
       <View style={styles.column}>
         <View style={styles.hero}>
           <Mascot expression="thinking" size={72} />
@@ -123,10 +126,9 @@ function Play({ found, computer }: { found: Resolved; computer: Computer }) {
     [router, playable, found.kind, found.title, found.lesson, computer, finish, setResult],
   );
 
-  const onQuit = useCallback(() => {
-    if (router.canGoBack()) router.back();
-    else router.replace('/');
-  }, [router]);
+  const { backToWorld } = useLessonNav();
+  // Leaving runs the lesson transition backwards, out to the world.
+  const onQuit = useCallback(() => backToWorld('back'), [backToWorld]);
 
   return (
     <LessonPlayer

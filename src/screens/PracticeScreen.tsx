@@ -13,12 +13,15 @@ import { reviewSession } from '@/progress/playable';
 import { dueSkills } from '@/progress/srs';
 import { dataOf, useHydrated, useProgress } from '@/progress/store';
 import { radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
+import { useLessonNav } from '@/world/transition/nav';
 
 /** Practice: only what was missed, and what is due to be looked at again. Never padding. */
 export default function PracticeScreen() {
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { openLesson } = useLessonNav();
   const hydrated = useHydrated();
   const store = useProgress();
   const data = dataOf(store);
@@ -29,7 +32,7 @@ export default function PracticeScreen() {
   const due = dueSkills(data.skills, today);
   const session = reviewSession(defaultCourse, data, today);
   const inProgress = data.runs[REVIEW_ID] !== undefined;
-  const start = () => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId: REVIEW_ID } });
+  const start = () => openLesson(REVIEW_ID);
 
   // How far each game has got: the number of levels finished, out of how many.
   const reached = (ids: string[]) => ids.filter((id) => data.game.levels[id] !== undefined).length;
@@ -54,6 +57,7 @@ export default function PracticeScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg, paddingTop: insets.top + space.md }]}>
+      <ScreenSky />
       <View style={styles.column}>
         <Text style={[typography.title, { color: c.ink }]}>Practice</Text>
 

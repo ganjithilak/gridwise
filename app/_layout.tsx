@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { setFeedbackEnabled } from '@/lib/feedback';
 import { useProgress } from '@/progress/store';
 import { useTheme } from '@/theme';
+import { GridTransition } from '@/world/transition/GridTransition';
 
 export default function RootLayout() {
   const c = useTheme();
@@ -25,6 +26,8 @@ export default function RootLayout() {
           animationDuration: 180,
         }}
       />
+      {/* The spreadsheet-sky transition into and out of lessons, drawn over everything. */}
+      <GridTransition />
     </>
   );
 }

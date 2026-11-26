@@ -5,6 +5,9 @@ import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
 import { W } from '../palette';
 
 import { between, play, useAmbient, type AmbientEvent } from './ambient';
+import { PaintDefs } from '../refined/paint';
+import { RefinedHat, RefinedScarecrowBody } from '../refined/Scarecrow';
+
 import { Bird, makeBirdRig, type BirdMode, type BirdRig } from './Bird';
 
 interface Props {
@@ -16,6 +19,8 @@ interface Props {
   active: boolean;
   /** Drawn between the scarecrow and the birds: the fence and field go here. */
   children?: ReactNode;
+  /** The Refined theme's scarecrow and birds (same events and perches). */
+  refined?: boolean;
 }
 
 const BIRDS = 6;
@@ -36,7 +41,7 @@ type Pt = { x: number; y: number };
  * Each event is an async script over plain Animated values on the native driver, so adding
  * one is a matter of writing another script. TEMPORARY ARTWORK.
  */
-export function ScarecrowScene({ width, ground, at, active, children }: Props) {
+export function ScarecrowScene({ width, ground, at, active, children, refined = false }: Props) {
   const S = Math.min(ground * 0.22, 140); // the scarecrow's height
   const k = S / VB_H;
   const left = at.x - (VB_W / 2) * k;
@@ -70,7 +75,14 @@ export function ScarecrowScene({ width, ground, at, active, children }: Props) {
       {/* The scarecrow, rocking on its pole. */}
       <Animated.View style={[styles.abs, { left, top, width: VB_W * k, height: S, transformOrigin: 'bottom', transform: [{ rotate }] }]}>
         <Svg width={VB_W * k} height={S} viewBox={`0 0 ${VB_W} ${VB_H}`}>
-          <ScarecrowBody />
+          {refined ? (
+            <>
+              <PaintDefs />
+              <RefinedScarecrowBody />
+            </>
+          ) : (
+            <ScarecrowBody />
+          )}
         </Svg>
         {/* The hat: its own piece, so birds can take it. */}
         <Animated.View
@@ -90,11 +102,17 @@ export function ScarecrowScene({ width, ground, at, active, children }: Props) {
           ]}
         >
           <Svg width={hatW} height={hatH} viewBox="0 0 46 26">
-            <Ellipse cx={23} cy={20} rx={22} ry={4.6} fill="#E3AE36" stroke={W.ink} strokeWidth={1.2} />
-            <Path d="M10,20 Q10,4 23,4 Q36,4 36,20 Z" fill="#F0C14B" stroke={W.ink} strokeWidth={1.2} strokeLinejoin="round" />
-            <Path d="M27,5 Q36,6 36,20 L29,20 Q31,10 27,5 Z" fill="#D49B24" />
-            <Rect x={10.5} y={14} width={25} height={4} fill="#C8432F" />
-            <Path d="M14,8 q3,-2 6,0" stroke="#FFF1B8" strokeWidth={1.4} strokeLinecap="round" fill="none" />
+            {refined ? (
+              <RefinedHat />
+            ) : (
+              <G>
+              <Ellipse cx={23} cy={20} rx={22} ry={4.6} fill="#E3AE36" stroke={W.ink} strokeWidth={1.2} />
+              <Path d="M10,20 Q10,4 23,4 Q36,4 36,20 Z" fill="#F0C14B" stroke={W.ink} strokeWidth={1.2} strokeLinejoin="round" />
+              <Path d="M27,5 Q36,6 36,20 L29,20 Q31,10 27,5 Z" fill="#D49B24" />
+              <Rect x={10.5} y={14} width={25} height={4} fill="#C8432F" />
+              <Path d="M14,8 q3,-2 6,0" stroke="#FFF1B8" strokeWidth={1.4} strokeLinecap="round" fill="none" />
+  </G>
+            )}
           </Svg>
           <Animated.View style={[StyleSheet.absoluteFill, { opacity: rig.splat }]}>
             <Svg width={hatW} height={hatH} viewBox="0 0 46 26">
@@ -126,7 +144,7 @@ export function ScarecrowScene({ width, ground, at, active, children }: Props) {
 
       {/* Birds fly in front of everything above ground. */}
       {rig.birds.map((bird, i) => (
-        <Bird key={i} rig={bird} mode={modes[i]} size={birdSize} />
+        <Bird key={i} rig={bird} mode={modes[i]} size={birdSize} refined={refined} />
       ))}
       <Animated.View
         style={[

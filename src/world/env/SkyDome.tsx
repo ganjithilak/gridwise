@@ -11,6 +11,13 @@ interface Props {
   zenith: number;
   /** The height at which the column letters run across the middle of the view. */
   labelsAt: number;
+  /** A unique gradient id when more than one dome is on screen (ids are page-wide on the web). */
+  id?: string;
+  /** 0..1, how visible the grid is. */
+  strength?: number;
+  /** Line and label colour. */
+  tint?: string;
+  labels?: boolean;
 }
 
 /**
@@ -22,7 +29,7 @@ interface Props {
  * Later it can become a way in to above-ground Branches and Fruit exercises; for now it is
  * atmosphere only, faint enough to leave the sky and clouds in charge.
  */
-export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt }: Props) {
+export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt, id = 'domeFade', strength = 1, tint = '#FFFFFF', labels = true }: Props) {
   // A camera inside a unit sphere, tilted up by `tilt`. With f the focal length:
   //   horizon y = cy + f·tan(tilt),  zenith y = cy − f / tan(tilt).
   const tilt = (24 * Math.PI) / 180;
@@ -87,7 +94,7 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt 
   // As on a sheet: the first visible column is the row-number header, then A, B, C…
   const cells = colLons.slice(0, -1).map((lon) => ({ lon: lon + COL / 2, p: project(rad(letterLat), rad(lon + COL / 2)) }));
   const onScreen = cells.filter((c) => c.p && c.p.x > 10 && c.p.x < width - 10);
-  const letters = onScreen.slice(1).map((c, i) => ({ p: c.p, t: LETTERS[i] }));
+  const letters = onScreen.slice(1, 27).map((c, i) => ({ p: c.p, t: LETTERS[i] }));
   // Row numbers down that header column, one per row below the letters.
   const numLon = onScreen.length > 0 ? onScreen[0].lon : -60;
   const numbers = Array.from({ length: 6 }, (_, i) => ({ p: project(rad(letterLat - STEP * (i + 1)), rad(numLon)), t: String(i + 1) }));
@@ -95,13 +102,13 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt 
   return (
     <G>
       <Defs>
-        <LinearGradient id="domeFade" x1="0" y1={String(zenith)} x2="0" y2={String(horizon)} gradientUnits="userSpaceOnUse">
-          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.32} />
-          <Stop offset="0.75" stopColor="#FFFFFF" stopOpacity={0.4} />
-          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+        <LinearGradient id={id} x1="0" y1={String(zenith)} x2="0" y2={String(horizon)} gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor={tint} stopOpacity={0.32 * strength} />
+          <Stop offset="0.75" stopColor={tint} stopOpacity={0.4 * strength} />
+          <Stop offset="1" stopColor={tint} stopOpacity={0} />
         </LinearGradient>
       </Defs>
-      <G stroke="url(#domeFade)" strokeWidth={1} fill="none">
+      <G stroke={`url(#${id})`} strokeWidth={1} fill="none">
         {rows.map((d, i) => (
           <Path key={`r${i}`} d={d} />
         ))}
@@ -109,7 +116,7 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt 
           <Path key={`c${i}`} d={d} />
         ))}
       </G>
-      <G fill="#FFFFFF" fontWeight="700" textAnchor="middle" opacity={0.75} fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
+      <G fill={tint} fontWeight="700" textAnchor="middle" opacity={labels ? 0.75 * Math.min(1, strength + 0.2) : 0} fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
         {letters.map(({ p, t }) =>
           p ? (
             <SvgText key={t} x={p.x} y={p.y + 4} fontSize={11}>

@@ -60,7 +60,9 @@ src/lib/            clock (fakeable), sound and vibration
 src/theme/          colours, spacing, type
 src/world/          the world: farm, roots, sky, plant, cloud, camera (docs/creative-direction-v2.md)
 src/world/env/      scenery and ambient life: sky grid, farm, stall, scarecrow, birds, worm (docs/world-animation-components.md)
-src/world/ui/       the world's gold glass interface kit and tab icons
+src/world/ui/       the world's gold glass interface kit, tab icons and ScreenSky
+src/world/refined/  the Refined theme's drawings (Classic Farm's are in src/world and src/world/env)
+src/world/transition/ the spreadsheet-sky transition into and out of lessons
 src/screens/        Practice and Profile, shown at the world's sides
 test/fixtures/      excel-parity.xlsx: test cases computed by real Excel
 scripts/            builds the parity workbook, the sounds and the icon

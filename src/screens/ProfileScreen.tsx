@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
-import { CELL_COLOURS, Mascot } from '@/components/Mascot';
+import { CELL_BLUE, CELL_COLOURS, Mascot } from '@/components/Mascot';
 import { defaultCourse } from '@/content';
 import { GRID_LEVELS } from '@/game/gridMaster';
 import { clockTime, GAME_LEVELS } from '@/game/speedTrial';
@@ -15,6 +15,8 @@ import { NAME_LENGTH, PROFILE_COLOURS } from '@/progress/saved';
 import { dataOf, useHydrated, useProgress } from '@/progress/store';
 import { streakToday } from '@/progress/streak';
 import { radius, space, type as typography, useTheme } from '@/theme';
+import { usePrefs } from '@/world/prefs';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 /** Every badge there is, in the order they are usually earned. */
 const BADGES: { id: string; name: string; how: string }[] = [
@@ -24,6 +26,7 @@ const BADGES: { id: string; name: string; how: string }[] = [
 
 /** Profile: how it is going, the two settings there are, and a way to start over. */
 export default function ProfileScreen() {
+  const { theme, motion, setTheme, setMotion } = usePrefs();
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const hydrated = useHydrated();
@@ -60,6 +63,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg, paddingTop: insets.top + space.md }]}>
+      <ScreenSky />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.column} showsVerticalScrollIndicator={false}>
         <Text style={[typography.title, { color: c.ink }]}>Profile</Text>
 
@@ -91,7 +95,7 @@ export default function ProfileScreen() {
           <View style={styles.swatches} accessibilityRole="radiogroup" accessibilityLabel="The colour of Cell">
             {PROFILE_COLOURS.map((colour) => {
               const on = data.profile.colour === colour;
-              const fill = CELL_COLOURS[colour]?.body ?? c.accent;
+              const fill = (CELL_COLOURS[colour] ?? CELL_BLUE).body;
               return (
                 <Pressable
                   key={colour}
@@ -213,7 +217,7 @@ export default function ProfileScreen() {
         <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>Look</Text>
-            <Text style={[typography.small, { color: c.inkSoft }]}>Dark navy is the app&apos;s own look. Auto follows your phone.</Text>
+            <Text style={[typography.small, { color: c.inkSoft }]}>Dark is the app&apos;s own look. Auto follows your phone.</Text>
           </View>
           <Choice
             testID="setting-look"
@@ -221,6 +225,35 @@ export default function ProfileScreen() {
               { label: 'Dark', on: data.profile.look === 'dark', onPress: () => store.setLook('dark') },
               { label: 'Light', on: data.profile.look === 'light', onPress: () => store.setLook('light') },
               { label: 'Auto', on: data.profile.look === 'auto', onPress: () => store.setLook('auto') },
+            ]}
+          />
+        </View>
+
+        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+          <View style={styles.words}>
+            <Text style={[typography.bodyStrong, { color: c.ink }]}>World style</Text>
+            <Text style={[typography.small, { color: c.inkSoft }]}>Refined is the app&apos;s own. Classic Farm is the first, brighter cartoon style.</Text>
+          </View>
+          <Choice
+            testID="setting-theme"
+            options={[
+              { label: 'Refined', on: theme === 'refined', onPress: () => setTheme('refined') },
+              { label: 'Classic', on: theme === 'classic', onPress: () => setTheme('classic') },
+            ]}
+          />
+        </View>
+
+        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+          <View style={styles.words}>
+            <Text style={[typography.bodyStrong, { color: c.ink }]}>Transitions</Text>
+            <Text style={[typography.small, { color: c.inkSoft }]}>The move from the world into a lesson and back. Reduced is a quick fade; Off goes straight there.</Text>
+          </View>
+          <Choice
+            testID="setting-motion"
+            options={[
+              { label: 'Full', on: motion === 'full', onPress: () => setMotion('full') },
+              { label: 'Reduced', on: motion === 'reduced', onPress: () => setMotion('reduced') },
+              { label: 'Off', on: motion === 'off', onPress: () => setMotion('off') },
             ]}
           />
         </View>

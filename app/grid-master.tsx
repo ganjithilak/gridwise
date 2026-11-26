@@ -30,6 +30,7 @@ import type { ShortcutId } from '@/spreadsheet/controller';
 import { KeyCaps } from '@/spreadsheet/KeyCaps';
 import { comboLabel } from '@/spreadsheet/shortcuts';
 import { mono, radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
 
 /** Shift and an arrow steer: in a spreadsheet they stretch a selection, and the snake is one. */
 const STEER: Partial<Record<ShortcutId, Dir>> = { extendUp: 'up', extendDown: 'down', extendLeft: 'left', extendRight: 'right' };
@@ -182,6 +183,7 @@ export default function GridMasterScreen() {
         { backgroundColor: c.bg, paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md, paddingLeft: insets.left, paddingRight: insets.right },
       ]}
     >
+      <ScreenSky variant="quiet" />
       {children}
     </View>
   );

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { radius, useTheme } from '@/theme';
 
@@ -38,9 +38,12 @@ export function Button({ label, onPress, kind = 'primary', disabled, style, test
           marginTop: kind !== 'quiet' && pressed ? 2 : 0,
           opacity: disabled ? 0.45 : 1,
         },
+        // The primary button carries the world's soft golden glow.
+        kind === 'primary' && !disabled ? { shadowColor: c.accent, shadowOpacity: 0.45, shadowRadius: 10, shadowOffset: { width: 0, height: 2 }, elevation: 4 } : null,
         style,
       ]}
     >
+      {kind === 'primary' ? <View pointerEvents="none" style={styles.sheen} /> : null}
       <Text style={[styles.label, { color: colours.text }]} numberOfLines={1}>
         {label}
       </Text>
@@ -57,5 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     userSelect: 'none',
   },
-  label: { fontSize: 16, fontWeight: '700', letterSpacing: 0.2 },
+  label: { fontSize: 16, fontWeight: '800', letterSpacing: 0.2 },
+  /** A reflection across the top half, as on the world's gold buttons. */
+  sheen: { position: 'absolute', top: 3, left: 10, right: 10, height: '38%', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.22)' },
 });

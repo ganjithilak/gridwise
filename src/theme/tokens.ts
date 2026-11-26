@@ -92,12 +92,43 @@ export const dark: Palette = {
   refs: ['#5A93FF', '#FB923C', '#B794F6', '#F472B6'],
 };
 
+/**
+ * The Refined world's own look (Creative Direction V2, refined pass): a deep dusk blue taken
+ * from the sky above the farm, warm cream text and gold for what matters. Used everywhere
+ * except the Roots, which keep their own colours. Solid colours, so the spreadsheet and its
+ * text stay as crisp and legible as on the navy look.
+ */
+export const dusk: Palette = {
+  bg: '#0E1A26',
+  surface: '#152737',
+  sunken: '#0B1520',
+  line: '#24394C',
+  outline: '#3A5468',
+  ink: '#F4EFE4',
+  inkSoft: '#BAC4CC',
+  inkFaint: '#7D8A95',
+  accent: '#E2B04A',
+  accentDeep: '#A9792A',
+  accentSoft: '#3A2F17',
+  onAccent: '#231708',
+  spark: '#F2C14E',
+  sparkSoft: '#3A2F14',
+  good: '#6CCB8A',
+  goodSoft: '#12301F',
+  bad: '#F09078',
+  badSoft: '#3A211B',
+  hint: '#E9C46A',
+  hintSoft: '#33290F',
+  refs: ['#6FA8FF', '#F59E52', '#C4A3F5', '#F48FB1'],
+};
+
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
 export const radius = { sm: 6, md: 10, lg: 16, pill: 999 } as const;
 
 export const type = {
-  title: { fontSize: 26, fontWeight: '800', lineHeight: 32 },
+  /** Screen titles: the world's display face (system serif, italic). */
+  title: { fontSize: 27, fontWeight: '700', lineHeight: 33, fontStyle: 'italic', fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, "Iowan Old Style", "Palatino Linotype", serif' }) },
   heading: { fontSize: 18, fontWeight: '700', lineHeight: 24 },
   body: { fontSize: 16, fontWeight: '400', lineHeight: 22 },
   bodyStrong: { fontSize: 16, fontWeight: '600', lineHeight: 22 },

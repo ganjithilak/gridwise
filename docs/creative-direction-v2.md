@@ -219,6 +219,54 @@ Details of every animation component, how to extend them, and their limits:
 Not done in this pass (next, per "Consistency across Gridwise"): Games, Profile and the lesson
 screens still use the navy theme. The gold kit (`src/world/ui/Gold.tsx`) is ready to apply.
 
+### Stage 2: the Refined direction (26 Nov 2026)
+
+**Decision:** the Stage 1 art was too childish for a 12–65 audience learning a workplace
+skill. The new direction is *artistic maturity without losing the charm*: the sense of
+discovery, atmosphere and progression of contemporary Pokémon games (inspiration only), not
+early children's cartoons. Classic Farm is kept as a selectable theme.
+
+Principles for every Refined drawing:
+
+- Natural proportions and perspective; shading from light and colour, **not outlines**.
+- A natural, balanced palette (`src/world/refined/paint.tsx`), no saturated primaries; colour
+  fades into a warm haze with distance.
+- Small, quiet facial features; nothing oversized.
+- The foreground stays open for the learner's tree (and, later, a farmer).
+- The gold-glass interface, gold accents and reflections stay.
+- The Roots keep their current look in every theme.
+
+Built:
+
+- **Theme architecture** (`src/world/theme.ts`, `src/world/prefs.ts`): a theme is a set of
+  drawings (sky, clouds, farm backdrop, farm foreground) plus a flag that shared characters
+  read. Everything else is shared. The choice and the motion setting are saved apart from
+  learning progress. Profile → *World style* (Refined / Classic) and *Transitions*
+  (Full / Reduced / Off).
+- **Refined farm:** productive farmland in perspective (a patchwork of wheat, barley, young
+  crops, pasture and ploughed fields with crop rows, hedgerows converging on a vanishing point,
+  orchards, a distant farmstead, hazy ridges); a deep blue sky with sun shafts; volumetric
+  clouds; a timber stall (planked walls, shingle roof, knee braces, carved sign, canvas awning,
+  glass jars and bottles); a split-rail fence; a framing apple tree; a slim scarecrow in a work
+  coat with a small stitched burlap face; painted birds and earthworm; the plant and Cell
+  painted without outlines, Cell's features smaller and finer.
+- **One app, one world:** a new *dusk* palette (deep sky blue, warm cream, gold) for every
+  screen except the Roots, display-serif titles, primary buttons with a gold glow and sheen,
+  and `ScreenSky`: the spreadsheet dome behind Games, Profile, welcome, tour, lesson screens,
+  results and the games, open on overview screens and faint on working ones. Cell keeps its
+  original blue on every screen.
+- **Lesson transition** (`src/world/transition/`): into a lesson, the camera rises into the
+  sky, the curved spreadsheet dome straightens into a flat sheet with letters and numbers, and
+  the lesson appears; leaving runs it in reverse to the world. ~0.8 s, native driver.
+  Reduced = 0.3 s fade, Off = none; the phone's reduce-motion setting turns Full into Reduced.
+
+Checked in a phone-sized browser: farm, Games, Profile, a lesson, the transition both ways
+(timed in the page), switching themes. Not yet on a real phone.
+
+Still to do in this direction: the lesson results and welcome screens could use more of the
+world (they have the palette and sky only); achievements need artwork; the remaining Classic
+characters (Cell's moods, birds) could get further Refined detail; production artwork.
+
 ### Still to design or build
 
 - Production art and animation. Recommended route: painted background layers as images

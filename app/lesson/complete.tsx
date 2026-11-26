@@ -12,6 +12,8 @@ import { lessonIdOf, practiceIdFor } from '@/progress/mastery';
 import { buildPath, nextUp, STREAK_BADGES, streakBadge, unitBadge } from '@/progress/path';
 import { dataOf, useProgress } from '@/progress/store';
 import { radius, space, type as typography, useTheme } from '@/theme';
+import { ScreenSky } from '@/world/ui/ScreenSky';
+import { useLessonNav } from '@/world/transition/nav';
 
 const clock = (seconds: number): string => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
@@ -31,6 +33,7 @@ export default function LessonCompleteScreen() {
   const c = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { backToWorld } = useLessonNav();
   const result = useLastResult((s) => s.result);
   const store = useProgress();
 
@@ -83,12 +86,13 @@ export default function LessonCompleteScreen() {
     const id = next.state === 'practice' ? practiceIdFor(next.lesson.id) : next.lesson.id;
     main = { label, onPress: () => open(id), testID: 'next-lesson' };
   } else {
-    main = { label: 'Done', onPress: () => router.replace('/'), testID: 'done' };
+    main = { label: 'Done', onPress: () => backToWorld(), testID: 'done' };
   }
   const celebrate = !needsPractice && !(kind === 'test' && !result.passedTest);
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg, paddingTop: insets.top + space.xl, paddingBottom: insets.bottom + space.lg }]}>
+      <ScreenSky />
       <View style={styles.column}>
         {/* Everything to read scrolls; the button for what comes next stays put underneath. */}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -149,7 +153,7 @@ export default function LessonCompleteScreen() {
         </ScrollView>
 
         <Button testID={main.testID} label={main.label} onPress={main.onPress} />
-        {main.testID !== 'done' ? <Button testID="done" kind="quiet" label="Back to the start screen" onPress={() => router.replace('/')} /> : null}
+        {main.testID !== 'done' ? <Button testID="done" kind="quiet" label="Back to the start screen" onPress={() => backToWorld()} /> : null}
       </View>
       {celebrate ? <Confetti /> : null}
     </View>
