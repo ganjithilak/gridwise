@@ -21,6 +21,7 @@ import {
   type RealKey,
   type TrialTask,
 } from '@/game/speedTrial';
+import { Panel, SectionLabel } from '@/components/Panel';
 import { lessonTeaching } from '@/game/taught';
 import { Choice, ComputerChoice, GameFrame, GameResults, GameTop, stars, useLeaveGame } from '@/game/ui/GameParts';
 import { useGame } from '@/game/ui/useGame';
@@ -313,18 +314,17 @@ export default function SpeedTrialScreen() {
             .filter(Boolean)
             .join(' and ');
           return (
-            <Pressable
+            <Panel
               key={level.id}
               testID={`trial-${level.id}`}
-              accessibilityRole="button"
               accessibilityLabel={`Level ${i + 1}: ${level.title}. ${open ? (record ? `Best ${record.bestAccuracy ?? 0}% first time` : 'Not played yet') : `Opens after ${opener}`}`}
-              accessibilityState={{ disabled: !open }}
               disabled={!open}
+              dashed={!open}
               onPress={() => start(i)}
-              style={[styles.level, { backgroundColor: c.surface, borderColor: c.outline, opacity: open ? 1 : 0.5 }]}
+              style={[styles.level, !open && styles.closed]}
             >
               <View style={styles.levelHead}>
-                <Text style={[typography.label, { color: c.accent }]}>LEVEL {i + 1}</Text>
+                <SectionLabel>{`Level ${i + 1}`}</SectionLabel>
                 <Text style={[styles.levelStars, { color: c.spark }]}>{record ? stars(record.bestStars) : ''}</Text>
               </View>
               <Text style={[typography.heading, { color: c.ink }]}>{level.title}</Text>
@@ -336,7 +336,7 @@ export default function SpeedTrialScreen() {
                     ? `Best ${record.bestAccuracy ?? 0}% first time${record.bestTimedMs ? ` · timed ${clockTime(record.bestTimedMs)}` : ''} · played ${record.plays}×`
                     : `${shortcutsAt(i, g.taught).length} actions in play. Not played yet.`}
               </Text>
-            </Pressable>
+            </Panel>
           );
         })}
       </ScrollView>
@@ -361,7 +361,8 @@ const styles = StyleSheet.create({
   modes: { flexDirection: 'row', gap: space.sm },
   mode: { flex: 1, borderWidth: 1.5, borderRadius: radius.md, padding: space.sm, gap: 1, userSelect: 'none' },
   levels: { gap: space.sm, paddingBottom: space.md },
-  level: { borderWidth: 1, borderBottomWidth: 4, borderRadius: radius.lg, padding: space.md, gap: 2, userSelect: 'none' },
+  level: { padding: space.md, gap: 2 },
+  closed: { opacity: 0.6 },
   levelHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   levelStars: { fontSize: 16, letterSpacing: 2 },
 });

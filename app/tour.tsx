@@ -5,24 +5,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Mascot } from '@/components/Mascot';
-import { Plant } from '@/components/Plant';
+import { SectionLabel, useRefinedUI } from '@/components/Panel';
 import { useProgress } from '@/progress/store';
-import { mono, radius, space, type as typography, useTheme, type Palette } from '@/theme';
+import { radius, space, type as typography, useTheme, type Palette } from '@/theme';
+import { Goldspire } from '@/world/Goldspire';
 import { ScreenSky } from '@/world/ui/ScreenSky';
 
 interface Stop {
   id: string;
   title: string;
   words: string;
-  picture: (c: Palette) => ReactNode;
+  picture: (c: Palette, refined: boolean) => ReactNode;
 }
 
 /** A small drawing of the sheet with one cell selected, made from plain boxes. */
 function MiniSheet({ c }: { c: Palette }) {
   const rows = [
-    ['Item', 'Cost'],
-    ['Milk', '$2.00'],
-    ['Bread', '$3.00'],
+    ['Fruit', 'Price per kg'],
+    ['Apples', '$4.00'],
+    ['Pears', '$3.50'],
   ];
   return (
     <View style={[styles.mini, { borderColor: c.outline, backgroundColor: c.surface }]}>
@@ -47,7 +48,7 @@ function MiniSheet({ c }: { c: Palette }) {
 /** One of the three steps of a lesson, as a labelled row. */
 function Step({ c, name, words, on }: { c: Palette; name: string; words: string; on: boolean }) {
   return (
-    <View style={[styles.step, { backgroundColor: on ? c.accentSoft : c.surface, borderColor: on ? c.accent : c.line }]}>
+    <View style={[styles.step, { backgroundColor: on ? c.accentSoft : c.surface, borderColor: on ? c.accent : c.line, borderRadius: 14 }]}>
       <Text style={[styles.stepName, { color: c.accent }]}>{name}</Text>
       <Text style={[typography.small, styles.stepWords, { color: c.ink }]}>{words}</Text>
     </View>
@@ -73,7 +74,7 @@ const STOPS: Stop[] = [
     title: 'From roots to fruits',
     words:
       'You grow your skills like a plant. First the roots: the spreadsheet itself. Then the trunk: your first formulas. Then the branches: smarter formulas. Last the fruit: real jobs, start to finish.',
-    picture: () => <Plant grown={4} ripe size={120} />,
+    picture: (_c, refined) => <Goldspire stage={7} ripe height={150} refined={refined} />,
   },
   {
     id: 'steps',
@@ -91,7 +92,7 @@ const STOPS: Stop[] = [
     id: 'sheet',
     title: 'A real sheet, not a quiz',
     words:
-      'Tap a cell to select it. Tap it again to type. Then press Check. A wrong answer costs nothing: it stays on screen so you can fix it and check again.',
+      'Tap a cell to select it, then type: what you type replaces what was there. Then press Check. A wrong answer costs nothing: it stays on screen so you can fix it and check again.',
     picture: (c) => (
       <View style={styles.sheetDemo}>
         <MiniSheet c={c} />
@@ -103,15 +104,15 @@ const STOPS: Stop[] = [
   },
   {
     id: 'practice',
-    title: 'Practice, and two games',
+    title: 'Games and practice',
     words:
-      'The Practice tab brings back whatever you found tricky. It also has two games: Speed Trial, where you press a shortcut against the clock, and Grid Master, where you steer a snake round the sheet with Shift + the arrows.',
+      'The Games tab has six short games on what you have learned, from matching pairs to building formulas, and each opens with the lesson that teaches it. It also brings back anything you found tricky.',
     picture: (c) => (
       <View style={styles.combo}>
         <Key c={c} label="Ctrl" />
         <Text style={[styles.plus, { color: c.inkSoft }]}>+</Text>
         <Key c={c} label="C" />
-        <Text style={[styles.time, { color: c.accent, fontFamily: mono }]}>0:12.4</Text>
+        <Text style={[styles.time, { color: c.spark }]}>★★★</Text>
       </View>
     ),
   },
@@ -132,6 +133,7 @@ export default function TourScreen() {
   const [at, setAt] = useState(0);
   const stop = STOPS[at];
   const last = at === STOPS.length - 1;
+  const refined = useRefinedUI();
 
   // Wherever it was opened from is still underneath: the welcome question, or the Profile screen.
   const leave = () => {
@@ -145,15 +147,13 @@ export default function TourScreen() {
       <ScreenSky />
       <View style={styles.column}>
         <View style={styles.top}>
-          <Text style={[typography.label, { color: c.inkSoft }]} testID="tour-count">
-            {at + 1} OF {STOPS.length}
-          </Text>
+          <SectionLabel testID="tour-count">{`${at + 1} of ${STOPS.length}`}</SectionLabel>
           {last ? null : <Button testID="tour-skip" kind="quiet" label="Skip the tour" onPress={leave} style={styles.skip} />}
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.stop} showsVerticalScrollIndicator={false}>
           <View style={styles.picture} testID={`tour-${stop.id}`}>
-            {stop.picture(c)}
+            {stop.picture(c, refined)}
           </View>
           <Text style={[typography.title, styles.centre, { color: c.ink }]}>{stop.title}</Text>
           <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>{stop.words}</Text>
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   skip: { minHeight: 40, paddingHorizontal: 0 },
   scroll: { flex: 1 },
   stop: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', gap: space.md, paddingVertical: space.md },
-  picture: { minHeight: 130, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch' },
+  picture: { minHeight: 160, alignItems: 'center', justifyContent: 'center', alignSelf: 'stretch' },
   centre: { textAlign: 'center' },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 7, borderRadius: 4 },

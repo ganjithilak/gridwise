@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Mascot, type Expression } from '@/components/Mascot';
+import { useRefinedUI } from '@/components/Panel';
 import { radius, useTheme } from '@/theme';
+import { GoldButton } from '@/world/ui/Gold';
 
 export type Tone = 'task' | 'say' | 'hint' | 'bad' | 'good';
 
@@ -21,8 +23,10 @@ interface Props {
 /** The one place the app talks: the task, a caption, a hint, or what went wrong. Cell sits beside it. */
 export function MessageCard({ mood, tone, text, height, lines, onPress, action }: Props) {
   const c = useTheme();
+  const refined = useRefinedUI();
   const colours = {
-    task: { bg: c.surface, fg: c.ink, edge: c.line },
+    // In the world (Refined) the task card carries the panels' fine gold edge.
+    task: { bg: c.surface, fg: c.ink, edge: refined ? 'rgba(242, 193, 78, 0.42)' : c.line },
     say: { bg: c.accentSoft, fg: c.ink, edge: c.accentSoft },
     hint: { bg: c.hintSoft, fg: c.hint, edge: c.hintSoft },
     bad: { bg: c.badSoft, fg: c.bad, edge: c.badSoft },
@@ -43,7 +47,7 @@ export function MessageCard({ mood, tone, text, height, lines, onPress, action }
 
   return (
     <View
-      style={[styles.card, { height, backgroundColor: colours.bg, borderColor: colours.edge }]}
+      style={[styles.card, refined && styles.round, { height, backgroundColor: colours.bg, borderColor: colours.edge }]}
       onLayout={(e) => {
         const next = Math.round(e.nativeEvent.layout.width);
         setMeasured((now) => (now === next ? now : next));
@@ -66,7 +70,10 @@ export function MessageCard({ mood, tone, text, height, lines, onPress, action }
           {text}
         </Text>
       </Pressable>
-      {action ? (
+      {action && refined ? (
+        // The farm's own button: a small gold pill, as Continue is on the farm.
+        <GoldButton testID="message-action" label={action.label} onPress={action.onPress} small arrow={false} style={styles.gold} />
+      ) : action ? (
         <Pressable
           testID="message-action"
           accessibilityRole="button"
@@ -99,6 +106,8 @@ const WRAP_SLACK = 0.92;
 
 const styles = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.md, borderWidth: 1, overflow: 'hidden' },
+  round: { borderRadius: 14 },
+  gold: { minWidth: 72, marginRight: 8, paddingHorizontal: 16 },
   main: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 10, paddingRight: 8, alignSelf: 'stretch' },
   text: { flex: 1, fontSize: 15, lineHeight: 20 },
   // Three lines of this are 51 pt, inside the 54 pt card that two normal lines sit in.

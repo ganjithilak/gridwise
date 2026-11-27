@@ -1,13 +1,14 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Mascot } from '@/components/Mascot';
+import { Panel, SectionLabel } from '@/components/Panel';
 import { defaultCourse } from '@/content';
 import type { Level } from '@/progress/saved';
 import { useProgress } from '@/progress/store';
-import { radius, space, type as typography, useTheme } from '@/theme';
+import { space, type as typography, useTheme } from '@/theme';
 import { ScreenSky } from '@/world/ui/ScreenSky';
 
 const intro = defaultCourse.units.find((unit) => unit.intro);
@@ -47,7 +48,7 @@ export default function WelcomeScreen() {
   };
 
   const steps = (
-    <View style={[styles.steps, { backgroundColor: c.surface, borderColor: c.line }]} testID="how-it-works">
+    <Panel style={styles.steps} testID="how-it-works">
       {STEPS.map((step) => (
         <View key={step.lead} style={styles.step}>
           <View style={[styles.number, { backgroundColor: c.accentSoft }]}>
@@ -59,7 +60,7 @@ export default function WelcomeScreen() {
           </Text>
         </View>
       ))}
-    </View>
+    </Panel>
   );
 
   if (!tourSeen) {
@@ -78,7 +79,7 @@ export default function WelcomeScreen() {
               Gridwise teaches you spreadsheets in short lessons. You do every step yourself, in a real working sheet.
             </Text>
           </View>
-          <Text style={[typography.label, { color: c.inkSoft }]}>HOW THE LEARNING WORKS</Text>
+          <SectionLabel>How the learning works</SectionLabel>
           {steps}
           <View style={styles.answers}>
             <Button testID="tour-start" label="Show me around" onPress={() => router.push('/tour')} />
@@ -99,27 +100,18 @@ export default function WelcomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Mascot expression="happy" size={56} />
+          <Mascot expression="happy" size={72} />
           <Text style={[typography.title, styles.centre, { color: c.ink }]}>One question first</Text>
+          <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>So the first lesson starts in the right place for you.</Text>
         </View>
 
         <Text style={[typography.heading, styles.centre, { color: c.ink }]}>Have you used a spreadsheet before?</Text>
         <View style={styles.answers}>
           {ANSWERS.map((answer) => (
-            <Pressable
-              key={answer.level}
-              testID={`level-${answer.level}`}
-              accessibilityRole="button"
-              accessibilityLabel={`${answer.title}. ${answer.detail}`}
-              onPress={() => choose(answer)}
-              style={({ pressed }) => [
-                styles.answer,
-                { backgroundColor: c.surface, borderColor: c.outline, borderBottomWidth: pressed ? 1 : 4, marginTop: pressed ? 3 : 0 },
-              ]}
-            >
+            <Panel key={answer.level} testID={`level-${answer.level}`} accessibilityLabel={`${answer.title}. ${answer.detail}`} onPress={() => choose(answer)} style={styles.answer}>
               <Text style={[typography.heading, { color: c.ink }]}>{answer.title}</Text>
               <Text style={[typography.small, { color: c.inkSoft }]}>{answer.detail}</Text>
-            </Pressable>
+            </Panel>
           ))}
         </View>
       </ScrollView>
@@ -130,14 +122,14 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, alignItems: 'center' },
   scroll: { flex: 1, width: '100%' },
-  column: { width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: space.lg, gap: space.lg },
+  column: { flexGrow: 1, justifyContent: 'center', width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: space.lg, gap: space.lg },
   hero: { alignItems: 'center', gap: space.sm },
   centre: { textAlign: 'center' },
-  steps: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, gap: space.sm },
+  steps: { padding: space.md, gap: space.sm },
   step: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   number: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   numberText: { fontSize: 13, fontWeight: '800' },
   words: { flex: 1 },
   answers: { gap: space.md },
-  answer: { borderWidth: 1, borderRadius: radius.lg, paddingVertical: space.md, paddingHorizontal: space.lg, gap: 2, userSelect: 'none' },
+  answer: { paddingVertical: space.md, paddingHorizontal: space.lg, gap: 2 },
 });

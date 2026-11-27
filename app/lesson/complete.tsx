@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Confetti } from '@/components/Confetti';
 import { Mascot } from '@/components/Mascot';
+import { Panel, SectionLabel } from '@/components/Panel';
 import { defaultCourse, skillName } from '@/content';
 import { LIMITS } from '@/lessons/types';
 import { useLastResult } from '@/progress/lastResult';
@@ -97,7 +98,7 @@ export default function LessonCompleteScreen() {
         {/* Everything to read scrolls; the button for what comes next stays put underneath. */}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.hero}>
-            <Mascot expression={mood} size={56} />
+            <Mascot expression={mood} size={64} />
             <Text style={[typography.title, { color: c.ink }]} testID="complete-title">
               {title}
             </Text>
@@ -106,10 +107,10 @@ export default function LessonCompleteScreen() {
 
           <View style={styles.stats}>
             {stats.map((stat) => (
-              <View key={stat.label} style={[styles.stat, { backgroundColor: c.surface, borderColor: c.line }]}>
+              <Panel key={stat.label} style={styles.stat}>
                 <Text style={[styles.statValue, { color: stat.label === 'XP' ? c.hint : c.ink }]}>{stat.value}</Text>
                 <Text style={[typography.label, styles.centre, { color: c.inkSoft }]}>{stat.label.toUpperCase()}</Text>
-              </View>
+              </Panel>
             ))}
           </View>
 
@@ -128,27 +129,27 @@ export default function LessonCompleteScreen() {
           ) : null}
 
           {result.recap.length > 0 ? (
-            <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="recap">
-              <Text style={[typography.label, { color: c.inkSoft }]}>WHAT YOU LEARNED</Text>
+            <Panel style={styles.card} testID="recap">
+              <SectionLabel>What you learned</SectionLabel>
               {result.recap.map((point) => (
                 <View key={point} style={styles.point}>
                   <View style={[styles.bullet, { backgroundColor: c.accent }]} />
                   <Text style={[typography.small, styles.words, { color: c.ink }]}>{point}</Text>
                 </View>
               ))}
-            </View>
+            </Panel>
           ) : null}
 
           {result.review.length > 0 ? (
-            <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="review">
-              <Text style={[typography.label, { color: c.inkSoft }]}>WORTH ANOTHER LOOK</Text>
+            <Panel style={styles.card} testID="review">
+              <SectionLabel>Worth another look</SectionLabel>
               {result.review.map((item) => (
                 <View key={item.id} style={styles.item}>
                   <Text style={[typography.small, { color: c.inkSoft }]}>{item.prompt}</Text>
                   <Text style={[typography.small, { color: c.ink, fontWeight: '600' }]}>{item.explain}</Text>
                 </View>
               ))}
-            </View>
+            </Panel>
           ) : null}
         </ScrollView>
 
@@ -170,10 +171,10 @@ const styles = StyleSheet.create({
   centre: { textAlign: 'center' },
   // One row of four, so there is room underneath for what was learned.
   stats: { flexDirection: 'row', gap: space.sm },
-  stat: { flex: 1, borderWidth: 1, borderRadius: radius.md, paddingVertical: space.sm, paddingHorizontal: 2, alignItems: 'center', gap: 2 },
+  stat: { flex: 1, paddingVertical: space.sm, paddingHorizontal: 2, alignItems: 'center', gap: 2 },
   statValue: { fontSize: 18, fontWeight: '800' },
   note: { borderRadius: radius.md, padding: space.md, gap: 2 },
-  card: { borderWidth: 1, borderRadius: radius.lg, padding: space.md, gap: space.sm },
+  card: { padding: space.md, gap: space.sm },
   point: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
   bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
   words: { flex: 1 },

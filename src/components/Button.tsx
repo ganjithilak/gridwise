@@ -1,6 +1,9 @@
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { radius, useTheme } from '@/theme';
+import { GOLD, GoldButton } from '@/world/ui/Gold';
+
+import { useRefinedUI } from './Panel';
 
 interface Props {
   label: string;
@@ -14,6 +17,27 @@ interface Props {
 
 export function Button({ label, onPress, kind = 'primary', disabled, style, testID }: Props) {
   const c = useTheme();
+  const refined = useRefinedUI();
+  // In the world (Refined), the farm's own buttons: the polished gold pill for the main
+  // action, a gold-edged pill beside it, and gold words for the quiet one.
+  if (refined && kind === 'primary') return <GoldButton testID={testID} label={label} onPress={onPress} disabled={disabled} arrow={false} style={[styles.pill, style]} />;
+  if (refined && kind === 'secondary') {
+    return (
+      <Pressable
+        testID={testID}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: !!disabled }}
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [styles.base, styles.pill, { borderWidth: 1.2, borderColor: GOLD.edge, backgroundColor: pressed ? c.accentSoft : 'transparent', opacity: disabled ? 0.45 : 1, transform: [{ scale: pressed ? 0.97 : 1 }] }, style]}
+      >
+        <Text style={[styles.label, { color: c.ink }]} numberOfLines={1}>
+          {label}
+        </Text>
+      </Pressable>
+    );
+  }
   const colours = {
     primary: { bg: c.accent, edge: c.accentDeep, text: c.onAccent },
     secondary: { bg: c.surface, edge: c.outline, text: c.ink },
@@ -61,6 +85,7 @@ const styles = StyleSheet.create({
     userSelect: 'none',
   },
   label: { fontSize: 16, fontWeight: '800', letterSpacing: 0.2 },
+  pill: { minHeight: 48, borderRadius: 999 },
   /** A reflection across the top half, as on the world's gold buttons. */
   sheen: { position: 'absolute', top: 3, left: 10, right: 10, height: '38%', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.22)' },
 });

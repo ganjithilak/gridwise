@@ -16,7 +16,7 @@ behind it, and where each stage stands. Visual direction lives in
 | 4 | New spreadsheet presentation, same engine | **Done** (27 Nov): Workbench, fitted columns, continuing sheet, Name Box and fx, ✕ ✓ |
 | 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | **Done** (27 Nov): six games, each asking only what has been taught, harder with play; Speed Trial rebuilt |
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
-| 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | Partly: palette, sky, type and buttons done in the Refined pass |
+| 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | **Done** (27 Nov): the farm's gold kit on every screen through shared Panel, SectionLabel and Button; Classic Farm unchanged |
 | 8 | Editorial overhaul of the remaining units | Not started |
 | 9 | Full testing and visual review | Ongoing per stage |
 
@@ -216,6 +216,45 @@ per game, `catalogue`), `src/game/ui/` the shared parts (`GameParts`, `SheetGame
   keyboards, physical keyboard: every game played through to its results. Not checked on a
   physical phone; the "which formula works?" questions are covered by tests but were not
   reached in the browser.
+
+## Stage 7: one visual language (27 Nov 2026)
+
+Every screen beside the farm now speaks the farm's interface language, through three shared
+pieces rather than screen-by-screen styling, so new screens inherit it:
+
+- **`Panel`** (`src/components/Panel.tsx`): a card edged in a fine line of gold with a soft
+  golden glow and a highlight along its top, as the farm's glass panels are. It stays solid
+  (the palette's surface), not see-through: working screens need crisp text and sheets.
+  `glow` marks the one card that matters most; `dashed` marks something not open yet; with
+  `onPress` it is a button that presses in.
+- **`SectionLabel`**: section headings in the farm's spaced gold capitals ("UP NEXT" style).
+- **`Button`**: the primary action is the farm's own polished gold pill (`GoldButton`); the
+  secondary is a gold-edged pill; the quiet one is gold words.
+
+Applied to: Games (with a small emblem per game, in the code face), Profile (cards, stats,
+badges glowing when earned and dashed until then, settings), the game intros, results,
+computer choice and Speed Trial's levels, the welcome screens (now centred, with a line on
+why the question is asked), the tour, the lesson results screen, and the lesson's message
+card (gold edge and the gold Next pill).
+
+**Tour corrections** (facts that had gone out of date): it shows the farm's own plant
+(Goldspire, in fruit) instead of the old cartoon tree; its sheet uses the lessons' fruit
+prices; "tap it again to type" is now "select it, then type" (as the course teaches); the
+games stop describes the six games instead of Speed Trial and the now-locked Grid Master.
+
+**Classic Farm** is preserved: every piece above checks the world style and keeps the plain
+navy cards, grey labels and blue buttons when Classic is chosen. Checked: the cartoon farm,
+Games and a lesson in Classic. The one visible change there: Classic's game cards are plain
+instead of blue-tinted.
+
+**Reported, not done:**
+- Copy on these screens is Stage 8's: the results screen still says "Flawless!" and
+  "Lesson done!" (exclamations the editorial standards avoid), and "Back to the start screen"
+  now returns to the world.
+- Badges have no artwork yet (a gold diamond stands in); production artwork remains open.
+- The lesson screen keeps its Stage 4 layout; only its card and button changed.
+- Checked in the browser at 375 × 812 in Refined (dark and light looks) and Classic. Not on a
+  physical phone.
 
 ## Approved vs deferred
 

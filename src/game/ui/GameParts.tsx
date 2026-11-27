@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Mascot } from '@/components/Mascot';
+import { Panel, SectionLabel } from '@/components/Panel';
 import type { GameLevelRecord } from '@/progress/saved';
 import type { Computer } from '@/spreadsheet/shortcuts';
 import { mono, radius, space, type as typography, useTheme } from '@/theme';
@@ -67,7 +68,7 @@ export function Prompt({ label, children, testID }: { label?: string; children: 
   const c = useTheme();
   return (
     <View style={styles.prompt} testID={testID ?? 'game-prompt'}>
-      {label ? <Text style={[typography.label, { color: c.accent }]}>{label.toUpperCase()}</Text> : null}
+      {label ? <SectionLabel>{label}</SectionLabel> : null}
       <Text style={[styles.promptText, { color: c.ink }]}>{children}</Text>
     </View>
   );
@@ -148,17 +149,17 @@ export function GameIntro({
         ) : null}
         {children}
         {covers.length > 0 ? (
-          <View style={[styles.covers, { backgroundColor: c.surface, borderColor: c.line }]} testID="game-covers">
-            <Text style={[typography.label, { color: c.inkSoft }]}>COVERS WHAT YOU HAVE LEARNED SO FAR</Text>
+          <Panel style={styles.covers} testID="game-covers">
+            <SectionLabel>Covers what you have learned so far</SectionLabel>
             <Text style={[typography.small, { color: c.ink }]}>{covers.join(' · ')}</Text>
-          </View>
+          </Panel>
         ) : null}
       </ScrollView>
       {locked ? (
-        <View style={[styles.locked, { borderColor: c.line }]} testID="game-locked">
+        <Panel dashed style={styles.locked} testID="game-locked">
           <Text style={[typography.bodyStrong, { color: c.ink }]}>Not open yet</Text>
           <Text style={[typography.small, { color: c.inkSoft }]}>{locked}</Text>
-        </View>
+        </Panel>
       ) : (
         <Button testID="game-play" label={playLabel} onPress={onPlay} />
       )}
@@ -225,7 +226,7 @@ export function GameResults({
         {note ? <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>{note}</Text> : null}
         <View style={styles.stats}>
           {stats.map((s) => (
-            <View key={s.label} style={[styles.stat, { backgroundColor: c.surface, borderColor: c.line }]}>
+            <Panel key={s.label} style={styles.stat}>
               <Text style={[styles.statValue, { color: c.ink }]}>{s.value}</Text>
               <Text style={[typography.label, styles.statLabel, { color: c.inkSoft }]} numberOfLines={1}>
                 {s.label.toUpperCase()}
@@ -235,7 +236,7 @@ export function GameResults({
                   {s.sub}
                 </Text>
               ) : null}
-            </View>
+            </Panel>
           ))}
         </View>
         {!first && earned < 3 ? (
@@ -266,17 +267,10 @@ export function ComputerChoice({ onChoose, onLeave }: { onChoose: (computer: Com
         <Text style={[typography.title, styles.centre, { color: c.ink }]}>Which computer do you use?</Text>
         <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>Shortcut keys are named differently on each. You can change this in Profile.</Text>
         {options.map((o) => (
-          <Pressable
-            key={o.computer}
-            testID={`computer-${o.computer}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${o.title}. ${o.detail}`}
-            onPress={() => onChoose(o.computer)}
-            style={[styles.option, { backgroundColor: c.surface, borderColor: c.outline }]}
-          >
+          <Panel key={o.computer} testID={`computer-${o.computer}`} accessibilityLabel={`${o.title}. ${o.detail}`} onPress={() => onChoose(o.computer)} style={styles.option}>
             <Text style={[typography.heading, { color: c.ink }]}>{o.title}</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>{o.detail}</Text>
-          </Pressable>
+          </Panel>
         ))}
       </View>
     </GameFrame>
@@ -309,17 +303,17 @@ const styles = StyleSheet.create({
   choiceText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
   code: { fontSize: 16, fontWeight: '700', textAlign: 'center' },
   introBody: { gap: space.md, paddingVertical: space.md },
-  covers: { borderWidth: 1, borderRadius: radius.md, padding: space.md, gap: 4 },
-  locked: { borderWidth: 1, borderStyle: 'dashed', borderRadius: radius.lg, padding: space.md, gap: 2 },
+  covers: { padding: space.md, gap: 4 },
+  locked: { padding: space.md, gap: 2 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.md },
   centre: { textAlign: 'center' },
   stars: { fontSize: 36, letterSpacing: 4 },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, alignSelf: 'stretch', justifyContent: 'center' },
-  stat: { flexGrow: 1, flexBasis: 64, borderWidth: 1, borderRadius: radius.md, paddingVertical: space.sm, alignItems: 'center', gap: 2 },
+  stat: { flexGrow: 1, flexBasis: 64, paddingVertical: space.sm, alignItems: 'center', gap: 2 },
   statValue: { fontSize: 16, fontWeight: '800' },
   statLabel: { fontSize: 10.5, letterSpacing: 0.4 },
   statSub: { fontSize: 11, fontWeight: '700' },
   buttons: { gap: space.sm },
-  option: { alignSelf: 'stretch', borderWidth: 1, borderBottomWidth: 4, borderRadius: radius.lg, padding: space.md, gap: 2, userSelect: 'none' },
+  option: { alignSelf: 'stretch', padding: space.md, gap: 2 },
   note: { borderWidth: 1, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.sm, gap: 2 },
 });

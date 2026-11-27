@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
+import { Panel, SectionLabel } from '@/components/Panel';
 import { CELL_BLUE, CELL_COLOURS, Mascot } from '@/components/Mascot';
 import { defaultCourse } from '@/content';
 import { GRID_LEVELS } from '@/game/gridMaster';
@@ -70,11 +71,11 @@ export default function ProfileScreen() {
         <Text style={[typography.title, { color: c.ink }]}>Profile</Text>
 
         {/* Who they are in the app: a name, and the colour of their Cell. */}
-        <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="profile-card">
+        <Panel style={styles.card} testID="profile-card">
           <View style={styles.who}>
             <Mascot expression="happy" size={56} />
             <View style={styles.words}>
-              <Text style={[typography.label, { color: c.inkSoft }]}>YOUR NAME</Text>
+              <SectionLabel>Your name</SectionLabel>
               <TextInput
                 testID="profile-name"
                 accessibilityLabel="Your name"
@@ -114,19 +115,19 @@ export default function ProfileScreen() {
               );
             })}
           </View>
-        </View>
+        </Panel>
 
         <View style={styles.stats}>
           {stats.map((stat) => (
-            <View key={stat.label} style={[styles.stat, { backgroundColor: c.surface, borderColor: c.line }]}>
+            <Panel key={stat.label} style={styles.stat}>
               <Text style={[styles.statValue, { color: c.ink }]}>{stat.value}</Text>
               <Text style={[typography.label, { color: c.inkSoft }]}>{stat.label.toUpperCase()}</Text>
-            </View>
+            </Panel>
           ))}
         </View>
 
-        <Text style={[typography.label, { color: c.inkSoft }]}>LESSONS DONE</Text>
-        <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="lessons-done">
+        <SectionLabel>Lessons done</SectionLabel>
+        <Panel style={styles.card} testID="lessons-done">
           {finished.length === 0 ? (
             <Text style={[typography.small, { color: c.inkSoft }]}>None yet. Each lesson you finish is listed here with your best score.</Text>
           ) : (
@@ -141,10 +142,10 @@ export default function ProfileScreen() {
               </View>
             ))
           )}
-        </View>
+        </Panel>
 
-        <Text style={[typography.label, { color: c.inkSoft }]}>GAME RESULTS</Text>
-        <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="game-results">
+        <SectionLabel>Game results</SectionLabel>
+        <Panel style={styles.card} testID="game-results">
           {[
             ...GAMES.filter((g) => g.id !== 'trial').map((g) => ({ id: g.id, name: g.title })),
             ...GAME_LEVELS.map((gameLevel, i) => ({ id: gameLevel.id, name: `Speed Trial ${i + 1}: ${gameLevel.title}` })),
@@ -166,31 +167,33 @@ export default function ProfileScreen() {
             <Button testID="profile-play" kind="quiet" label="Play Speed Trial" onPress={() => router.push('/speed-trial')} style={styles.half} />
             {/* Grid Master is in the locked Advanced Arcade; its results stay listed above. */}
           </View>
-        </View>
+        </Panel>
 
-        <Text style={[typography.label, { color: c.inkSoft }]}>BADGES</Text>
+        <SectionLabel>Badges</SectionLabel>
         <View style={styles.badges}>
           {BADGES.map((badge) => {
             const earned = data.badges.includes(badge.id);
             return (
-              <View
+              <Panel
                 key={badge.id}
                 testID={`badge-${badge.id}`}
                 accessibilityLabel={`${badge.name}. ${earned ? 'Earned' : badge.how}`}
-                style={[styles.badge, { backgroundColor: earned ? c.sparkSoft : c.surface, borderColor: earned ? c.spark : c.line }]}
+                glow={earned}
+                dashed={!earned}
+                style={[styles.badge, !earned && styles.unearned]}
               >
                 <View style={[styles.medal, { backgroundColor: earned ? c.spark : c.sunken }]} />
                 <View style={styles.words}>
                   <Text style={[typography.bodyStrong, { color: earned ? c.ink : c.inkSoft }]}>{badge.name}</Text>
                   <Text style={[typography.small, { color: c.inkSoft }]}>{earned ? 'Earned' : badge.how}</Text>
                 </View>
-              </View>
+              </Panel>
             );
           })}
         </View>
 
-        <Text style={[typography.label, { color: c.inkSoft }]}>SETTINGS</Text>
-        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+        <SectionLabel>Settings</SectionLabel>
+        <Panel style={styles.setting}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>Sound and vibration</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>A small buzz and chime for right and wrong answers</Text>
@@ -202,8 +205,8 @@ export default function ProfileScreen() {
               { label: 'Off', on: !data.profile.feedback, onPress: () => store.setFeedback(false) },
             ]}
           />
-        </View>
-        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+        </Panel>
+        <Panel style={styles.setting}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>My computer</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>Shortcuts are shown with Ctrl on Windows and Cmd on a Mac</Text>
@@ -215,9 +218,9 @@ export default function ProfileScreen() {
               { label: 'Mac', on: computer === 'mac', onPress: () => store.setComputer('mac') },
             ]}
           />
-        </View>
+        </Panel>
 
-        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+        <Panel style={styles.setting}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>Look</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>Dark is the app&apos;s own look. Auto follows your phone.</Text>
@@ -230,9 +233,9 @@ export default function ProfileScreen() {
               { label: 'Auto', on: data.profile.look === 'auto', onPress: () => store.setLook('auto') },
             ]}
           />
-        </View>
+        </Panel>
 
-        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+        <Panel style={styles.setting}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>World style</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>Refined is the app&apos;s own. Classic Farm is the first, brighter cartoon style.</Text>
@@ -244,9 +247,9 @@ export default function ProfileScreen() {
               { label: 'Classic', on: theme === 'classic', onPress: () => setTheme('classic') },
             ]}
           />
-        </View>
+        </Panel>
 
-        <View style={[styles.setting, { backgroundColor: c.surface, borderColor: c.line }]}>
+        <Panel style={styles.setting}>
           <View style={styles.words}>
             <Text style={[typography.bodyStrong, { color: c.ink }]}>Transitions</Text>
             <Text style={[typography.small, { color: c.inkSoft }]}>The move from the world into a lesson and back. Reduced is a quick fade; Off goes straight there.</Text>
@@ -259,7 +262,7 @@ export default function ProfileScreen() {
               { label: 'Off', on: motion === 'off', onPress: () => setMotion('off') },
             ]}
           />
-        </View>
+        </Panel>
 
         <Button testID="profile-tour" kind="secondary" label="Take the tour of the app again" onPress={() => router.push('/tour')} />
 
@@ -334,13 +337,14 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, width: '100%' },
   column: { width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: space.lg, paddingBottom: space.xl, gap: space.md },
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  stat: { flexGrow: 1, flexBasis: '45%', borderWidth: 1, borderRadius: radius.md, paddingVertical: space.md, alignItems: 'center', gap: 2 },
+  stat: { flexGrow: 1, flexBasis: '45%', paddingVertical: space.md, alignItems: 'center', gap: 2 },
   statValue: { fontSize: 22, fontWeight: '800' },
   badges: { gap: space.sm },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.md, padding: space.md },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md },
+  unearned: { opacity: 0.78 },
   medal: { width: 22, height: 22, borderRadius: 6, transform: [{ rotate: '45deg' }] },
   words: { flex: 1, gap: 1 },
-  card: { borderWidth: 1, borderRadius: radius.md, padding: space.md, gap: space.sm },
+  card: { padding: space.md, gap: space.sm },
   who: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   name: { minHeight: 44, borderWidth: 1, borderRadius: radius.sm, paddingHorizontal: 10, fontSize: 16, fontWeight: '600', marginVertical: 2 },
   swatches: { flexDirection: 'row', gap: space.sm },
@@ -348,8 +352,8 @@ const styles = StyleSheet.create({
   swatchFill: { width: 28, height: 28, borderRadius: 8 },
   line: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 28 },
   gameButtons: { flexDirection: 'row', gap: space.sm },
-  setting: { borderWidth: 1, borderRadius: radius.md, padding: space.md, gap: space.md },
-  choice: { flexDirection: 'row', borderWidth: 1, borderRadius: radius.md, overflow: 'hidden' },
+  setting: { padding: space.md, gap: space.md },
+  choice: { flexDirection: 'row', borderWidth: 1, borderRadius: 999, overflow: 'hidden' },
   option: { flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', userSelect: 'none' },
   optionText: { fontSize: 15, fontWeight: '700' },
   confirm: { borderRadius: radius.md, padding: space.md, gap: space.md },

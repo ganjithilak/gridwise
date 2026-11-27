@@ -216,8 +216,8 @@ Built:
 Details of every animation component, how to extend them, and their limits:
 [world-animation-components.md](world-animation-components.md).
 
-Not done in this pass (next, per "Consistency across Gridwise"): Games, Profile and the lesson
-screens still use the navy theme. The gold kit (`src/world/ui/Gold.tsx`) is ready to apply.
+Since applied everywhere (Stage 7): `Panel`, `SectionLabel` and the gold `Button` carry the gold
+kit to Games, Profile, the games, welcome, tour, results and lessons. See development-plan.md.
 
 ### Stage 2: the Refined direction (26 Nov 2026)
 
@@ -278,7 +278,6 @@ characters (Cell's moods, birds) could get further Refined detail; production ar
 - The seed reveal and more species; a collection on the Profile side.
 - Weather, day/night, wet soil, grass growth (atmosphere only).
 - Cloud expressions beyond the current set, rain / sun / rainbow effects.
-- Games, Profile and the lesson screens restyled with the world's gold kit.
 - The sky grid as navigation into above-ground Branches and Fruit exercises.
 - Stall stock driven by the learner's own spreadsheet work.
 - The farm stall has no job yet (a future home for fruit / rewards?).

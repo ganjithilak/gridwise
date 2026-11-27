@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
+import { SectionLabel } from '@/components/Panel';
 import { defaultCourse } from '@/content';
 import { parseRange } from '@/engine';
 import { availablePairs, buildBoards, CATEGORIES, categoryCounts, firstSkillOf, MIN_PAIRS, rightOrder, type CategoryId, type Face, type Pair } from '@/game/matchPairs';
@@ -158,7 +159,7 @@ export default function MatchPairsScreen() {
         onPlay={begin}
         onLeave={leave}
       >
-        <Text style={[typography.label, { color: c.inkSoft }]}>CHOOSE PAIRS</Text>
+        <SectionLabel>Choose pairs</SectionLabel>
         <View style={styles.chips}>
           {[{ id: 'mixed' as const, title: 'Mixed', about: '' }, ...CATEGORIES].map((x) => {
             const open = x.id === 'mixed' ? total >= MIN_PAIRS : playable(x.id);
