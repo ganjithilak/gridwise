@@ -157,7 +157,7 @@ const makers: Record<string, Maker[]> = {
   [MINMAX]: [
     (r, n) => {
       const best = r() < 0.5;
-      const { products, spec } = weekSheet(r, [pick(r, ['Pears', 'Pumpkins', 'Carrots'])]);
+      const { products, spec } = weekSheet(r, [pick(r, ['Pears', 'Plums', 'Carrots'])]);
       const sheet = withCell(withCell(spec, 'A7', best ? 'Best day' : 'Quietest'), 'B7', null);
       const fn = best ? 'MAX' : 'MIN';
       const answer = `=${fn}(B2:B6)`;

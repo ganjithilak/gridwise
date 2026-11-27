@@ -10,7 +10,7 @@ import { rng, sample, shuffle } from './random';
  * course has not taught: each level opens when the lessons behind it are finished.
  *
  * Levels follow the course: entering data, selecting rows and columns, getting around,
- * stretching a selection, then the shortcuts of the side unit "Getting around faster".
+ * extending a selection, then the shortcuts of the side unit "Getting Around Faster".
  */
 
 // Skill ids, as in src/content/excel/course.ts.
@@ -49,10 +49,10 @@ export const GAME_SHORTCUTS: readonly GameShortcut[] = [
   { id: 'moveUp', hold: [], key: 'Up', task: 'Move one cell up', does: 'moves one cell up', cue: 'the arrow points the way', skill: MOVE },
   { id: 'moveRight', hold: [], key: 'Right', task: 'Move one cell right', does: 'moves one cell right', cue: 'the arrow points the way', skill: MOVE },
   { id: 'moveLeft', hold: [], key: 'Left', task: 'Move one cell left', does: 'moves one cell left', cue: 'the arrow points the way', skill: MOVE },
-  { id: 'extendDown', hold: ['shift'], key: 'Down', task: 'Stretch the selection down', does: 'stretches the selection down', cue: 'Shift stretches, the arrow points', skill: EXTEND },
-  { id: 'extendUp', hold: ['shift'], key: 'Up', task: 'Stretch the selection up', does: 'stretches the selection up', cue: 'Shift stretches, the arrow points', skill: EXTEND },
-  { id: 'extendRight', hold: ['shift'], key: 'Right', task: 'Stretch the selection right', does: 'stretches the selection right', cue: 'Shift stretches, the arrow points', skill: EXTEND },
-  { id: 'extendLeft', hold: ['shift'], key: 'Left', task: 'Stretch the selection left', does: 'stretches the selection left', cue: 'Shift stretches, the arrow points', skill: EXTEND },
+  { id: 'extendDown', hold: ['shift'], key: 'Down', task: 'Extend the selection down', does: 'extends the selection down', cue: 'Shift extends, the arrow points', skill: EXTEND },
+  { id: 'extendUp', hold: ['shift'], key: 'Up', task: 'Extend the selection up', does: 'extends the selection up', cue: 'Shift extends, the arrow points', skill: EXTEND },
+  { id: 'extendRight', hold: ['shift'], key: 'Right', task: 'Extend the selection right', does: 'extends the selection right', cue: 'Shift extends, the arrow points', skill: EXTEND },
+  { id: 'extendLeft', hold: ['shift'], key: 'Left', task: 'Extend the selection left', does: 'extends the selection left', cue: 'Shift extends, the arrow points', skill: EXTEND },
   { id: 'selectAll', hold: ['mod'], key: 'A', task: 'Select the whole sheet', does: 'selects everything', cue: 'A for All', skill: ALL },
   { id: 'copy', hold: ['mod'], key: 'C', task: 'Copy the selected cells', does: 'copies the selection', cue: 'C for Copy', skill: COPY },
   { id: 'cut', hold: ['mod'], key: 'X', task: 'Cut the selected cells', does: 'cuts the selection', cue: 'X, like a pair of scissors', skill: CUT },
@@ -73,7 +73,7 @@ export const GAME_LEVELS: readonly GameLevel[] = [
   { id: 'trial.entry', title: 'Entering data', adds: ['confirm', 'cancel', 'edit'] },
   { id: 'trial.rowcol', title: 'Rows and columns', adds: ['selectColumn', 'selectRow'] },
   { id: 'trial.move', title: 'Getting around', adds: ['moveDown', 'moveUp', 'moveRight', 'moveLeft'] },
-  { id: 'trial.extend', title: 'Stretching a selection', adds: ['extendDown', 'extendUp', 'extendRight', 'extendLeft'] },
+  { id: 'trial.extend', title: 'Extending a selection', adds: ['extendDown', 'extendUp', 'extendRight', 'extendLeft'] },
   { id: 'trial.all', title: 'Select everything', adds: ['selectAll'] },
   { id: 'trial.clip', title: 'Copy, cut and paste', adds: ['copy', 'cut', 'paste'] },
   { id: 'trial.undo', title: 'Undo and bold', adds: ['undo', 'bold'] },

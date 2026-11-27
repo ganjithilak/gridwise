@@ -9,7 +9,7 @@ import type {
   PredictExercise,
   ScriptStep,
 } from '@/lessons/types';
-import { SheetController, type ToolId } from '@/spreadsheet/controller';
+import type { ToolId } from '@/spreadsheet/controller';
 
 /**
  * Helpers for writing lessons. A lesson says what the learner should end up with
@@ -37,18 +37,6 @@ export function chipsIn(formula: string): string[] {
   return out;
 }
 
-/** How many presses of delete it takes to empty a cell holding `raw`, pieces coming out whole. */
-function deletesFor(raw: string): number {
-  const controller = new SheetController({ cols: 1, rows: 1, cells: { A1: raw } }, 'A1');
-  controller.startEdit();
-  let n = 0;
-  while ((controller.getState().editing?.text ?? '') !== '' && n < 200) {
-    controller.pressKey('backspace');
-    n++;
-  }
-  return n;
-}
-
 interface TypingOptions {
   /** What is already in the cell and has to be deleted first. */
   replacing?: string;
@@ -73,12 +61,9 @@ export function typing(cell: string, formula: string, opts: TypingOptions = {}):
     return words ? { say: words } : {};
   };
 
-  steps.push({ tap: cell, ...say(`Tap ${cell}, then tap it again to type.`) });
-  steps.push({ tap: cell });
-  if (opts.replacing) {
-    const n = deletesFor(opts.replacing);
-    for (let i = 0; i < n; i++) steps.push(i === 0 ? { key: 'backspace', ...say('Delete what is there.') } : { key: 'backspace' });
-  }
+  // Selected, the cell takes whatever is typed, as in Excel. Typing over a broken formula
+  // replaces it, so there is nothing to delete first.
+  steps.push({ tap: cell, ...say(opts.replacing ? `Select ${cell}. Typing replaces what is there.` : `Select ${cell}.`) });
 
   const tokens = tokensOf(formula);
   // Brackets left open at the end are closed by Enter, so they are never typed.

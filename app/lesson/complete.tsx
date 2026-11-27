@@ -51,24 +51,25 @@ export default function LessonCompleteScreen() {
   let line: string;
   let mood: 'cheering' | 'happy' | 'thinking' = 'cheering';
   if (kind === 'test') {
-    title = result.passedTest ? 'Passed!' : 'Not this time';
+    title = result.passedTest ? 'Unit passed' : 'Not yet';
     line = result.passedTest
-      ? 'You know this unit. It is marked as done.'
+      ? 'You already know this unit, so it is marked as done.'
       : `You need ${LIMITS.checkpointPassMark} of ${summary.scored} right first time to skip the unit. The lessons will get you there.`;
     mood = result.passedTest ? 'cheering' : 'thinking';
   } else if (kind === 'practice') {
-    title = 'Practice done!';
+    title = 'Practice complete';
     line = 'That is what the next lesson builds on. It is open now.';
   } else if (kind === 'review') {
-    title = 'Practice done!';
-    line = 'Those skills are fresh again.';
+    title = 'Practice complete';
+    line = 'Those skills are fresh again. They return when they are next due.';
   } else if (needsPractice) {
-    title = 'Lesson done';
-    line = 'A few of those were tricky. A short practice round will make them stick.';
+    title = 'Lesson complete';
+    line = 'A few of those need another look. A short practice round comes first.';
     mood = 'happy';
   } else {
-    title = flawless ? 'Flawless!' : 'Lesson done!';
-    line = `You finished “${result.title}”.`;
+    // Feedback reinforces; it does not celebrate (docs/editorial-standards.md).
+    title = 'Lesson complete';
+    line = flawless ? `Every answer in “${result.title}” was right first time.` : `You finished “${result.title}”.`;
   }
 
   const stats = [
@@ -154,7 +155,7 @@ export default function LessonCompleteScreen() {
         </ScrollView>
 
         <Button testID={main.testID} label={main.label} onPress={main.onPress} />
-        {main.testID !== 'done' ? <Button testID="done" kind="quiet" label="Back to the start screen" onPress={() => backToWorld()} /> : null}
+        {main.testID !== 'done' ? <Button testID="done" kind="quiet" label="Back to the farm" onPress={() => backToWorld()} /> : null}
       </View>
       {celebrate ? <Confetti /> : null}
     </View>

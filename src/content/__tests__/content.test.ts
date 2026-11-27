@@ -323,3 +323,42 @@ describe.each(exercises.map((e) => [e.exercise.id, e.exercise, e.kind] as const)
     }
   }
 });
+
+/**
+ * The editorial standards' wording rules (docs/editorial-standards.md), checked on every
+ * learner-facing line: no celebratory praise or exclamation marks, the approved terms
+ * (select, not pick; currency format, not money format; AutoSum suggests, never guesses),
+ * Australian spelling, and none of the old "tap it again to type" instructions.
+ */
+describe('wording', () => {
+  const linesOf = (exercise: Exercise): string[] => [
+    exercise.prompt,
+    exercise.explain,
+    ...exercise.tips,
+    ...exercise.hints,
+    ...(exercise.praise ? [exercise.praise] : []),
+    ...('options' in exercise ? exercise.options : []),
+    ...(isGrid(exercise) ? scriptsOf(exercise).flatMap((step) => (step.say ? [step.say] : [])) : []),
+  ];
+  const lines = [
+    ...lessons.flatMap((lesson) => [lesson.title, lesson.summary, ...lesson.recap].map((text) => ({ where: lesson.id, text }))),
+    ...checkpoints.map(({ checkpoint }) => ({ where: checkpoint.id, text: checkpoint.title })),
+    ...exercises.flatMap(({ exercise }) => linesOf(exercise).map((text) => ({ where: exercise.id, text }))),
+  ];
+  const RULES: [string, RegExp][] = [
+    ['an exclamation mark', /!/],
+    ['celebratory praise', /\b(oops|great job|well done|excellent|amazing|awesome|superstar|flawless|you got it)\b/i],
+    // "Pick" stays for the harvest (apples picked, the Picked column); it is never a word for selecting.
+    ['"pick" for select', /\b(pick(s|ed|ing)?|Picks?) (the|a|an|any|one|it|them|all|every|where|cells?|[A-Z]{1,2}[0-9]+)\b/],
+    ['"money format" for currency format', /money format/i],
+    ['AutoSum "guessing"', /\bguess(es|ed)?\b/i],
+    ['the old "tap it again to type"', /again to type|twice\. Then/i],
+    ['American spelling', /\b(color|center|organize|favorite|recognize|analyze)\b/i],
+  ];
+
+  it.each(RULES)('has no %s', (_rule, pattern) => {
+    // Error values such as #DIV/0! and #NAME? are Excel's own words.
+    const found = lines.filter(({ text }) => pattern.test(text.replace(/#[A-Z/0-9]+[!?]/g, '')));
+    expect(found.map(({ where, text }) => `${where}: ${text}`)).toEqual([]);
+  });
+});

@@ -5,20 +5,24 @@ import { FORMULAS, tipsFor } from '../tips';
 
 const AVERAGE = 'xl.average';
 
-/** A lemonade stand's long weekend. Averages come out as whole numbers on purpose. */
-const lemon = table(
-  ['Day', 'Cups', 'Sales', 'Ice'],
+const money = { numFmt: 'currency' as const };
+
+/** The stall's long weekend. Apples at $4 a kilogram; the averages come out whole on purpose. */
+const weekend = table(
+  ['Day', 'Apples (kg)', 'Takings', 'Pies'],
   [
-    ['Sat', 30, 60, 3],
-    ['Sun', 50, 100, 5],
-    ['Mon', 20, 40, 2],
-    ['Tue', 20, 40, 2],
+    ['Sat', 30, 120, 3],
+    ['Sun', 50, 200, 5],
+    ['Mon', 20, 80, 2],
+    ['Tue', 20, 80, 2],
   ],
   { footer: 'Average' },
 );
+weekend.formats = { ...weekend.formats, 'C2:C6': money };
 
-const football = table(
-  ['Player', 'Goals', 'Shots'],
+/** The orchard pickers' day. Dee worked in the packing shed, so picked no bins: a real 0. */
+const pickers = table(
+  ['Picker', 'Bins', 'Hours'],
   [
     ['Ana', 4, 10],
     ['Ben', 2, 8],
@@ -28,8 +32,9 @@ const football = table(
   { footer: 'Average' },
 );
 
+/** The stall was shut on Sunday, so that cell is empty rather than 0. */
 const shutSunday = table(
-  ['Day', 'Cups'],
+  ['Day', 'Apples (kg)'],
   [
     ['Sat', 30],
     ['Sun', null],
@@ -39,24 +44,25 @@ const shutSunday = table(
   { footer: 'Average' },
 );
 
-const tests = table(
-  ['Pupil', 'Test 1', 'Test 2'],
+/** Practice on a different record: the dairy's milk, in litres per cow. */
+const dairy = table(
+  ['Cow', 'Mon (L)', 'Tue (L)'],
   [
-    ['Ali', 6, 8],
-    ['Bea', 9, 7],
-    ['Cal', 3, 9],
-    ['Dot', 6, 4],
+    ['Daisy', 24, 32],
+    ['Bella', 36, 28],
+    ['Rosie', 12, 36],
+    ['Mabel', 24, 16],
   ],
   { footer: 'Average' },
 );
 
 export const theAverage: Lesson = {
   id: 'xl.u1.l2',
-  title: 'The average',
-  summary: 'Find a typical value with AVERAGE.',
+  title: 'The Average',
+  summary: 'Find a typical day at the stall with AVERAGE.',
   recap: [
-    'AVERAGE adds the numbers up, then divides by how many there are.',
-    'It is written like SUM: the name, then a range in brackets.',
+    'AVERAGE adds the numbers, then divides by how many there are.',
+    'It is written like SUM: the function name, then a range in brackets.',
     'A 0 counts as one of the numbers. An empty cell is skipped.',
   ],
   newSkills: [AVERAGE],
@@ -65,109 +71,112 @@ export const theAverage: Lesson = {
     demo({
       id: 'xl.u1.l2.e1',
       skill: AVERAGE,
-      sheet: lemon,
+      sheet: weekend,
       script: typing('B6', '=AVERAGE(B2:B5)', {
         says: [
-          'The average is the total shared out evenly. Tap B6 twice.',
-          'AVERAGE does the sharing for you.',
+          'How many apples does a typical day sell? Select B6.',
+          'AVERAGE shares the total out evenly.',
           'Tap the first cell...',
           '...then the colon, and the last cell.',
-          'Enter. 120 cups over 4 days is 30 a day.',
+          'Enter. 120 kg over 4 days is 30 kg a day.',
         ],
       }),
-      prompt: 'Your turn. Find the average Sales in C6.',
+      prompt: 'Your turn. Find the average takings in C6.',
       cell: 'C6',
       formula: '=AVERAGE(C2:C5)',
       uses: 'AVERAGE',
-      hints: ['The AVERAGE key is in the row above the numbers.', 'AVERAGE, the first Sales cell, : , the last Sales cell.'],
-      explain: 'AVERAGE adds C2 through C5 and divides by 4: 60 a day.',
+      hints: ['AVERAGE is in the row of functions above the keys.', 'AVERAGE, the first takings cell, : , the last takings cell.'],
+      explain: 'AVERAGE adds C2 to C5 and divides by 4: $120 a day.',
       tips: ['An average is a typical value: the total, shared out evenly.', FORMULAS.colon],
     }),
     task({
       id: 'xl.u1.l2.e2',
       skill: AVERAGE,
-      sheet: withCells(lemon, { B6: '=AVERAGE(B2:B5)', C6: '=AVERAGE(C2:C5)' }),
-      prompt: 'Find the average bags of Ice in D6.',
+      sheet: withCells(weekend, { B6: '=AVERAGE(B2:B5)', C6: '=AVERAGE(C2:C5)' }),
+      prompt: 'Find the average number of pies sold, in D6.',
       cell: 'D6',
       formula: '=AVERAGE(D2:D5)',
       uses: 'AVERAGE',
-      hints: ['Same as the two before it, one column along.', 'AVERAGE, the first Ice cell, : , the last Ice cell.'],
-      explain: 'Same shape, new column: 12 bags over 4 days is 3 a day.',
-      tips: ['AVERAGE needs a range, just like SUM does.', FORMULAS.bracket],
+      hints: ['The same as the two before it, one column along.', 'AVERAGE, the first Pies cell, : , the last Pies cell.'],
+      explain: 'Same calculation, new column: 12 pies over 4 days is 3 a day.',
+      tips: ['AVERAGE needs a range, just as SUM does.', FORMULAS.bracket],
     }),
     predict({
       id: 'xl.u1.l2.e3',
       skill: AVERAGE,
-      sheet: table(['Day', 'Cups', 'Answer'], [['Sat', 30], ['Sun', 50], ['Mon', 20], ['Tue', 20]]),
+      sheet: table(['Day', 'Apples (kg)', 'Result'], [['Sat', 30], ['Sun', 50], ['Mon', 20], ['Tue', 20]]),
       prompt: 'This formula is in C2. What will it show?',
       cell: 'C2',
       formula: '=AVERAGE(B2:B3)',
       options: ['40', '80', '30', '50'],
-      hints: ['Only two cells are in the range.', 'Add Sat and Sun, then share the total between the two days.', '30 and 50 make 80. Half of 80 is 40.'],
-      explain: 'B2:B3 is just Sat and Sun: 80 shared over 2 days is 40.',
-      tips: ['AVERAGE adds the numbers up, then divides by how many there are.', FORMULAS.shows],
+      hints: ['Only two cells are in the range.', 'Add Saturday and Sunday, then share the total between the two days.', '30 and 50 make 80. Half of 80 is 40.'],
+      explain: 'B2:B3 is only Saturday and Sunday: 80 kg shared over 2 days is 40.',
+      tips: ['AVERAGE adds the numbers, then divides by how many there are.', FORMULAS.shows],
     }),
     task({
       id: 'xl.u1.l2.e4',
       skill: AVERAGE,
-      sheet: football,
-      prompt: 'New sheet: a football team. Find the average Goals in B6.',
+      apply: true,
+      sheet: pickers,
+      prompt: 'The orchard pickers’ day. Find the average bins picked, in B6.',
       cell: 'B6',
       formula: '=AVERAGE(B2:B5)',
       uses: 'AVERAGE',
-      hints: ['All four players count, even the one with no goals.', 'AVERAGE, then the Goals cells from first to last.'],
-      explain: 'Dee scored 0, and that still counts as one of the four: 12 over 4 is 3.',
-      tips: ['A zero counts in an average. An empty cell does not.', FORMULAS.tapCell],
+      hints: ['All four pickers count, including Dee, who picked none.', 'AVERAGE, then the Bins cells from first to last.'],
+      explain: 'Dee’s 0 still counts as one of the four: 12 bins over 4 pickers is 3.',
+      tips: ['A 0 counts in an average. An empty cell does not.', FORMULAS.tapCell],
     }),
     fix({
       id: 'xl.u1.l2.e5',
       skill: AVERAGE,
-      sheet: football,
-      prompt: 'C6 should be the average Shots, but it shows the total. Fix it.',
+      apply: true,
+      sheet: pickers,
+      prompt: 'C6 should be the average hours, but it shows the total. Correct it.',
       cell: 'C6',
       broken: '=SUM(C2:C5)',
       formula: '=AVERAGE(C2:C5)',
       uses: 'AVERAGE',
-      hints: ['Read the formula in the bar. Which function is it using?', 'Delete it with ⌫, then build it again with AVERAGE.'],
-      explain: 'SUM gave the total, 36. AVERAGE shares it over the 4 players: 9.',
-      tips: ['To change a formula, tap its cell twice and use ⌫.', FORMULAS.check],
+      hints: ['Read the formula bar. Which function is it using?', 'Select C6 and type the formula again with AVERAGE. Typing replaces it.'],
+      explain: 'SUM gave the total, 36 hours. AVERAGE shares it over the 4 pickers: 9.',
+      tips: ['Typing into a selected cell replaces its formula.', FORMULAS.check],
     }),
     task({
       id: 'xl.u1.l2.e6',
       skill: AVERAGE,
+      apply: true,
       sheet: shutSunday,
-      prompt: 'The stand was shut on Sun. Find the average Cups in B6.',
+      prompt: 'The stall was shut on Sunday. Find the average apples sold, in B6.',
       cell: 'B6',
       formula: '=AVERAGE(B2:B5)',
       uses: 'AVERAGE',
-      hints: ['Use the whole column, empty cell and all.', 'AVERAGE over all four days. The gap looks after itself.'],
-      explain: 'AVERAGE skips the empty cell: 90 shared over 3 days, not 4.',
-      tips: ['An average can be a number that is not in the list at all.', FORMULAS.updates],
+      hints: ['Use the whole column, empty cell and all.', 'AVERAGE over all four days. The empty cell is skipped.'],
+      explain: 'AVERAGE skips the empty cell: 90 kg shared over 3 days, not 4.',
+      tips: ['An average need not be one of the numbers in the list.', FORMULAS.updates],
     }),
   ],
   practice: [
     task({
       id: 'xl.u1.l2.p1',
       skill: AVERAGE,
-      sheet: tests,
-      prompt: 'Find the average mark for Test 1, in B6.',
+      sheet: dairy,
+      prompt: 'Find the average milk per cow on Monday, in B6.',
       cell: 'B6',
       formula: '=AVERAGE(B2:B5)',
       uses: 'AVERAGE',
-      hints: ['The AVERAGE key is in the row above the numbers.', 'AVERAGE, the first Test 1 mark, : , the last one.'],
-      explain: 'The four marks add to 24. Shared over 4 pupils, that is 6.',
+      hints: ['AVERAGE is in the row of functions above the keys.', 'AVERAGE, the first Monday cell, : , the last one.'],
+      explain: 'The four cows gave 96 litres. Shared over 4, that is 24 each.',
       tips: tipsFor(AVERAGE),
     }),
     task({
       id: 'xl.u1.l2.p2',
       skill: AVERAGE,
-      sheet: tests,
-      prompt: 'Now the average for Test 2, in C6.',
+      sheet: dairy,
+      prompt: 'Now the average for Tuesday, in C6.',
       cell: 'C6',
       formula: '=AVERAGE(C2:C5)',
       uses: 'AVERAGE',
-      hints: ['Same idea, one column along.', 'AVERAGE, the first Test 2 mark, : , the last one.'],
-      explain: 'The four marks add to 28. Shared over 4 pupils, that is 7.',
+      hints: ['The same calculation, one column along.', 'AVERAGE, the first Tuesday cell, : , the last one.'],
+      explain: 'The four cows gave 112 litres. Shared over 4, that is 28 each.',
       tips: tipsFor(AVERAGE),
     }),
   ],

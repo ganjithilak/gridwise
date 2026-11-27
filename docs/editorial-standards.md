@@ -2,7 +2,8 @@
 
 Permanent rules for every learner-facing word: lessons, hints, tips, feedback, Cell's
 dialogue, games, onboarding and the interface. The content tests (`src/content/__tests__`)
-enforce the measurable parts; this document covers the rest.
+enforce the measurable parts, including a wording test (no exclamation marks or praise, the
+approved terms, Australian spelling); this document covers the rest.
 
 ## Voice
 
@@ -55,7 +56,7 @@ story and context so the selection only moves when the movement means something.
 
 | Use | Not | Notes |
 |---|---|---|
-| select (a cell) | pick, choose, tap on | "Tap" only for the physical gesture on the phone |
+| select (a cell) | pick, choose, tap on | "Tap" only for the physical gesture on the phone. "Pick" stays for the harvest |
 | active cell | current cell, chosen cell | The outlined cell |
 | cell reference | cell name, address | "B3": column letter, then row number |
 | range | block, area | "B2:B5": first cell, colon, last cell. "Block" is acceptable in Roots before ranges are taught |
@@ -73,8 +74,10 @@ story and context so the selection only moves when the movement means something.
 Every lesson must describe how Excel actually behaves. Where the phone works differently,
 say so.
 
-- **Selecting vs editing.** Typing into a selected cell replaces its contents. To change part
-  of an entry: a second tap here; F2 or double-click in Excel.
+- **Selecting vs editing.** Typing into a selected cell replaces its contents, formulas
+  included: select, then type =. To change part of an entry: a second tap here; F2 or
+  double-click in Excel. Never "tap it again to type". (Exception: tasks with a toolbar need the
+  second tap, and say so.)
 - **Confirm and cancel.** Enter confirms; ✕ in the formula bar here, Esc in Excel, cancels.
 - **Windows vs Mac.** Ctrl + Space selects a column on both (Control, not Command, on a Mac).
   Copy, paste, undo: Ctrl on Windows, Cmd on a Mac (`{mod}` in prompts).

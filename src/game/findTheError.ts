@@ -178,7 +178,7 @@ const wrongAverage: Maker = (r) => {
 };
 
 const wrongMax: Maker = (r) => {
-  const { spec } = weekSheet(r, [pick(r, ['Apples', 'Pumpkins', 'Carrots'])]);
+  const { spec } = weekSheet(r, [pick(r, ['Apples', 'Plums', 'Carrots'])]);
   const sheet = withCell(withCell(spec, 'A7', 'Best day'), 'B7', '=MIN(B2:B6)');
   return {
     skill: MINMAX,

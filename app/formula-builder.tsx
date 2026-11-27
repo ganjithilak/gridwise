@@ -130,7 +130,7 @@ export default function FormulaBuilderScreen() {
         title="Formula Builder"
         about="A question about the farm’s records, and the pieces of a formula to answer it. Some pieces do not belong. As you improve there are more of them."
         covers={coverNames(BUILDER_SKILLS, g.taught)}
-        locked={open ? null : 'Opens after Add it up, the first formulas lesson.'}
+        locked={open ? null : 'Opens after Add It Up, the first formulas lesson.'}
         record={g.record}
         onPlay={begin}
         onLeave={leave}

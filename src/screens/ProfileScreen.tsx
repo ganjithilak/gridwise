@@ -23,7 +23,12 @@ import { ScreenSky } from '@/world/ui/ScreenSky';
 
 /** Every badge there is, in the order they are usually earned. */
 const BADGES: { id: string; name: string; how: string }[] = [
-  ...defaultCourse.units.map((unit) => ({ id: unitBadge(unit.id), name: unit.title, how: `Finish every lesson in "${unit.title}"` })),
+  ...defaultCourse.units.map((unit) => ({
+    id: unitBadge(unit.id),
+    name: unit.title,
+    // Passing a unit's test earns its badge too (see badgesFor).
+    how: unit.checkpoint ? `Finish every lesson in “${unit.title}”, or pass its test` : `Finish every lesson in “${unit.title}”`,
+  })),
   ...STREAK_BADGES.map((days) => ({ id: streakBadge(days), name: `${days} days in a row`, how: `Learn something ${days} days running` })),
 ];
 

@@ -17,7 +17,7 @@ behind it, and where each stage stands. Visual direction lives in
 | 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | **Done** (27 Nov): six games, each asking only what has been taught, harder with play; Speed Trial rebuilt |
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
 | 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | **Done** (27 Nov): the farm's gold kit on every screen through shared Panel, SectionLabel and Button; Classic Farm unchanged |
-| 8 | Editorial overhaul of the remaining units | Not started |
+| 8 | Editorial overhaul of the remaining units | **Done** (27 Nov): units 1–4 on the farm's records in the house voice; formulas typed as in Excel (select, then type); wording rules enforced by test |
 | 9 | Full testing and visual review | Ongoing per stage |
 
 **Dependencies.** Stage 4 (spreadsheet layout) should settle before Stage 3's transition is
@@ -40,7 +40,7 @@ parallel with any of them.
 - Practice data duplicated lesson numbers.
 - Strengths kept: formula-mistake diagnostics already meet the feedback standard.
 
-**Content (still to do, Stage 8):** units 1–4 use the old voice and non-farm datasets (shop,
+**Content (done in Stage 8, below):** units 1–4 use the old voice and non-farm datasets (shop,
 pets, sport) and the default formula captions still say "tap it again to type"; welcome, tour
 and game copy need the same review; badge names and descriptions.
 
@@ -182,8 +182,8 @@ own feedback sheet. The sheet games use the real Workbench, Grid and formula bar
 | Cell Hunt | Select a cell, a whole row or column (with the taught shortcut), a block; get somewhere with the arrows only; name the lit block. Sheets change size every task. | Cells and References |
 | Speed Trial | Press the keys for an action, or say what keys do. Seven levels, each opening with its lesson: entering data (Enter, Esc, F2), rows and columns, getting around, stretching, select all, copy/cut/paste, undo and bold. | Entering and Correcting Data |
 | Find the Error | Find the faulty cell (tap to inspect, the formula bar shows what is really there), then choose the correction. Typed figures against a docket; short ranges; wrong rows; wrong sign; AVERAGE by hand; MIN for MAX; unlocked $; #DIV/0!; #NAME?; a backwards IF. | Entering and Correcting Data |
-| Formula Builder | Build a formula from pieces (the lessons' token tray) for a farm question. At tier 3, a third of the go asks which of three formulas works (one with a syntax slip, one with the wrong function). | Add it up |
-| Predict the Result | Say what a formula will show. Wrong options are real mistakes (multiplying last, a range read short, the wrong function). The answer is then worked out on the sheet. | Add it up |
+| Formula Builder | Build a formula from pieces (the lessons' token tray) for a farm question. At tier 3, a third of the go asks which of three formulas works (one with a syntax slip, one with the wrong function). | Add It Up |
+| Predict the Result | Say what a formula will show. Wrong options are real mistakes (multiplying last, a range read short, the wrong function). The answer is then worked out on the sheet. | Add It Up |
 
 **Speed Trial overhaul:** a desktop keyboard (Esc and F keys, Tab, Caps, Enter, both Shifts,
 Ctrl ⊞ Alt on Windows, fn ⌃ ⌥ ⌘ on a Mac, full-size inverted-T arrows); every key can be
@@ -248,13 +248,50 @@ Games and a lesson in Classic. The one visible change there: Classic's game card
 instead of blue-tinted.
 
 **Reported, not done:**
-- Copy on these screens is Stage 8's: the results screen still says "Flawless!" and
+- Copy on these screens was left to Stage 8 (since done): the results screen said "Flawless!" and
   "Lesson done!" (exclamations the editorial standards avoid), and "Back to the start screen"
   now returns to the world.
 - Badges have no artwork yet (a gold diamond stands in); production artwork remains open.
 - The lesson screen keeps its Stage 4 layout; only its card and button changed.
 - Checked in the browser at 375 × 812 in Refined (dark and light looks) and Classic. Not on a
   physical phone.
+
+## Stage 8: editorial overhaul (27 Nov 2026)
+
+**Content.** Units 1–4 (17 lessons, 3 unit tests) rewritten under their existing exercise IDs.
+Every dataset outside the Fruit projects is a farm record; the stall's prices carry over from
+Roots; customers and produce match the Roots lessons and the games (pumpkins removed, the
+games' customers aligned). Titles are in title case; unit and skill names use the approved
+terms (extend, range, currency format). The Fruit projects keep their cafe and classroom on
+purpose, and now say so.
+
+**Typing formulas as in Excel.** The old lessons said "tap it again to type", because the phone
+keys only opened when a cell was being edited. Now, on any task answered by typing (a value or a
+formula), the keys open as soon as a cell is selected, so the lesson can teach Excel's way:
+select, then type (typing replaces; a second tap or F2 edits). Worked solutions select once;
+fixing a formula types over it. The keys and Check stay in place while typing, and Check
+confirms an open entry as Enter would (before, the keys jumped about 50 px when typing began).
+
+**Fill handle.** Its touch area was clipped at the grid's right and bottom edges, so the visible
+handle on a last-column cell could not be grabbed at its corner. It is now kept inside the grid.
+
+**Interface copy.** Results screen: "Lesson complete", "Unit passed", "Practice complete" and
+"Back to the farm" (no "Flawless!" or exclamation marks). Multiple-choice "Nearly." became "Not
+all of them.". Badge descriptions say a unit test also earns a unit's badge.
+
+**Enforced.** A wording test checks every lesson line: no exclamation marks or celebratory
+praise, "pick" never for selecting (it stays for the harvest), currency not money format,
+AutoSum suggests rather than guesses, no "tap it again to type", Australian spelling.
+
+**Compromises and open items.**
+- Tasks with a toolbar (Undo, Sort, Copy) still need a second tap to type, because the toolbar
+  and the keys do not both fit under the sheet. The two Undo-on-typing tasks say so ("tap B4
+  twice to edit it"), which matches the editing taught in Roots, not Excel's type-to-replace.
+- Grid Master (locked in the Advanced Arcade) keeps its old copy ("Bump!", "Yes!", "pick").
+- Badges still have no artwork.
+- Checked in the browser at 375 × 812 (Refined): a demonstration, typing a formula, typing over a
+  broken one, a fill with the keys open, the fill handle at the grid's edge, an Undo task and
+  the results screen. Not every lesson was played end to end, and not on a physical phone.
 
 ## Approved vs deferred
 

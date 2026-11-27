@@ -241,8 +241,12 @@ export function GridExercise({
   }, [attempt.hintsShown]);
 
   const doing = phase === 'do';
-  /** A task that is checked on a typed value (not a formula): the keys stay open while doing it. */
-  const typesValues = exercise.checks.some((c) => c.type === 'cellValue');
+  /**
+   * A task answered by typing into a cell, a value or a formula: the keys stay open while
+   * doing it, so selecting a cell and typing replaces its contents, as in Excel.
+   */
+  const typesValues =
+    exercise.checks.some((c) => c.type === 'cellValue' || c.type === 'outcome') || (exercise.solution ?? []).some((step) => 'key' in step);
   const locked = !doing;
   const editing = state.editing !== null;
   // Once the learner changes the sheet, the last "not quite" no longer describes it.
@@ -290,6 +294,9 @@ export function GridExercise({
   }, [controller, computer, doing, hideKeys, tray, noteKey]);
 
   const check = () => {
+    // An entry still being typed is confirmed first, as Enter would; one that can't be
+    // accepted stays open with its message.
+    if (controller.getState().editing && !controller.commit()) return;
     const result = checkController(exercise.checks, controller);
     onCheck(result.status);
     setCheckedVersion(state.version);
@@ -511,21 +518,10 @@ export function GridExercise({
         keyHeight={metrics.keyHeight}
       />
     );
-  } else if (editing) {
-    bottom = (
-      <FormulaKeyboard
-        onKey={(key) => controller.pressKey(key)}
-        hidden={hideKeys}
-        chips={chips}
-        onChip={(chip) => controller.pressChip(chip)}
-        flashKey={player.flashKey}
-        locked={locked}
-        keyHeight={metrics.keyHeight}
-      />
-    );
-  } else if (typesValues && doing && !liveOutcome) {
-    // Entering values: the keys are there as soon as a cell is selected, so typing replaces
-    // the cell's contents, as it does in Excel. Tapping the cell again still edits it.
+  } else if (typesValues && doing && (editing || !liveOutcome) && top === null) {
+    // Entering values or formulas: the keys are there as soon as a cell is selected, so typing
+    // replaces the cell's contents, as it does in Excel. Tapping the cell again still edits it.
+    // The keys and Check stay put while typing, so nothing moves under the learner's thumb.
     bottom = (
       <FeedbackSheet
         top={
@@ -541,6 +537,18 @@ export function GridExercise({
         }
         primary={checkAction}
         secondary={showMeAction}
+      />
+    );
+  } else if (editing) {
+    bottom = (
+      <FormulaKeyboard
+        onKey={(key) => controller.pressKey(key)}
+        hidden={hideKeys}
+        chips={chips}
+        onChip={(chip) => controller.pressChip(chip)}
+        flashKey={player.flashKey}
+        locked={locked}
+        keyHeight={metrics.keyHeight}
       />
     );
   } else if (phase === 'watch' || phase === 'showing') {

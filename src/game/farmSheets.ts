@@ -7,9 +7,9 @@ import { int, pick, sample, type Rng } from './random';
  * never repeat the lessons' own. Produce is the farm stall's: what the lessons sell and
  * what the stall shows.
  */
-export const PRODUCE = ['Carrots', 'Potatoes', 'Tomatoes', 'Apples', 'Pears', 'Pumpkins', 'Plums'] as const;
+export const PRODUCE = ['Carrots', 'Potatoes', 'Tomatoes', 'Apples', 'Pears', 'Plums'] as const;
 export const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
-export const CUSTOMERS = ['Town Grocer', 'Hill Café', 'Market Co-op'] as const;
+export const CUSTOMERS = ['River Cafe', 'Hill Market', 'Town Grocer'] as const;
 const PRICES = [2.5, 3, 3.5, 4, 4.5, 6] as const;
 
 /** A sheet with a heading row: `rows` are the data under it. */

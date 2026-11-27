@@ -96,7 +96,7 @@ export default function PredictTheResultScreen() {
         title="Predict the Result"
         about="A formula sits in a cell. Work out what it will show before the sheet does. The wrong answers are the slips people really make."
         covers={coverNames(PREDICT_SKILLS, g.taught)}
-        locked={open ? null : 'Opens after Add it up, the first formulas lesson.'}
+        locked={open ? null : 'Opens after Add It Up, the first formulas lesson.'}
         record={g.record}
         onPlay={begin}
         onLeave={leave}

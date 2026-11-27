@@ -391,7 +391,12 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
             accessibilityLabel="Fill handle. Drag it to copy this cell down or across."
             style={[
               styles.reach,
-              { left: corner.left + corner.width - HANDLE_REACH / 2, top: corner.top + corner.height - HANDLE_REACH / 2 },
+              // Kept inside the grid: at its right or bottom edge, half the reach would be
+              // clipped off and the visible handle could not be grabbed.
+              {
+                left: Math.min(corner.left + corner.width - HANDLE_REACH / 2, size.w - HANDLE_REACH),
+                top: Math.min(corner.top + corner.height - HANDLE_REACH / 2, size.h - HANDLE_REACH),
+              },
             ]}
             onStartShouldSetResponder={() => {
               live.current.onHandle = true;

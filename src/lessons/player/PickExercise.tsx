@@ -159,7 +159,7 @@ export function PickExercise({
   else if (phase === 'shown') card = { mood: 'thinking', tone: 'task', text: exercise.prompt };
   else if (latest === 'outcome' && wrong.length > 0) {
     const missing = several && picked.every((i) => right.includes(i));
-    card = { mood: 'oops', tone: 'bad', text: missing ? 'Nearly. There is more than one right answer here.' : 'Not that one. Have another look.' };
+    card = { mood: 'oops', tone: 'bad', text: missing ? 'Not all of them. There is more than one right answer here.' : 'Not that one. Have another look.' };
   } else if (hint && latest === 'hint') card = { mood: 'thinking', tone: 'hint', text: hint };
   else card = { mood: 'neutral', tone: 'task', text: exercise.prompt };
 
