@@ -22,7 +22,7 @@ function MiniGrid({ cells, size = 17 }: { cells: string; size?: number }) {
   const rows = 5;
   const lit = (col: number, row: number) => !!r && col >= r.start.col && col <= r.end.col && row >= r.start.row && row <= r.end.row;
   return (
-    <View accessible accessibilityLabel={`A grid with ${cells.includes(':') ? 'a block' : 'one cell'} highlighted`}>
+    <View accessible accessibilityLabel={`A grid with ${cells.includes(':') ? 'a range' : 'one cell'} highlighted`}>
       <View style={styles.miniRow}>
         <View style={{ width: size * 0.8 }} />
         {Array.from({ length: cols }, (_, col) => (
@@ -153,7 +153,7 @@ export default function MatchPairsScreen() {
       <GameIntro
         title="Match Pairs"
         about="Join each item on the left to its partner on the right. A wrong pair gives a clue; there is no clock."
-        covers={CATEGORIES.filter((x) => counts[x.id] > 0).map((x) => x.title)}
+        covers={CATEGORIES.filter((x) => playable(x.id)).map((x) => x.title)}
         locked={total < MIN_PAIRS ? 'Opens after Welcome to Golden Apples Farm.' : null}
         record={g.record}
         onPlay={begin}

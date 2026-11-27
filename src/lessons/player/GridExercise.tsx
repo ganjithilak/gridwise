@@ -505,6 +505,8 @@ export function GridExercise({
     );
   }
 
+  // While typing, Check sits under the keys, so the space under the sheet has to hold both.
+  const keysWithCheck = typesValues && doing && top === null && !tray;
   let bottom;
   if (editing && tray) {
     bottom = (
@@ -657,10 +659,13 @@ export function GridExercise({
         {gridView}
         {nextAnywhere}
       </Workbench>
-      <View style={{ height: keyboardHeight(metrics.keyHeight, chips.length > 0) }}>{bottom}</View>
+      <View style={{ height: keyboardHeight(metrics.keyHeight, chips.length > 0) + (keysWithCheck ? CHECK_ROW : 0) }}>{bottom}</View>
     </View>
   );
 }
+
+/** The Check button under the keys (a 48 pt button) and the gap above it. */
+const CHECK_ROW = 55;
 
 const styles = StyleSheet.create({
   fill: { flex: 1, gap: space.sm },

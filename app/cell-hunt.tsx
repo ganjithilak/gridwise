@@ -154,7 +154,7 @@ export default function CellHuntScreen() {
     return (
       <GameIntro
         title="Cell Hunt"
-        about={`Find cells, rows, columns and blocks on a sheet that changes shape every time. ${HUNT_LENGTH} tasks a go, at your own pace.`}
+        about={`Find cells, rows, columns and ranges on a sheet that changes shape every time. ${HUNT_LENGTH} tasks a go, at your own pace.`}
         covers={coverNames(SKILLS, g.taught)}
         locked={open ? null : 'Opens after Cells and References.'}
         record={g.record}

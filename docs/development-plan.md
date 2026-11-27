@@ -18,7 +18,7 @@ behind it, and where each stage stands. Visual direction lives in
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
 | 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | **Done** (27 Nov): the farm's gold kit on every screen through shared Panel, SectionLabel and Button; Classic Farm unchanged |
 | 8 | Editorial overhaul of the remaining units | **Done** (27 Nov): units 1–4 on the farm's records in the house voice; formulas typed as in Excel (select, then type); wording rules enforced by test |
-| 9 | Full testing and visual review | Ongoing per stage |
+| 9 | Full testing and visual review | **Done** (27 Nov): production build, every screen at three sizes and in all three looks; seven defects fixed (below). Physical-phone test still to do |
 
 **Dependencies.** Stage 4 (spreadsheet layout) should settle before Stage 3's transition is
 finalised, because the transition must land exactly on the new grid's headers. Stage 5's
@@ -292,6 +292,37 @@ AutoSum suggests rather than guesses, no "tap it again to type", Australian spel
 - Checked in the browser at 375 × 812 (Refined): a demonstration, typing a formula, typing over a
   broken one, a fill with the keys open, the fill handle at the grid's edge, an Undo task and
   the results screen. Not every lesson was played end to end, and not on a physical phone.
+
+## Stage 9: full testing and visual review (27 Nov 2026)
+
+**Automated.** Typecheck, lint and 2,700 tests pass. The production web build (`expo export -p
+web`) succeeds at 2.0 MB. `expo install --check`: every package is on SDK 58, but four are a
+patch behind (expo 58.0.25 → ~58.1.0, expo-router, expo-splash-screen, jest-expo). Not updated:
+a dependency change, left for the product owner's approval.
+
+**Reviewed** in the browser at 375 × 812, 375 × 667 (the smallest supported phone) and
+812 × 375 (landscape), in Refined dark, Refined light and Classic Farm: the Farm, Games,
+Profile, welcome, tour, onboarding question, placement test, lessons from units 1–3, every
+game's opening screen, a Find the Error round and the results screen.
+
+**Fixed.**
+- On a small phone the keys and Check covered the bottom of the sheet (a 5-row lookup sheet lost
+  row 5). The space under the sheet now holds both; a 7-row sheet fits with 35 pt cells at
+  375 × 667 (44 pt at 375 × 812).
+- Games: two game descriptions were cut off mid-sentence; shortened.
+- Profile: long lesson and level names were cut off; they now wrap. Grid Master levels (locked
+  in the Advanced Arcade) are listed only once played, so no earlier results are lost.
+- Match Pairs listed a category as covered while its button was still locked; it now lists only
+  the categories that can be chosen.
+- Cell Hunt said "block"; it now says "range", as the lessons do.
+- Find the Error's docket split "140" from "kg" across lines.
+- Unit tests and practice rounds showed the "Lesson" step label; they now say "Test" or
+  "Practice". The tour's example pear price now matches the lessons ($5).
+
+**Not covered.** No physical phone (Expo Go) test: needed before release, particularly for
+touch feel, haptics and performance (the frame-rate target in Performance requirements is still
+unmeasured). Not every lesson was played start to finish in the browser; every exercise's
+worked solution is proved solvable by the content tests. Screen-reader use was not tested.
 
 ## Approved vs deferred
 

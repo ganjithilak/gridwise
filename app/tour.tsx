@@ -23,7 +23,7 @@ function MiniSheet({ c }: { c: Palette }) {
   const rows = [
     ['Fruit', 'Price per kg'],
     ['Apples', '$4.00'],
-    ['Pears', '$3.50'],
+    ['Pears', '$5.00'],
   ];
   return (
     <View style={[styles.mini, { borderColor: c.outline, backgroundColor: c.surface }]}>

@@ -138,7 +138,7 @@ export default function ProfileScreen() {
           ) : (
             finished.map(({ lesson, record }) => (
               <View key={lesson.id} style={styles.line} testID={`done-${lesson.id}`}>
-                <Text style={[typography.body, styles.words, { color: c.ink }]} numberOfLines={1}>
+                <Text style={[typography.body, styles.words, { color: c.ink }]} numberOfLines={2}>
                   {lesson.title}
                 </Text>
                 <Text style={[typography.small, { color: c.inkSoft }]}>
@@ -154,12 +154,15 @@ export default function ProfileScreen() {
           {[
             ...GAMES.filter((g) => g.id !== 'trial').map((g) => ({ id: g.id, name: g.title })),
             ...GAME_LEVELS.map((gameLevel, i) => ({ id: gameLevel.id, name: `Speed Trial ${i + 1}: ${gameLevel.title}` })),
-            ...GRID_LEVELS.map((gridLevel, i) => ({ id: gridLevel.id, name: `Grid Master ${i + 1}: ${gridLevel.title}` })),
+            // Grid Master is locked in the Advanced Arcade: only levels already played are listed, so no results are lost.
+            ...GRID_LEVELS.map((gridLevel, i) => ({ id: gridLevel.id, name: `Grid Master ${i + 1}: ${gridLevel.title}` })).filter(
+              (gridLevel) => data.game.levels[gridLevel.id] !== undefined,
+            ),
           ].map((gameLevel) => {
             const record = data.game.levels[gameLevel.id];
             return (
               <View key={gameLevel.id} style={styles.line}>
-                <Text style={[typography.body, styles.words, { color: record ? c.ink : c.inkSoft }]} numberOfLines={1}>
+                <Text style={[typography.body, styles.words, { color: record ? c.ink : c.inkSoft }]} numberOfLines={2}>
                   {gameLevel.name}
                 </Text>
                 <Text style={[typography.small, { color: record ? c.spark : c.inkSoft, fontWeight: record ? '700' : '400' }]}>
@@ -170,7 +173,7 @@ export default function ProfileScreen() {
           })}
           <View style={styles.gameButtons}>
             <Button testID="profile-play" kind="quiet" label="Play Speed Trial" onPress={() => router.push('/speed-trial')} style={styles.half} />
-            {/* Grid Master is in the locked Advanced Arcade; its results stay listed above. */}
+            {/* Grid Master is in the locked Advanced Arcade; levels already played stay listed above. */}
           </View>
         </Panel>
 

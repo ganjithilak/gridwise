@@ -23,10 +23,10 @@ export interface GameEntry {
 }
 
 export const GAMES: readonly GameEntry[] = [
-  { id: 'match', title: 'Match Pairs', about: 'Join terms, keys and references to their meanings', path: '/match-pairs', opensWith: ['xl.spreadsheet.purpose', 'xl.cell.address'], records: ['match'] },
-  { id: 'hunt', title: 'Cell Hunt', about: 'Find cells, rows, columns and blocks', path: '/cell-hunt', opensWith: ['xl.cell.address'], records: ['hunt'] },
+  { id: 'match', title: 'Match Pairs', about: 'Match terms, keys and references', path: '/match-pairs', opensWith: ['xl.spreadsheet.purpose', 'xl.cell.address'], records: ['match'] },
+  { id: 'hunt', title: 'Cell Hunt', about: 'Find cells, rows, columns and ranges', path: '/cell-hunt', opensWith: ['xl.cell.address'], records: ['hunt'] },
   { id: 'trial', title: 'Speed Trial', about: 'Press the keys for an action', path: '/speed-trial', opensWith: ['xl.cell.type', 'xl.select.column', 'xl.keys.move'], records: GAME_LEVELS.map((l) => l.id) },
-  { id: 'errors', title: 'Find the Error', about: 'Spot the mistake in a farm record and correct it', path: '/find-the-error', opensWith: ERROR_SKILLS, records: ['errors'] },
+  { id: 'errors', title: 'Find the Error', about: 'Spot and correct a slip in the records', path: '/find-the-error', opensWith: ERROR_SKILLS, records: ['errors'] },
   { id: 'builder', title: 'Formula Builder', about: 'Put a formula together from its pieces', path: '/formula-builder', opensWith: BUILDER_SKILLS, records: ['builder'] },
   { id: 'predict', title: 'Predict the Result', about: 'Say what a formula will show', path: '/predict-the-result', opensWith: PREDICT_SKILLS, records: ['predict'] },
 ];

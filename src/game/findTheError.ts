@@ -85,7 +85,7 @@ const docket: Maker = (r) => {
     skill: TYPE,
     sheet,
     ask: 'The morning count is on the docket. One stock figure on the sheet does not match it. Find it.',
-    note: { title: 'Stock count', lines: produce.map((p, i) => `${p}: ${spec.grid?.[i + 1][1]} kg`) },
+    note: { title: 'Stock count', lines: produce.map((p, i) => `${p}:\u00A0${spec.grid?.[i + 1][1]}\u00A0kg`) },
     wrong: [`B${row}`],
     problem: `B${row} says ${typed}; the docket says ${truth} kg of ${produce[row - 2].toLowerCase()}.`,
     fixCell: `B${row}`,

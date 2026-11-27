@@ -124,7 +124,7 @@ function make(r: Rng, kind: HuntKind, skill: string, sheet: SheetSpec, tier: num
     }
     case 'range': {
       const target = blockIn(r, sheet);
-      return { kind, skill, sheet, target, from: awayFrom(target.split(':')[0], sheet), ask: `Select the block ${target}.`, how: help ? 'Select its top-left cell, then hold Shift and use the arrows (or drag).' : undefined };
+      return { kind, skill, sheet, target, from: awayFrom(target.split(':')[0], sheet), ask: `Select the range ${target}.`, how: help ? 'Select its top-left cell, then hold Shift and use the arrows (or drag).' : undefined };
     }
     case 'arrows': {
       const from = cellIn(r, sheet);
@@ -137,7 +137,7 @@ function make(r: Rng, kind: HuntKind, skill: string, sheet: SheetSpec, tier: num
       const single = !block.includes(':');
       const options = single ? shuffle(r, [block, ...wrongCells(r, block, sheet)]) : shuffle(r, [block, ...nearMisses(r, block, sheet)]);
       if (options.length < 3) return null;
-      return { kind, skill: single ? ADDRESS : skill, sheet, target: block, from: block.split(':')[0], options, ask: single ? 'Which cell is selected?' : 'Which block is selected?' };
+      return { kind, skill: single ? ADDRESS : skill, sheet, target: block, from: block.split(':')[0], options, ask: single ? 'Which cell is selected?' : 'Which range is selected?' };
     }
   }
 }

@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { buzz } from '@/lib/feedback';
 import { now } from '@/lib/clock';
+import { REVIEW_ID } from '@/progress/finish';
+import { lessonIdOf } from '@/progress/mastery';
 import { fromSaved, toSaved, type Run, type SavedRun, type Side } from '@/progress/saved';
 import type { Computer } from '@/spreadsheet/shortcuts';
 import { MOTION_MS, radius, space, TOUCH, useTheme } from '@/theme';
@@ -160,6 +162,8 @@ export function LessonPlayer({ lesson, computer = 'win', resume, onSave, onFinis
   const back = nav.back ?? (index > 0 ? () => lookAt(index - 1) : null);
   const forward = nav.forward;
   const step = stepOf(item.exercise, phase);
+  // A unit test or a practice round has no Teach, Lesson, Apply: it says what it is instead.
+  const kindLabel = lesson.id.endsWith('.test') ? 'Test' : lesson.id === REVIEW_ID || lessonIdOf(lesson.id) !== lesson.id ? 'Practice' : null;
   const swapSides = () => onSheetSide?.(sheetSide === 'left' ? 'right' : 'left');
 
   return (
@@ -197,10 +201,13 @@ export function LessonPlayer({ lesson, computer = 'win', resume, onSave, onFinis
             <View
               testID="lesson-step"
               accessibilityRole="text"
-              accessibilityLabel={`Step: ${STEP_NAMES[step]}. A lesson goes Teach, Lesson, Apply.`}
+              accessibilityLabel={kindLabel ?? `Step: ${STEP_NAMES[step]}. A lesson goes Teach, Lesson, Apply.`}
               style={styles.steps}
             >
-              {STEPS.map((name) =>
+              {kindLabel ? (
+                <Text style={[styles.stepName, { color: c.accent }]}>{kindLabel.toUpperCase()}</Text>
+              ) : null}
+              {(kindLabel ? [] : STEPS).map((name) =>
                 name === step || split ? (
                   <Text key={name} style={[styles.stepName, { color: name === step ? c.accent : c.inkSoft, opacity: name === step ? 1 : 0.55 }]}>
                     {STEP_NAMES[name].toUpperCase()}
