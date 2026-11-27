@@ -87,13 +87,17 @@ export const DEFAULT_PROFILE: Profile = {
   look: 'dark',
 };
 
-/** How one level of the Speed Trial game has gone so far. */
+/** How one game (or one level of a game) has gone so far, by its ID. */
 export interface GameLevelRecord {
   /** The quickest finish, in thousandths of a second. */
   bestMs: number;
   /** The most stars earned in one go: 1 to 3. */
   bestStars: number;
   plays: number;
+  /** The best share of answers right first time, 0 to 100. Core games and Speed Trial. */
+  bestAccuracy?: number;
+  /** The quickest go played against the clock (Speed Trial's timed mode). */
+  bestTimedMs?: number;
 }
 
 /** The Speed Trial game: best results, and how well each shortcut is known. */
@@ -258,6 +262,8 @@ export function migrate(persisted: unknown, _version: number): ProgressData {
   for (const [id, value] of Object.entries(record<unknown>(game.levels))) {
     if (!isRecord(value) || count(value.bestMs) === 0) continue;
     levels[id] = { bestMs: count(value.bestMs), bestStars: Math.min(3, Math.max(1, count(value.bestStars))), plays: Math.max(1, count(value.plays)) };
+    if (typeof value.bestAccuracy === 'number') levels[id].bestAccuracy = Math.min(100, count(value.bestAccuracy));
+    if (typeof value.bestTimedMs === 'number' && value.bestTimedMs > 0) levels[id].bestTimedMs = count(value.bestTimedMs);
   }
   const known: Record<string, number> = {};
   for (const [id, value] of Object.entries(record<unknown>(game.known))) known[id] = count(value);

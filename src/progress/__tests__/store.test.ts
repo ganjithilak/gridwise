@@ -113,23 +113,23 @@ describe('progress store', () => {
   });
 
   it('records a level of Grid Master next to Speed Trial, with XP for the day', () => {
-    useProgress.getState().finishGame(0, { ms: 30_000, misses: 0, firstTry: [] }, '2026-11-17');
+    useProgress.getState().finishGame('trial.move', { ms: 30_000, asked: 8, firstTry: 8 }, '2026-11-17');
     const first = useProgress.getState().finishGrid(0, { ms: 45_000, stars: 2 }, '2026-11-17');
     expect(first).toMatchObject({ xp: 4, newBest: false, opened: { id: 'grid.2' } });
     const s = useProgress.getState();
     expect(s.game.levels['grid.1']).toEqual({ bestMs: 45_000, bestStars: 2, plays: 1 });
-    expect(s.game.levels['trial.1']).toBeDefined();
+    expect(s.game.levels['trial.move']).toBeDefined();
     expect(s.days['2026-11-17']).toBe(s.xp);
     expect(s.streak.count).toBe(1);
   });
 
-  it('records a go at the game: best time, XP for the day, and the streak', () => {
-    const first = useProgress.getState().finishGame(0, { ms: 30_000, misses: 3, firstTry: ['copy'] }, '2026-11-16');
-    expect(first).toMatchObject({ stars: 1, xp: 2, newBest: false });
-    const second = useProgress.getState().finishGame(0, { ms: 12_000, misses: 0, firstTry: ['copy', 'paste'] }, '2026-11-16');
-    expect(second).toMatchObject({ stars: 3, xp: 6, newBest: true });
+  it('records a go at a game: best accuracy and time, XP for the day, and the streak', () => {
+    const first = useProgress.getState().finishGame('trial.clip', { ms: 30_000, asked: 8, firstTry: 5, known: ['copy'] }, '2026-11-16');
+    expect(first).toMatchObject({ stars: 1, xp: 2, newBest: null, accuracy: 63 });
+    const second = useProgress.getState().finishGame('trial.clip', { ms: 12_000, asked: 8, firstTry: 8, timed: true, known: ['copy', 'paste'] }, '2026-11-16');
+    expect(second).toMatchObject({ stars: 3, xp: 6, newBest: 'accuracy' });
     const s = useProgress.getState();
-    expect(s.game.levels['trial.1']).toEqual({ bestMs: 12_000, bestStars: 3, plays: 2 });
+    expect(s.game.levels['trial.clip']).toEqual({ bestMs: 12_000, bestStars: 3, plays: 2, bestAccuracy: 100, bestTimedMs: 12_000 });
     expect(s.game.known).toEqual({ copy: 2, paste: 1 });
     expect(s.xp).toBe(8);
     expect(s.days['2026-11-16']).toBe(8);

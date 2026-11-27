@@ -7,7 +7,9 @@ import { Button } from '@/components/Button';
 import { CELL_BLUE, CELL_COLOURS, Mascot } from '@/components/Mascot';
 import { defaultCourse } from '@/content';
 import { GRID_LEVELS } from '@/game/gridMaster';
-import { clockTime, GAME_LEVELS } from '@/game/speedTrial';
+import { GAMES } from '@/game/catalogue';
+import { clockTime } from '@/game/records';
+import { GAME_LEVELS } from '@/game/speedTrial';
 import { dayKey, shiftClock } from '@/lib/clock';
 import { levelFor } from '@/progress/level';
 import { STREAK_BADGES, streakBadge, unitBadge } from '@/progress/path';
@@ -144,6 +146,7 @@ export default function ProfileScreen() {
         <Text style={[typography.label, { color: c.inkSoft }]}>GAME RESULTS</Text>
         <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]} testID="game-results">
           {[
+            ...GAMES.filter((g) => g.id !== 'trial').map((g) => ({ id: g.id, name: g.title })),
             ...GAME_LEVELS.map((gameLevel, i) => ({ id: gameLevel.id, name: `Speed Trial ${i + 1}: ${gameLevel.title}` })),
             ...GRID_LEVELS.map((gridLevel, i) => ({ id: gridLevel.id, name: `Grid Master ${i + 1}: ${gridLevel.title}` })),
           ].map((gameLevel) => {
@@ -154,7 +157,7 @@ export default function ProfileScreen() {
                   {gameLevel.name}
                 </Text>
                 <Text style={[typography.small, { color: record ? c.spark : c.inkSoft, fontWeight: record ? '700' : '400' }]}>
-                  {record ? `${'★'.repeat(record.bestStars)}  ${clockTime(record.bestMs)}` : 'Not played'}
+                  {record ? `${'★'.repeat(record.bestStars)}  ${record.bestAccuracy !== undefined ? `${record.bestAccuracy}%` : clockTime(record.bestMs)}` : 'Not played'}
                 </Text>
               </View>
             );

@@ -5,8 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Mascot } from '@/components/Mascot';
 import { defaultCourse, skillName } from '@/content';
+import { gameStatuses } from '@/game/catalogue';
 import { GRID_LEVELS } from '@/game/gridMaster';
-import { GAME_LEVELS } from '@/game/speedTrial';
 import { dayKey } from '@/lib/clock';
 import { REVIEW_ID } from '@/progress/finish';
 import { reviewSession } from '@/progress/playable';
@@ -34,50 +34,46 @@ export default function PracticeScreen() {
   const inProgress = data.runs[REVIEW_ID] !== undefined;
   const start = () => openLesson(REVIEW_ID);
 
-  // How far each game has got: the number of levels finished, out of how many.
-  // Core educational games. Grid Master now lives in the locked Advanced Arcade below
-  // (its code and route are kept; see docs/games.md).
-  const reached = (ids: string[]) => ids.filter((id) => data.game.levels[id] !== undefined).length;
-  const arcadeDone = reached(GRID_LEVELS.map((level) => level.id));
-  const games = [
-    {
-      id: 'open-speed-trial',
-      title: 'Speed Trial',
-      about: 'Press the shortcut, against the clock',
-      done: reached(GAME_LEVELS.map((level) => level.id)),
-      levels: GAME_LEVELS.length,
-      path: '/speed-trial' as const,
-    },
-  ];
+  // The core games. Grid Master lives in the locked Advanced Arcade below (its code and
+  // route are kept; see docs/development-plan.md, Stage 6).
+  const arcadeDone = GRID_LEVELS.filter((level) => data.game.levels[level.id] !== undefined).length;
+  const games = gameStatuses(defaultCourse, data);
 
   return (
     <View style={[styles.screen, { backgroundColor: c.bg, paddingTop: insets.top + space.md }]}>
       <ScreenSky />
-      <View style={styles.column}>
-        <Text style={[typography.title, { color: c.ink }]}>Practice</Text>
+      <ScrollView style={styles.scrollAll} contentContainerStyle={styles.column} showsVerticalScrollIndicator={false}>
+        <Text style={[typography.title, { color: c.ink }]}>Games</Text>
 
         {/* The games. They are always here, whatever else there is to practise. */}
         <View style={styles.games}>
-          {games.map((g) => {
-            const progress = g.done > 0 ? `${g.done} of ${g.levels} levels done` : 'Not played yet';
+          {games.map(({ entry, open, opensAfter, plays, bestStars }) => {
+            const progress = !open ? (opensAfter ?? 'Not open yet') : plays > 0 ? `${'★'.repeat(bestStars)}${'☆'.repeat(3 - bestStars)}  played ${plays}×` : 'Not played yet';
             return (
               <Pressable
-                key={g.id}
-                testID={g.id}
+                key={entry.id}
+                testID={`open-${entry.id}`}
                 accessibilityRole="button"
-                accessibilityLabel={`${g.title}, a game. ${g.about}. ${progress}.`}
-                onPress={() => router.push(g.path)}
+                accessibilityLabel={`${entry.title}, a game. ${entry.about}. ${progress}.`}
+                accessibilityState={{ disabled: !open }}
+                disabled={!open}
+                onPress={() => router.push(entry.path)}
                 style={({ pressed }) => [
                   styles.game,
-                  { backgroundColor: c.accentSoft, borderColor: c.accent, borderBottomWidth: pressed ? 1 : 4, marginTop: pressed ? 3 : 0 },
+                  open
+                    ? { backgroundColor: c.accentSoft, borderColor: c.accent, borderBottomWidth: pressed ? 1 : 4, marginTop: pressed ? 3 : 0 }
+                    : { backgroundColor: c.surface, borderColor: c.line, borderStyle: 'dashed', opacity: 0.7 },
                 ]}
               >
-                <Text style={[typography.label, { color: c.accent }]}>GAME</Text>
-                <Text style={[typography.heading, { color: c.ink }]}>{g.title}</Text>
-                <Text style={[typography.small, { color: c.inkSoft }]} numberOfLines={2}>
-                  {g.about}
+                <Text style={[typography.bodyStrong, { color: c.ink }]} numberOfLines={1}>
+                  {entry.title}
                 </Text>
-                <Text style={[typography.small, styles.progress, { color: c.accent }]}>{progress}</Text>
+                <Text style={[typography.small, styles.about, { color: c.inkSoft }]} numberOfLines={2}>
+                  {entry.about}
+                </Text>
+                <Text style={[styles.progress, { color: open ? c.accent : c.inkSoft }]} numberOfLines={2}>
+                  {progress}
+                </Text>
               </Pressable>
             );
           })}
@@ -102,7 +98,8 @@ export default function PracticeScreen() {
             <Text style={[typography.body, { color: c.inkSoft }]}>
               A short round on the skills that need it most. Different numbers from the lessons.
             </Text>
-            <ScrollView style={styles.scroll} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+            <Text style={[typography.label, { color: c.inkSoft }]}>PRACTICE</Text>
+            <View style={styles.list}>
               {due.map((skill) => {
                 const weak = data.skills[skill].weak;
                 return (
@@ -115,7 +112,7 @@ export default function PracticeScreen() {
                   </View>
                 );
               })}
-            </ScrollView>
+            </View>
             <Button testID="start-practice" label={inProgress ? 'Continue' : 'Start practice'} onPress={start} />
           </>
         ) : (
@@ -127,7 +124,7 @@ export default function PracticeScreen() {
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -135,15 +132,16 @@ export default function PracticeScreen() {
 const styles = StyleSheet.create({
   arcade: { borderWidth: 1, borderStyle: 'dashed', borderRadius: radius.lg, padding: space.md, gap: 2, opacity: 0.85 },
   screen: { flex: 1, alignItems: 'center' },
-  column: { flex: 1, width: '100%', maxWidth: 480, paddingHorizontal: space.lg, paddingBottom: space.md, gap: space.md },
-  scroll: { flex: 1 },
+  scrollAll: { flex: 1, width: '100%', maxWidth: 520 },
+  column: { paddingHorizontal: space.lg, paddingBottom: space.xl, gap: space.md },
   list: { gap: space.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderRadius: radius.md, padding: space.md },
-  games: { flexDirection: 'row', gap: space.sm },
-  game: { flex: 1, borderWidth: 1, borderRadius: radius.lg, padding: space.md, gap: 2, userSelect: 'none' },
-  progress: { marginTop: 'auto', paddingTop: 4, fontWeight: '700' },
+  games: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  game: { flexGrow: 1, flexBasis: '45%', minHeight: 104, borderWidth: 1, borderRadius: radius.lg, paddingHorizontal: space.md, paddingVertical: space.sm, gap: 2, userSelect: 'none' },
+  about: { fontSize: 13, lineHeight: 17 },
+  progress: { marginTop: 'auto', paddingTop: 4, fontSize: 12.5, fontWeight: '700' },
   pip: { width: 10, height: 10, borderRadius: 5 },
   words: { flex: 1, gap: 1 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.md, paddingHorizontal: space.md },
+  empty: { alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingHorizontal: space.md, paddingVertical: space.md },
   centre: { textAlign: 'center' },
 });

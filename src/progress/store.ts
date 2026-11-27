@@ -7,7 +7,7 @@ import type { Course } from '@/lessons/types';
 import type { Computer } from '@/spreadsheet/shortcuts';
 
 import { gridXp, recordGrid, type GridOutcome } from '@/game/gridMaster';
-import { recordRound, xpFor, type RoundOutcome, type RoundResult } from '@/game/speedTrial';
+import { playXp, recordPlay, type PlayOutcome, type PlayResult } from '@/game/records';
 
 import { applyFinish, type Finished, type FinishResult } from './finish';
 import {
@@ -41,8 +41,11 @@ interface ProgressStore extends ProgressData {
   /** The tour has been taken or skipped. */
   setTourSeen: () => void;
   setLook: (look: Look) => void;
-  /** A go at the Speed Trial game was finished. Returns how it went against earlier goes. */
-  finishGame: (levelIndex: number, result: RoundResult, today: string) => RoundOutcome & { xp: number };
+  /**
+   * A go at one of the core games (or a Speed Trial level) was finished, by the game's ID.
+   * Returns how it went against earlier goes.
+   */
+  finishGame: (id: string, result: PlayResult, today: string) => PlayOutcome & { xp: number };
   /** A level of Grid Master was finished. Returns how it went against earlier goes. */
   finishGrid: (levelIndex: number, result: { ms: number; stars: number }, today: string) => GridOutcome & { xp: number };
   /** Wipes everything and starts the app as new. */
@@ -99,10 +102,10 @@ export const useProgress = create<ProgressStore>()(
       setSheetSide: (sheetSide) => set((s) => ({ profile: { ...s.profile, sheetSide } })),
       setTourSeen: () => set((s) => (s.profile.tourSeen ? s : { profile: { ...s.profile, tourSeen: true } })),
       setLook: (look) => set((s) => ({ profile: { ...s.profile, look } })),
-      finishGame: (levelIndex, result, today) => {
+      finishGame: (id, result, today) => {
         const s = get();
-        const outcome = recordRound(s.game, levelIndex, result);
-        const xp = xpFor(outcome.stars);
+        const outcome = recordPlay(s.game, id, result);
+        const xp = playXp(outcome.stars);
         // A game counts as learning today, like a practice round does.
         set({
           game: outcome.game,

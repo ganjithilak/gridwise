@@ -1,123 +1,148 @@
-import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/Button';
-import { Mascot } from '@/components/Mascot';
+import { defaultCourse } from '@/content';
 import { GameKeyboard } from '@/game/GameKeyboard';
+import { freshSeed } from '@/game/random';
+import { clockTime } from '@/game/records';
 import {
   answerLabel,
-  clockTime,
+  explainMiss,
+  fromKeyName,
   GAME_LEVELS,
   hintFor,
   holdsFor,
   isRight,
-  keysAt,
   levelOpen,
-  ROUND_LENGTH,
+  levelSkills,
   roundFor,
   shortcutById,
   shortcutsAt,
   type RealKey,
-  type RoundOutcome,
+  type TrialTask,
 } from '@/game/speedTrial';
-import { dayKey, now } from '@/lib/clock';
+import { lessonTeaching } from '@/game/taught';
+import { Choice, ComputerChoice, GameFrame, GameResults, GameTop, stars, useLeaveGame } from '@/game/ui/GameParts';
+import { useGame } from '@/game/ui/useGame';
+import { now } from '@/lib/clock';
 import { buzz } from '@/lib/feedback';
-import { useHydrated, useProgress } from '@/progress/store';
-import type { Computer, PressKey } from '@/spreadsheet/shortcuts';
+import type { PressKey } from '@/spreadsheet/shortcuts';
 import { mono, radius, space, type as typography, useTheme } from '@/theme';
-import { ScreenSky } from '@/world/ui/ScreenSky';
 
-const stars = (n: number): string => '★'.repeat(n) + '☆'.repeat(3 - n);
-
-/** What a real keyboard calls a key, in the game's own names. Null for a key the game has no use for. */
-function fromEvent(key: string): PressKey | null {
-  if (key === ' ' || key === 'Spacebar') return 'Space';
-  if (key.startsWith('Arrow')) return key.slice(5);
-  return /^[a-zA-Z]$/.test(key) ? key.toUpperCase() : null;
-}
+type Mode = 'practice' | 'timed';
 
 interface Round {
   level: number;
-  tasks: string[];
+  mode: Mode;
+  tasks: TrialTask[];
   at: number;
   startedAt: number;
-  misses: number;
-  /** The task in hand has been got wrong at least once, so it gets its full hint. */
+  /** The task in hand has been got wrong, so it gets its full hint and no longer counts as first time. */
   missed: boolean;
-  firstTry: string[];
+  firstTry: number;
+  known: string[];
+}
+
+const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** Keys shown as caps: "Ctrl" "+" "C", for recognition tasks. */
+function Caps({ keys }: { keys: string[] }) {
+  const c = useTheme();
+  return (
+    <View style={styles.caps} accessible accessibilityLabel={keys.join(' plus ')}>
+      {keys.map((k, i) => (
+        <View key={`${k}${i}`} style={styles.capWrap}>
+          {i > 0 ? <Text style={[styles.plus, { color: c.inkSoft }]}>+</Text> : null}
+          <View style={[styles.cap, { backgroundColor: c.surface, borderColor: c.outline }]}>
+            <Text style={[styles.capText, { color: c.ink, fontFamily: mono }]}>{k}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
 }
 
 /**
- * Speed Trial: the shortcut game. A task is named and the player presses its keys, as
- * fast as they can. It is on the Practice tab and never part of a lesson.
+ * Speed Trial: the keys game. Execution (an action is named; press its keys) and recognition
+ * (keys are shown; name the action). Practice has no clock; Timed keeps a best time. Stars
+ * are for accuracy only. Levels open with the lessons that teach their keys.
  */
 export default function SpeedTrialScreen() {
   const c = useTheme();
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const hydrated = useHydrated();
+  const leave = useLeaveGame();
   const { height } = useWindowDimensions();
-  const game = useProgress((s) => s.game);
-  const computer = useProgress((s) => s.profile.computer);
-  const setComputer = useProgress((s) => s.setComputer);
-  const finishGame = useProgress((s) => s.finishGame);
-
+  const g = useGame('trial');
+  const [mode, setMode] = useState<Mode>('practice');
   const [round, setRound] = useState<Round | null>(null);
-  const [done, setDone] = useState<(RoundOutcome & { xp: number; ms: number; misses: number; level: number }) | null>(null);
+  const [done, setDone] = useState<(ReturnType<typeof g.finish> & { ms: number; level: number; mode: Mode; asked: number; firstTry: number }) | null>(null);
   const [held, setHeld] = useState<readonly RealKey[]>([]);
-  const [flash, setFlash] = useState<'right' | 'wrong' | null>(null);
+  const [said, setSaid] = useState<string | null>(null);
+  const [wrongKeys, setWrongKeys] = useState<string[]>([]);
+  const [picked, setPicked] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
 
-  // The clock on screen. The time that counts is taken from the start and the last answer.
+  const finish = g.finish;
+  const timed = round?.mode === 'timed';
   useEffect(() => {
-    if (!round) return;
+    if (!round || !timed) return;
     const tick = setInterval(() => setElapsed(now() - round.startedAt), 100);
     return () => clearInterval(tick);
-  }, [round]);
+  }, [round, timed]);
 
   useEffect(() => {
-    if (!flash) return;
-    const clear = setTimeout(() => setFlash(null), 350);
+    if (wrongKeys.length === 0) return;
+    const clear = setTimeout(() => setWrongKeys([]), 500);
     return () => clearTimeout(clear);
-  }, [flash]);
+  }, [wrongKeys]);
 
-  const start = (level: number) => {
+  const start = (level: number, m: Mode = mode) => {
     setDone(null);
     setHeld([]);
+    setSaid(null);
+    setPicked(null);
     setElapsed(0);
-    setRound({ level, tasks: roundFor(level, game.levels[GAME_LEVELS[level].id]?.plays ?? 0), at: 0, startedAt: now(), misses: 0, missed: false, firstTry: [] });
+    setRound({ level, mode: m, tasks: roundFor(level, freshSeed(), g.taught), at: 0, startedAt: now(), missed: false, firstTry: 0, known: [] });
   };
+
+  const advance = useCallback(
+    (r: Round, rightFirst: boolean, shortcutId: string) => {
+      const firstTry = r.firstTry + (rightFirst ? 1 : 0);
+      const known = rightFirst && r.tasks[r.at].kind === 'press' ? [...r.known, shortcutId] : r.known;
+      setHeld([]);
+      setSaid(null);
+      setPicked(null);
+      if (r.at + 1 < r.tasks.length) {
+        setRound({ ...r, at: r.at + 1, missed: false, firstTry, known });
+        return;
+      }
+      const ms = now() - r.startedAt;
+      const levelId = GAME_LEVELS[r.level].id;
+      const outcome = finish({ ms, asked: r.tasks.length, firstTry, timed: r.mode === 'timed', known }, levelId);
+      setRound(null);
+      setDone({ ...outcome, ms, level: r.level, mode: r.mode, asked: r.tasks.length, firstTry });
+    },
+    [finish],
+  );
 
   const answer = useCallback(
     (holding: readonly RealKey[], key: PressKey) => {
-      if (!round || !computer) return;
-      const task = shortcutById(round.tasks[round.at]);
+      if (!round || !g.computer || round.tasks[round.at].kind !== 'press') return;
+      const task = shortcutById(round.tasks[round.at].id);
       setHeld([]);
-      if (!isRight(task, computer, holding, key)) {
+      if (!isRight(task, g.computer, holding, key)) {
         buzz('wrong');
-        setFlash('wrong');
-        setRound({ ...round, misses: round.misses + 1, missed: true });
+        setWrongKeys([key, ...holding]);
+        setSaid(explainMiss(task, g.computer, holding, key));
+        setRound({ ...round, missed: true });
         return;
       }
       buzz('correct');
-      setFlash('right');
-      const firstTry = round.missed ? round.firstTry : [...round.firstTry, task.id];
-      if (round.at + 1 < round.tasks.length) {
-        setRound({ ...round, at: round.at + 1, missed: false, firstTry });
-        return;
-      }
-      const ms = now() - round.startedAt;
-      const outcome = finishGame(round.level, { ms, misses: round.misses, firstTry }, dayKey());
-      buzz('complete');
-      setRound(null);
-      setDone({ ...outcome, ms, misses: round.misses, level: round.level });
+      advance(round, !round.missed, task.id);
     },
-    [round, computer, finishGame],
+    [round, g.computer, advance],
   );
 
-  // A real keyboard, where there is one: the real keys are the whole point of the game.
+  // A real keyboard, where there is one: real keys are the point of the game.
   const live = useRef(answer);
   useEffect(() => {
     live.current = answer;
@@ -126,9 +151,10 @@ export default function SpeedTrialScreen() {
   useEffect(() => {
     if (Platform.OS !== 'web' || !playing) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      const key = fromEvent(e.key);
+      if (['Control', 'Meta', 'Shift', 'Alt'].includes(e.key)) return;
+      const key = fromKeyName(e.key);
       if (!key || e.altKey) return;
-      // Stops the browser doing its own thing with Ctrl + A, Space and the rest.
+      // Stops the browser acting on Ctrl + A, Space, Tab and the rest.
       e.preventDefault();
       const holding: RealKey[] = [];
       if (e.ctrlKey) holding.push('Ctrl');
@@ -140,213 +166,202 @@ export default function SpeedTrialScreen() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [playing]);
 
-  if (!hydrated) return <View style={[styles.screen, { backgroundColor: c.bg }]} />;
-
-  const frame = (children: React.ReactNode) => (
-    <View
-      style={[
-        styles.screen,
-        { backgroundColor: c.bg, paddingTop: insets.top + space.sm, paddingBottom: insets.bottom + space.md, paddingLeft: insets.left, paddingRight: insets.right },
-      ]}
-    >
-      <ScreenSky variant="quiet" />
-      <View style={styles.column}>{children}</View>
-    </View>
-  );
-
-  const leave = () => (router.canGoBack() ? router.back() : router.replace('/practice'));
-
-  // The keys are named differently on each kind of computer, so that comes first.
-  if (!computer) {
-    const options: { computer: Computer; title: string; detail: string }[] = [
-      { computer: 'win', title: 'Windows', detail: 'Shortcuts use the Ctrl key' },
-      { computer: 'mac', title: 'Mac', detail: 'Shortcuts use the Cmd key' },
-    ];
-    return frame(
-      <View style={styles.centred}>
-        <Mascot expression="thinking" size={72} />
-        <Text style={[typography.title, styles.centre, { color: c.ink }]}>Which computer do you use?</Text>
-        <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>The shortcut keys are named differently on each.</Text>
-        {options.map((option) => (
-          <Pressable
-            key={option.computer}
-            testID={`computer-${option.computer}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${option.title}. ${option.detail}`}
-            onPress={() => setComputer(option.computer)}
-            style={[styles.level, { backgroundColor: c.surface, borderColor: c.outline }]}
-          >
-            <Text style={[typography.heading, { color: c.ink }]}>{option.title}</Text>
-            <Text style={[typography.small, { color: c.inkSoft }]}>{option.detail}</Text>
-          </Pressable>
-        ))}
-      </View>,
-    );
-  }
+  if (!g.hydrated) return <View style={[styles.fill, { backgroundColor: c.bg }]} />;
+  if (!g.computer) return <ComputerChoice onChoose={g.setComputer} onLeave={leave} />;
+  const computer = g.computer;
 
   if (round) {
-    const task = shortcutById(round.tasks[round.at]);
-    const hint = hintFor(game, task.id, round.missed);
-    const pointOut = {
-      holds: hint === 'none' ? [] : holdsFor(task, computer),
-      key: hint === 'full' ? task.key : null,
+    const item = round.tasks[round.at];
+    const task = shortcutById(item.id);
+    const hint = hintFor(g.data.game, task.id, round.missed);
+    const pointOut = { holds: hint === 'none' ? [] : holdsFor(task, computer), key: hint === 'full' ? task.key : null };
+    const keys = answerLabel(task, computer).split(' + ');
+    const keyHeight = height < 560 ? 30 : height < 720 ? 36 : 40;
+
+    const pick = (option: string) => {
+      if (picked) return;
+      setPicked(option);
+      if (option === task.does) {
+        buzz('correct');
+        setTimeout(() => advance(round, !round.missed, task.id), 500);
+      } else {
+        buzz('wrong');
+        setSaid(`Not “${option}”. ${sentence(task.cue)}.`);
+        setRound({ ...round, missed: true });
+        setTimeout(() => setPicked(null), 700);
+      }
     };
-    const tone = flash === 'wrong' ? c.bad : flash === 'right' ? c.accent : c.line;
-    return frame(
-      <>
-        <View style={styles.top}>
-          <Pressable testID="trial-quit" accessibilityRole="button" accessibilityLabel="Stop the game" onPress={() => setRound(null)} hitSlop={10} style={styles.quit}>
-            <Text style={[styles.quitText, { color: c.inkSoft }]}>✕</Text>
-          </Pressable>
-          <Text style={[typography.label, { color: c.inkSoft }]} testID="trial-count">
-            TASK {round.at + 1} OF {ROUND_LENGTH}
-          </Text>
-          <Text style={[styles.clock, { color: c.ink, fontFamily: mono }]} testID="trial-clock">
-            {clockTime(elapsed)}
-          </Text>
-        </View>
 
-        <View style={styles.middle}>
-          <View style={[styles.task, { backgroundColor: c.surface, borderColor: tone }]} testID="trial-task" accessibilityLabel={task.task}>
-            <Text style={[typography.label, { color: c.inkSoft }]}>PRESS THE SHORTCUT TO</Text>
-            <Text style={[styles.taskText, { color: c.ink }]}>{task.task}</Text>
-          </View>
-          <Text style={[typography.small, styles.centre, styles.help, { color: round.missed ? c.bad : c.inkSoft }]} testID="trial-help">
-            {round.missed
-              ? `Not that one. It is ${answerLabel(task, computer)}.`
-              : hint === 'full'
-                ? 'The keys to press are lit. Tap the first: it stays held.'
-                : hint === 'first'
-                  ? 'Only the first key is lit now. Which key goes with it?'
-                  : 'No hint for this one. You know it.'}
-          </Text>
-        </View>
-
-        <GameKeyboard
-          computer={computer}
-          lit={keysAt(round.level, computer)}
-          held={held}
-          hint={pointOut}
-          onHold={(key) => {
-            buzz('key');
-            setHeld((nowHeld) => (nowHeld.includes(key) ? nowHeld.filter((k) => k !== key) : [...nowHeld, key]));
-          }}
-          onKey={(key) => answer(held, key)}
-          keyHeight={height < 500 ? 34 : 42}
+    return (
+      <GameFrame wide>
+        <GameTop
+          onClose={() => setRound(null)}
+          at={round.at}
+          total={round.tasks.length}
+          right={
+            timed ? (
+              <Text style={[styles.clock, { color: c.ink, fontFamily: mono }]} testID="trial-clock">
+                {clockTime(elapsed)}
+              </Text>
+            ) : null
+          }
         />
-      </>,
+        <View style={styles.middle}>
+          <View style={[styles.task, { backgroundColor: c.surface, borderColor: said ? c.bad : c.line }]} testID="trial-task">
+            {item.kind === 'press' ? (
+              <>
+                <Text style={[typography.label, { color: c.inkSoft }]}>PRESS THE KEYS TO</Text>
+                <Text style={[styles.taskText, { color: c.ink }]}>{task.task}</Text>
+              </>
+            ) : (
+              <>
+                <Text style={[typography.label, { color: c.inkSoft }]}>WHAT DO THESE KEYS DO?</Text>
+                <Caps keys={keys} />
+              </>
+            )}
+          </View>
+          <Text style={[typography.small, styles.centre, styles.help, { color: said ? c.bad : c.inkSoft }]} testID="trial-help">
+            {said ??
+              (item.kind === 'name'
+                ? 'Choose what they do.'
+                : hint === 'full'
+                  ? task.hold.length > 0
+                    ? 'The keys are lit. Tap the first: it stays held. Then the second.'
+                    : 'The key is lit.'
+                  : hint === 'first'
+                    ? 'Only the first key is lit now. Which goes with it?'
+                    : 'No hint for this one now.')}
+          </Text>
+        </View>
+        {item.kind === 'name' ? (
+          <View style={styles.options}>
+            {item.options?.map((o) => (
+              <Choice key={o} label={sentence(o)} testID={`name-${o}`} state={picked === o ? (o === task.does ? 'right' : 'wrong') : 'idle'} onPress={() => pick(o)} />
+            ))}
+          </View>
+        ) : (
+          <GameKeyboard
+            computer={computer}
+            held={held}
+            hint={pointOut}
+            wrong={wrongKeys}
+            onHold={(key) => {
+              buzz('key');
+              setHeld((h) => (h.includes(key) ? h.filter((k) => k !== key) : [...h, key]));
+            }}
+            onKey={(key) => answer(held, key)}
+            keyHeight={keyHeight}
+          />
+        )}
+      </GameFrame>
     );
   }
 
   if (done) {
-    const level = GAME_LEVELS[done.level];
-    const next = GAME_LEVELS[done.level + 1];
-    return frame(
-      <View style={styles.centred}>
-        <Mascot expression={done.stars === 3 ? 'cheering' : 'happy'} size={72} />
-        <Text style={[styles.stars, { color: c.spark }]} testID="trial-stars" accessibilityLabel={`${done.stars} of 3 stars`}>
-          {stars(done.stars)}
-        </Text>
-        <Text style={[typography.title, styles.centre, { color: c.ink }]}>{done.newBest ? 'New best time!' : done.stars === 3 ? 'Clean and quick!' : 'Round done'}</Text>
-        <Text style={[typography.body, styles.centre, { color: c.inkSoft }]}>{level.title}</Text>
-        <View style={styles.results}>
-          {[
-            { label: 'Time', value: clockTime(done.ms) },
-            { label: 'Best', value: clockTime(done.game.levels[level.id].bestMs) },
-            { label: 'Misses', value: String(done.misses) },
-            { label: 'XP', value: `+${done.xp}` },
-          ].map((stat) => (
-            <View key={stat.label} style={[styles.result, { backgroundColor: c.surface, borderColor: c.line }]}>
-              <Text style={[styles.resultValue, { color: c.ink }]}>{stat.value}</Text>
-              <Text style={[typography.label, { color: c.inkSoft }]}>{stat.label.toUpperCase()}</Text>
-            </View>
-          ))}
-        </View>
-        {done.opened ? (
-          <Text style={[typography.small, styles.centre, { color: c.accent, fontWeight: '700' }]} testID="trial-opened">
-            New level open: {done.opened.title}
-          </Text>
-        ) : done.stars < 3 ? (
-          <Text style={[typography.small, styles.centre, { color: c.inkSoft }]}>Three stars: no misses, and under {ROUND_LENGTH * 2.5} seconds.</Text>
-        ) : null}
-        <View style={styles.wide}>
-          {next ? <Button testID="trial-next" label={`Next level: ${next.title}`} onPress={() => start(done.level + 1)} /> : null}
-          <Button testID="trial-again" kind={next ? 'secondary' : 'primary'} label="Play again" onPress={() => start(done.level)} />
-          <Button testID="trial-levels" kind="quiet" label="All levels" onPress={() => setDone(null)} />
-        </View>
-      </View>,
+    const next = GAME_LEVELS.findIndex((_, i) => i > done.level && levelOpen(g.taught, i));
+    return (
+      <GameResults
+        {...done}
+        best={done.mode === 'timed' ? done.record.bestTimedMs : null}
+        note={`${GAME_LEVELS[done.level].title} · ${done.mode === 'timed' ? 'timed' : 'practice'}`}
+        onAgain={() => start(done.level, done.mode)}
+        onLeave={() => setDone(null)}
+        leaveLabel="All levels"
+        extra={next >= 0 ? <Choice testID="trial-next" label={`Next level: ${GAME_LEVELS[next].title}`} onPress={() => start(next, done.mode)} /> : null}
+      />
     );
   }
 
-  return frame(
-    <>
-      <View style={styles.top}>
-        <Pressable testID="trial-leave" accessibilityRole="button" accessibilityLabel="Back to Practice" onPress={leave} hitSlop={10} style={styles.quit}>
-          <Text style={[styles.quitText, { color: c.inkSoft }]}>✕</Text>
-        </Pressable>
-        <Text style={[typography.title, styles.grow, { color: c.ink }]}>Speed Trial</Text>
-      </View>
+  return (
+    <GameFrame>
+      <GameTop onClose={leave} closeLabel="Back to Games" />
+      <Text style={[typography.title, { color: c.ink }]}>Speed Trial</Text>
       <Text style={[typography.body, { color: c.inkSoft }]}>
-        A task appears. Press its keyboard shortcut as fast as you can. Eight tasks a go, and each level adds more shortcuts.
+        An action is named: press its keys. Or keys are shown: say what they do. Stars are for accuracy, never for speed.
       </Text>
-      <ScrollView style={styles.grow} contentContainerStyle={styles.levels} showsVerticalScrollIndicator={false}>
+      <View style={styles.modes} accessibilityRole="radiogroup">
+        {(
+          [
+            { id: 'practice', title: 'Practice', detail: 'No clock' },
+            { id: 'timed', title: 'Timed', detail: 'Keeps a best time' },
+          ] as const
+        ).map((m) => {
+          const on = mode === m.id;
+          return (
+            <Pressable
+              key={m.id}
+              testID={`mode-${m.id}`}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: on }}
+              onPress={() => setMode(m.id)}
+              style={[styles.mode, { backgroundColor: on ? c.accentSoft : c.surface, borderColor: on ? c.accent : c.outline }]}
+            >
+              <Text style={[typography.bodyStrong, { color: on ? c.accent : c.ink }]}>{m.title}</Text>
+              <Text style={[typography.small, { color: c.inkSoft }]}>{m.detail}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <ScrollView style={styles.fill} contentContainerStyle={styles.levels} showsVerticalScrollIndicator={false}>
         {GAME_LEVELS.map((level, i) => {
-          const open = levelOpen(game, i);
-          const record = game.levels[level.id];
+          const open = levelOpen(g.taught, i);
+          const record = g.data.game.levels[level.id];
           const fresh = level.adds.map((id) => answerLabel(shortcutById(id), computer)).join(',  ');
+          const opener = levelSkills(i)
+            .filter((s) => !g.taught.has(s))
+            .map((s) => lessonTeaching(defaultCourse, s))
+            .filter(Boolean)
+            .join(' and ');
           return (
             <Pressable
               key={level.id}
               testID={`trial-${level.id}`}
               accessibilityRole="button"
-              accessibilityLabel={`Level ${i + 1}: ${level.title}. ${open ? (record ? `Best time ${clockTime(record.bestMs)}` : 'Not played yet') : 'Finish the level before to open this'}`}
+              accessibilityLabel={`Level ${i + 1}: ${level.title}. ${open ? (record ? `Best ${record.bestAccuracy ?? 0}% first time` : 'Not played yet') : `Opens after ${opener}`}`}
               accessibilityState={{ disabled: !open }}
               disabled={!open}
               onPress={() => start(i)}
-              style={[styles.level, { backgroundColor: c.surface, borderColor: c.outline, opacity: open ? 1 : 0.45 }]}
+              style={[styles.level, { backgroundColor: c.surface, borderColor: c.outline, opacity: open ? 1 : 0.5 }]}
             >
               <View style={styles.levelHead}>
                 <Text style={[typography.label, { color: c.accent }]}>LEVEL {i + 1}</Text>
                 <Text style={[styles.levelStars, { color: c.spark }]}>{record ? stars(record.bestStars) : ''}</Text>
               </View>
               <Text style={[typography.heading, { color: c.ink }]}>{level.title}</Text>
-              <Text style={[typography.small, { color: c.inkSoft }]}>New: {fresh}</Text>
+              <Text style={[typography.small, { color: c.inkSoft, fontFamily: mono }]}>{fresh}</Text>
               <Text style={[typography.small, { color: c.inkSoft }]}>
                 {!open
-                  ? 'Finish the level before to open this'
+                  ? `Opens after ${opener}`
                   : record
-                    ? `Best ${clockTime(record.bestMs)} · played ${record.plays} ${record.plays === 1 ? 'time' : 'times'}`
-                    : `${shortcutsAt(i).length} shortcuts in play. Not played yet.`}
+                    ? `Best ${record.bestAccuracy ?? 0}% first time${record.bestTimedMs ? ` · timed ${clockTime(record.bestTimedMs)}` : ''} · played ${record.plays}×`
+                    : `${shortcutsAt(i, g.taught).length} actions in play. Not played yet.`}
               </Text>
             </Pressable>
           );
         })}
       </ScrollView>
-    </>,
+    </GameFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, alignItems: 'center' },
-  column: { flex: 1, width: '100%', maxWidth: 640, paddingHorizontal: space.md, gap: space.md },
-  top: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: space.md },
-  quit: { width: 30, height: 40, alignItems: 'center', justifyContent: 'center' },
-  quitText: { fontSize: 18, fontWeight: '700' },
-  clock: { fontSize: 20, fontWeight: '700', marginLeft: 'auto' },
-  grow: { flex: 1 },
+  fill: { flex: 1 },
+  clock: { fontSize: 18, fontWeight: '700' },
   middle: { flex: 1, justifyContent: 'center', gap: space.sm },
-  task: { borderWidth: 2, borderRadius: radius.lg, padding: space.lg, gap: space.xs, alignItems: 'center' },
+  task: { borderWidth: 2, borderRadius: radius.lg, padding: space.lg, gap: space.sm, alignItems: 'center' },
   taskText: { fontSize: 22, lineHeight: 28, fontWeight: '800', textAlign: 'center' },
-  help: { minHeight: 38 },
+  help: { minHeight: 40 },
   centre: { textAlign: 'center' },
-  centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.md },
-  stars: { fontSize: 40, letterSpacing: 4 },
-  results: { flexDirection: 'row', gap: space.sm, alignSelf: 'stretch' },
-  result: { flex: 1, borderWidth: 1, borderRadius: radius.md, paddingVertical: space.sm, alignItems: 'center', gap: 2 },
-  resultValue: { fontSize: 17, fontWeight: '800' },
-  wide: { alignSelf: 'stretch', gap: space.sm },
+  options: { gap: space.sm },
+  caps: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  capWrap: { flexDirection: 'row', alignItems: 'center' },
+  plus: { fontSize: 18, fontWeight: '700', marginHorizontal: 8 },
+  cap: { minWidth: 54, height: 50, paddingHorizontal: 12, borderWidth: 1, borderBottomWidth: 4, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  capText: { fontSize: 18, fontWeight: '800' },
+  modes: { flexDirection: 'row', gap: space.sm },
+  mode: { flex: 1, borderWidth: 1.5, borderRadius: radius.md, padding: space.sm, gap: 1, userSelect: 'none' },
   levels: { gap: space.sm, paddingBottom: space.md },
-  level: { alignSelf: 'stretch', borderWidth: 1, borderBottomWidth: 4, borderRadius: radius.lg, padding: space.md, gap: 2, userSelect: 'none' },
+  level: { borderWidth: 1, borderBottomWidth: 4, borderRadius: radius.lg, padding: space.md, gap: 2, userSelect: 'none' },
   levelHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   levelStars: { fontSize: 16, letterSpacing: 2 },
 });

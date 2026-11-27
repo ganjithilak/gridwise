@@ -82,10 +82,10 @@ course progresses. All reuse the Workbench sheet (Stage 4).
 
 | Game | Status | Reinforces | Unlocks after |
 |---|---|---|---|
-| Match Pairs | planned (Stage 5) | references, functions, definitions, shortcuts and what they do | per category: the lesson that teaches it |
-| Speed Trial | built; overhaul planned | in order: navigation, selection, data entry, then shortcuts | each tier after its lessons. **Issue:** level 1 currently tests copy/paste/undo before they are taught |
-| Formula Builder | planned (Stage 5) | arithmetic, SUM, AVERAGE, MIN/MAX, COUNT, then later functions | First formulas |
-| Find the Error | planned (Stage 5) | wrong values, wrong ranges and references, error values, IFERROR | Entering and Correcting Data (values); First formulas (formulas) |
-| Cell Hunt | planned (Stage 5) | cell references, rows/columns, ranges | Cells and References |
-| Predict the Result | planned (Stage 5) | what a formula returns | First formulas |
+| Match Pairs | built (Stage 5) | words, references, shortcuts, symbols, functions, formula results, error values, formatting | per category: the lesson that teaches it |
+| Speed Trial | rebuilt (Stage 5) | entering data (Enter, Esc, F2), rows and columns, arrows, stretching, then the side unit's shortcuts | each level when its lessons are finished |
+| Formula Builder | built (Stage 5) | arithmetic, SUM, AVERAGE, MIN/MAX, COUNT, $, comparisons, IF, COUNTIF, SUMIF | Add it up |
+| Find the Error | built (Stage 5) | typed values, ranges, references, functions, $, IF, #DIV/0!, #NAME? | Entering and Correcting Data (values); formulas as taught |
+| Cell Hunt | built (Stage 5) | cell references, rows and columns, blocks, arrow keys | Cells and References |
+| Predict the Result | built (Stage 5) | what a formula returns | Add it up |
 | Grid Master | locked in Advanced Arcade | cell references, Shift + arrows | — |

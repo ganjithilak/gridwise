@@ -14,7 +14,7 @@ behind it, and where each stage stands. Visual direction lives in
 | 2 | Roots content overhaul; permanent editorial standards | **Done**: 5 lessons rewritten, then revised after a beginner walkthrough (27 Nov) |
 | 3 | Spreadsheet atmosphere; seamless lesson-entry transition (farm and roots routes) | **Done** (27 Nov): beam up the roots and stem, sky grid bends into the lesson's own sheet; return runs it back |
 | 4 | New spreadsheet presentation, same engine | **Done** (27 Nov): Workbench, fitted columns, continuing sheet, Name Box and fx, ✕ ✓ |
-| 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | Not started (list revised 27 Nov) |
+| 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | **Done** (27 Nov): six games, each asking only what has been taught, harder with play; Speed Trial rebuilt |
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
 | 7 | Games, Profile, Lessons, supporting screens to the Farm's standard | Partly: palette, sky, type and buttons done in the Refined pass |
 | 8 | Editorial overhaul of the remaining units | Not started |
@@ -149,6 +149,73 @@ ambient events (birds, worm, Cell wandering) wait while a lesson is open.
   menu), Refined and Classic Farm, Full, Reduced and Off, roots and farm routes, both directions.
   Not checked: entering from Games (needs skills due for review), leaving from the results
   screen, and a physical phone.
+
+## Stage 5: the core games (27 Nov 2026)
+
+Six games on the Games side of the world, built as one family: the same frame under the
+spreadsheet sky, the same top bar and progress, intro, choices and results, and the lessons'
+own feedback sheet. The sheet games use the real Workbench, Grid and formula bar (Stage 4).
+
+**Rules every game follows**
+- **Only what has been taught.** `src/game/taught.ts` works out the taught skills: a lesson's
+  `newSkills` once it is finished, a whole unit once it is skipped (unit test passed, or "I've
+  used one before" for Start here). Every question is tagged with its skill, and a test plays
+  every game at every point in the course to prove nothing untaught is asked.
+- **Leans on what is newest.** About half of each go comes from the three most recently
+  taught skills.
+- **Harder with play** (`tierFor`): tier 1 for a new game, tier 2 after two goes, tier 3 after
+  six goes with two stars. Higher tiers give less help (how-to lines go, hints fade) and more
+  to choose from (more pairs, more spare pieces, "which formula works?").
+- **Accuracy before speed.** Stars come from answers right first time (3: all, 2: three in
+  four, 1: finished). Time is a personal best only; only Speed Trial has a clock, and only in
+  Timed mode. Records keep best accuracy and best timed go (`bestAccuracy`, `bestTimedMs`,
+  optional fields, so existing saves load unchanged).
+- **Feedback teaches.** Every miss says which part was right and what to look at; every right
+  answer names the idea. Wording follows the editorial standards (no "Amazing!").
+- **The engine judges.** Formula answers are worked out by the spreadsheet engine on the sheet
+  shown, never by matching text. Questions are generated fresh from farm records (the stall's
+  produce), so numbers never repeat the lessons'.
+
+| Game | What it asks | Opens after |
+|---|---|---|
+| Match Pairs | Two columns of tiles to join: words, references (with a little lit grid), shortcuts (Ctrl or Cmd), symbols, functions, formulas and results, error values, toolbar buttons. Choose a category or Mixed; 4 to 6 pairs a board, two boards a go. | Welcome to Golden Apples Farm |
+| Cell Hunt | Select a cell, a whole row or column (with the taught shortcut), a block; get somewhere with the arrows only; name the lit block. Sheets change size every task. | Cells and References |
+| Speed Trial | Press the keys for an action, or say what keys do. Seven levels, each opening with its lesson: entering data (Enter, Esc, F2), rows and columns, getting around, stretching, select all, copy/cut/paste, undo and bold. | Entering and Correcting Data |
+| Find the Error | Find the faulty cell (tap to inspect, the formula bar shows what is really there), then choose the correction. Typed figures against a docket; short ranges; wrong rows; wrong sign; AVERAGE by hand; MIN for MAX; unlocked $; #DIV/0!; #NAME?; a backwards IF. | Entering and Correcting Data |
+| Formula Builder | Build a formula from pieces (the lessons' token tray) for a farm question. At tier 3, a third of the go asks which of three formulas works (one with a syntax slip, one with the wrong function). | Add it up |
+| Predict the Result | Say what a formula will show. Wrong options are real mistakes (multiplying last, a range read short, the wrong function). The answer is then worked out on the sheet. | Add it up |
+
+**Speed Trial overhaul:** a desktop keyboard (Esc and F keys, Tab, Caps, Enter, both Shifts,
+Ctrl ⊞ Alt on Windows, fn ⌃ ⌥ ⌘ on a Mac, full-size inverted-T arrows); every key can be
+pressed and a wrong one is explained ("Shift + ↓ stretches the selection down. To move one
+cell down: ↓."); hints fade as each shortcut is known; Practice (no clock) and Timed; accuracy
+and personal bests. The physical keyboard works on the web.
+
+**Code:** `src/game/` holds the logic (`taught`, `records`, `random`, `farmSheets`, one module
+per game, `catalogue`), `src/game/ui/` the shared parts (`GameParts`, `SheetGame`, `useGame`,
+`sheet`). Screens: `app/match-pairs.tsx`, `cell-hunt`, `formula-builder`, `find-the-error`,
+`predict-the-result`, `speed-trial`. Tests: `src/game/__tests__/coreGames.test.ts` and
+`speedTrial.test.ts`.
+
+**Compromises and departures, reported:**
+- The brief's separate *Shortcut Match* game is the Shortcuts category of Match Pairs plus
+  Speed Trial's recognition questions, following the revised list of six (27 Nov).
+- Redo left Speed Trial: no lesson teaches it. Speed Trial's old levels (`trial.1`–`trial.4`)
+  are replaced; old records stay in saves but are no longer shown.
+- No "advanced challenge" for untaught shortcuts (the first brief allowed one if chosen
+  explicitly); everything untaught stays closed, naming the lesson that opens it.
+- Lookups (XLOOKUP, VLOOKUP) are only in Match Pairs so far; Formula Builder, Find the Error
+  and Predict the Result do not yet ask about them.
+- Formula Builder lets a piece be used more than once, as the lessons' token tray does.
+- On a Mac in a browser, some shortcuts (Cmd + Space, Ctrl + Space) can be taken by the system
+  before the page sees them; the on-screen keys always work.
+- Games are not yet linked to the spaced-review schedule (they give XP and count towards the
+  streak, but do not mark skills as reviewed).
+- Checked in the browser at 375 × 812 and 812 × 375 (sideways: sheet games split like
+  lessons, Match Pairs lays its board across), Refined and Classic Farm, Windows and Mac
+  keyboards, physical keyboard: every game played through to its results. Not checked on a
+  physical phone; the "which formula works?" questions are covered by tests but were not
+  reached in the browser.
 
 ## Approved vs deferred
 

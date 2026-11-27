@@ -22,7 +22,7 @@ import {
   type GridOutcome,
   type GridState,
 } from '@/game/gridMaster';
-import { clockTime } from '@/game/speedTrial';
+import { clockTime } from '@/game/records';
 import { dayKey, now } from '@/lib/clock';
 import { buzz } from '@/lib/feedback';
 import { useHydrated, useProgress } from '@/progress/store';

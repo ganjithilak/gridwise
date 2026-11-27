@@ -1,35 +1,64 @@
-import type { GameData, GameLevelRecord } from '@/progress/saved';
+import type { GameData } from '@/progress/saved';
 import { holdLabel, keyLabel, type Computer, type HoldKey, type PressKey } from '@/spreadsheet/shortcuts';
 
+import { rng, sample, shuffle } from './random';
+
 /**
- * Speed Trial: a task is named, and the learner presses the keyboard shortcut for it,
- * against the clock. Shortcuts are learned by recall and repetition, so this is the one
- * place in the app with a timer. It is a game on the Practice tab, never part of a lesson.
+ * Speed Trial: an action is named and the learner presses its keys (execution), or keys are
+ * shown and the learner names the action (recognition). Keys are learned by recall and
+ * repetition, so this is the one game with an optional clock. It never tests a key the
+ * course has not taught: each level opens when the lessons behind it are finished.
+ *
+ * Levels follow the course: entering data, selecting rows and columns, getting around,
+ * stretching a selection, then the shortcuts of the side unit "Getting around faster".
  */
+
+// Skill ids, as in src/content/excel/course.ts.
+const TYPE = 'xl.cell.type';
+const COLUMN = 'xl.select.column';
+const ROW = 'xl.select.row';
+const MOVE = 'xl.keys.move';
+const EXTEND = 'xl.select.extend';
+const ALL = 'xl.select.all';
+const COPY = 'xl.copy';
+const CUT = 'xl.cut';
+const UNDO = 'xl.undo';
+const BOLD = 'xl.bold';
 
 export interface GameShortcut {
   id: string;
-  /** Held down first. `mod` is Ctrl on Windows and Cmd on a Mac. */
+  /** Held down first. `mod` is Ctrl on Windows and Cmd on a Mac. Empty for a key on its own. */
   hold: readonly HoldKey[];
   key: PressKey;
-  /** The task as it is put to the player. */
+  /** The task as it is put to the player: "Copy the selected cells". */
   task: string;
+  /** What it does, for recognition and feedback: "copies the selection". */
+  does: string;
+  /** A memory aid for the key, said after a wrong key: "C for Copy". */
+  cue: string;
+  skill: string;
 }
 
 export const GAME_SHORTCUTS: readonly GameShortcut[] = [
-  { id: 'copy', hold: ['mod'], key: 'C', task: 'Copy the selected cells' },
-  { id: 'paste', hold: ['mod'], key: 'V', task: 'Paste what you copied' },
-  { id: 'undo', hold: ['mod'], key: 'Z', task: 'Undo your last step' },
-  { id: 'cut', hold: ['mod'], key: 'X', task: 'Cut the selected cells' },
-  { id: 'selectAll', hold: ['mod'], key: 'A', task: 'Select the whole sheet' },
-  { id: 'bold', hold: ['mod'], key: 'B', task: 'Make the selection bold' },
-  { id: 'redo', hold: ['mod'], key: 'Y', task: 'Redo what you just undid' },
-  { id: 'selectColumn', hold: ['ctrl'], key: 'Space', task: 'Select the whole column' },
-  { id: 'selectRow', hold: ['shift'], key: 'Space', task: 'Select the whole row' },
-  { id: 'extendDown', hold: ['shift'], key: 'Down', task: 'Stretch the selection down' },
-  { id: 'extendUp', hold: ['shift'], key: 'Up', task: 'Stretch the selection up' },
-  { id: 'extendRight', hold: ['shift'], key: 'Right', task: 'Stretch the selection right' },
-  { id: 'extendLeft', hold: ['shift'], key: 'Left', task: 'Stretch the selection left' },
+  { id: 'confirm', hold: [], key: 'Enter', task: 'Confirm what you typed', does: 'confirms an entry', cue: 'Enter confirms', skill: TYPE },
+  { id: 'cancel', hold: [], key: 'Esc', task: 'Cancel what you are typing', does: 'cancels an entry', cue: 'Esc, top left, escapes', skill: TYPE },
+  { id: 'edit', hold: [], key: 'F2', task: 'Edit the active cell', does: 'opens the cell for editing', cue: 'F2 edits', skill: TYPE },
+  { id: 'selectColumn', hold: ['ctrl'], key: 'Space', task: 'Select the whole column', does: 'selects the whole column', cue: 'Ctrl for columns', skill: COLUMN },
+  { id: 'selectRow', hold: ['shift'], key: 'Space', task: 'Select the whole row', does: 'selects the whole row', cue: 'Shift for rows', skill: ROW },
+  { id: 'moveDown', hold: [], key: 'Down', task: 'Move one cell down', does: 'moves one cell down', cue: 'the arrow points the way', skill: MOVE },
+  { id: 'moveUp', hold: [], key: 'Up', task: 'Move one cell up', does: 'moves one cell up', cue: 'the arrow points the way', skill: MOVE },
+  { id: 'moveRight', hold: [], key: 'Right', task: 'Move one cell right', does: 'moves one cell right', cue: 'the arrow points the way', skill: MOVE },
+  { id: 'moveLeft', hold: [], key: 'Left', task: 'Move one cell left', does: 'moves one cell left', cue: 'the arrow points the way', skill: MOVE },
+  { id: 'extendDown', hold: ['shift'], key: 'Down', task: 'Stretch the selection down', does: 'stretches the selection down', cue: 'Shift stretches, the arrow points', skill: EXTEND },
+  { id: 'extendUp', hold: ['shift'], key: 'Up', task: 'Stretch the selection up', does: 'stretches the selection up', cue: 'Shift stretches, the arrow points', skill: EXTEND },
+  { id: 'extendRight', hold: ['shift'], key: 'Right', task: 'Stretch the selection right', does: 'stretches the selection right', cue: 'Shift stretches, the arrow points', skill: EXTEND },
+  { id: 'extendLeft', hold: ['shift'], key: 'Left', task: 'Stretch the selection left', does: 'stretches the selection left', cue: 'Shift stretches, the arrow points', skill: EXTEND },
+  { id: 'selectAll', hold: ['mod'], key: 'A', task: 'Select the whole sheet', does: 'selects everything', cue: 'A for All', skill: ALL },
+  { id: 'copy', hold: ['mod'], key: 'C', task: 'Copy the selected cells', does: 'copies the selection', cue: 'C for Copy', skill: COPY },
+  { id: 'cut', hold: ['mod'], key: 'X', task: 'Cut the selected cells', does: 'cuts the selection', cue: 'X, like a pair of scissors', skill: CUT },
+  { id: 'paste', hold: ['mod'], key: 'V', task: 'Paste what you copied', does: 'pastes', cue: 'V sits beside C', skill: COPY },
+  { id: 'undo', hold: ['mod'], key: 'Z', task: 'Undo your last step', does: 'undoes the last step', cue: 'Z, at the start of the bottom row', skill: UNDO },
+  { id: 'bold', hold: ['mod'], key: 'B', task: 'Make the selection bold', does: 'makes the selection bold', cue: 'B for Bold', skill: BOLD },
 ];
 
 export interface GameLevel {
@@ -39,18 +68,19 @@ export interface GameLevel {
   adds: readonly string[];
 }
 
-/** Each level brings in a few more shortcuts and keeps asking for the earlier ones. */
+/** In the order the course teaches them. A level's shortcuts are tested only once all are taught. */
 export const GAME_LEVELS: readonly GameLevel[] = [
-  { id: 'trial.1', title: 'Copy, paste, undo', adds: ['copy', 'paste', 'undo'] },
-  { id: 'trial.2', title: 'Cut, select all, bold', adds: ['cut', 'selectAll', 'bold'] },
-  { id: 'trial.3', title: 'Rows, columns and redo', adds: ['selectColumn', 'selectRow', 'redo'] },
-  { id: 'trial.4', title: 'Stretch with Shift', adds: ['extendDown', 'extendUp', 'extendRight', 'extendLeft'] },
+  { id: 'trial.entry', title: 'Entering data', adds: ['confirm', 'cancel', 'edit'] },
+  { id: 'trial.rowcol', title: 'Rows and columns', adds: ['selectColumn', 'selectRow'] },
+  { id: 'trial.move', title: 'Getting around', adds: ['moveDown', 'moveUp', 'moveRight', 'moveLeft'] },
+  { id: 'trial.extend', title: 'Stretching a selection', adds: ['extendDown', 'extendUp', 'extendRight', 'extendLeft'] },
+  { id: 'trial.all', title: 'Select everything', adds: ['selectAll'] },
+  { id: 'trial.clip', title: 'Copy, cut and paste', adds: ['copy', 'cut', 'paste'] },
+  { id: 'trial.undo', title: 'Undo and bold', adds: ['undo', 'bold'] },
 ];
 
 /** How many tasks one go at a level has. */
 export const ROUND_LENGTH = 8;
-/** Seconds a task may take, on average, for a go to count as quick. */
-export const QUICK_SECONDS = 2.5;
 /** Right first time this often, and a shortcut no longer gets a hint. */
 export const KNOWN_AFTER = 5;
 /** Right first time this often, and only the first key is hinted. */
@@ -58,57 +88,65 @@ export const HALF_KNOWN_AFTER = 2;
 
 export const shortcutById = (id: string): GameShortcut => GAME_SHORTCUTS.find((s) => s.id === id) as GameShortcut;
 
-/** Every shortcut in play at a level: its own and all the earlier levels'. */
-export function shortcutsAt(levelIndex: number): string[] {
-  return GAME_LEVELS.slice(0, levelIndex + 1).flatMap((level) => level.adds);
-}
+/** The skills a level needs taught before it opens. */
+export const levelSkills = (levelIndex: number): string[] => [...new Set(GAME_LEVELS[levelIndex].adds.map((id) => shortcutById(id).skill))];
 
-/** A level opens once the one before it has been finished. */
-export function levelOpen(game: GameData, levelIndex: number): boolean {
-  return levelIndex === 0 || game.levels[GAME_LEVELS[levelIndex - 1].id] !== undefined;
-}
+/** A level opens once every lesson behind its shortcuts is finished. */
+export const levelOpen = (taught: ReadonlySet<string>, levelIndex: number): boolean => levelSkills(levelIndex).every((s) => taught.has(s));
 
-/** A small repeatable shuffle, so the same go can be replayed in a test. */
-function shuffled<T>(items: readonly T[], seed: number): T[] {
-  const out = [...items];
-  let state = (seed * 2654435761 + 97) >>> 0;
-  for (let i = out.length - 1; i > 0; i--) {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    const j = state % (i + 1);
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
+/** Every shortcut in play at a level: its own, and those of the open levels before it. */
+export function shortcutsAt(levelIndex: number, taught?: ReadonlySet<string>): string[] {
+  return GAME_LEVELS.slice(0, levelIndex + 1)
+    .filter((_, i) => i === levelIndex || !taught || levelOpen(taught, i))
+    .flatMap((level) => level.adds);
 }
 
 /** True if the item at `at` is the same as the one before or after it. */
-const clashes = (list: readonly string[], at: number): boolean =>
-  (at > 0 && list[at] === list[at - 1]) || (at < list.length - 1 && list[at] === list[at + 1]);
+const clashes = (list: readonly { id: string }[], at: number): boolean =>
+  (at > 0 && list[at].id === list[at - 1].id) || (at < list.length - 1 && list[at].id === list[at + 1].id);
+
+/** One task in a go: press the keys for an action, or name the action for the keys shown. */
+export interface TrialTask {
+  id: string;
+  kind: 'press' | 'name';
+  /** For `name`: the actions to choose from, the right one among them. */
+  options?: string[];
+}
 
 /**
- * The tasks for one go at a level. The level's new shortcuts come up most (twice each
- * where there is room); at least two places go to earlier ones, so they are not
- * forgotten. The same shortcut is never asked twice running.
+ * The tasks for one go at a level. The level's new shortcuts come up most (twice each where
+ * there is room); at least two places go to earlier ones, so they are not forgotten. The
+ * same shortcut is never asked twice running. Two tasks in a go ask the other way round:
+ * the keys are shown and the action is named, which is how a shortcut is recognised.
  */
-export function roundFor(levelIndex: number, seed: number): string[] {
+export function roundFor(levelIndex: number, seed: number, taught?: ReadonlySet<string>): TrialTask[] {
+  const r = rng(seed);
   const fresh = GAME_LEVELS[levelIndex].adds;
-  const earlier = shortcutsAt(levelIndex - 1);
+  const earlier = shortcutsAt(levelIndex, taught).filter((id) => !fresh.includes(id));
   const kept = earlier.length > 0 ? 2 : 0;
   const picks: string[] = [...fresh];
   for (let i = 0; i < fresh.length && picks.length < ROUND_LENGTH - kept; i++) picks.push(fresh[i]);
-  const pool = earlier.length > 0 ? shuffled(earlier, seed) : [...fresh];
+  const pool = earlier.length > 0 ? shuffle(r, earlier) : [...fresh];
   for (let i = 0; picks.length < ROUND_LENGTH; i++) picks.push(pool[i % pool.length]);
-  const order = shuffled(picks, seed + 1);
-  // Pull apart any two of the same that landed side by side, by swapping one of them
-  // with something elsewhere that fits in both places.
+  const order = shuffle(r, picks).map((id): TrialTask => ({ id, kind: 'press' }));
   for (let pass = 0; pass < 4; pass++) {
     for (let i = 1; i < order.length; i++) {
-      if (order[i] !== order[i - 1]) continue;
+      if (order[i].id !== order[i - 1].id) continue;
       for (let j = 0; j < order.length; j++) {
         if (j === i || j === i - 1) continue;
         [order[i], order[j]] = [order[j], order[i]];
         if (!clashes(order, i) && !clashes(order, j)) break;
         [order[i], order[j]] = [order[j], order[i]];
       }
+    }
+  }
+  // Recognition: the third and sixth tasks, when there are enough actions to choose between.
+  const inPlay = [...new Set([...fresh, ...earlier])];
+  if (inPlay.length >= 3) {
+    for (const at of [2, 5]) {
+      const task = order[at];
+      const others = sample(r, inPlay.filter((id) => id !== task.id && shortcutById(id).does !== shortcutById(task.id).does), 2);
+      order[at] = { ...task, kind: 'name', options: shuffle(r, [task.id, ...others]).map((id) => shortcutById(id).does) };
     }
   }
   return order;
@@ -121,15 +159,47 @@ export const realKey = (hold: HoldKey, computer: Computer): RealKey => holdLabel
 /** The keys to hold for a shortcut on this kind of computer. */
 export const holdsFor = (shortcut: GameShortcut, computer: Computer): RealKey[] => shortcut.hold.map((h) => realKey(h, computer));
 
-/** "Ctrl + C", "Cmd + C", "Shift + ↓". */
+/** "Ctrl + C", "Cmd + C", "Shift + ↓", "F2". */
 export const answerLabel = (shortcut: GameShortcut, computer: Computer): string =>
   [...holdsFor(shortcut, computer), keyLabel(shortcut.key)].join(' + ');
+
+const sameKey = (a: PressKey, b: PressKey) => (a.length === 1 ? a.toUpperCase() : a) === b;
 
 /** True if exactly the right keys are held as the right key is pressed. */
 export function isRight(shortcut: GameShortcut, computer: Computer, held: readonly RealKey[], key: PressKey): boolean {
   const wanted = holdsFor(shortcut, computer);
-  const pressed = key.length === 1 ? key.toUpperCase() : key;
-  return pressed === shortcut.key && wanted.length === held.length && wanted.every((k) => held.includes(k));
+  return sameKey(key, shortcut.key) && wanted.length === held.length && wanted.every((k) => held.includes(k));
+}
+
+/** The shortcut these keys make, among those the game knows. */
+export function shortcutPressed(computer: Computer, held: readonly RealKey[], key: PressKey): GameShortcut | null {
+  return GAME_SHORTCUTS.find((s) => isRight(s, computer, held, key)) ?? null;
+}
+
+const list = (keys: readonly string[]) => keys.join(' + ');
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * What to say after a wrong press, so it teaches rather than just marks: what the keys
+ * pressed really do, which part was right, and a cue for the key that was wanted.
+ */
+export function explainMiss(task: GameShortcut, computer: Computer, held: readonly RealKey[], key: PressKey): string {
+  const answer = answerLabel(task, computer);
+  const wanted = holdsFor(task, computer);
+  const pressedLabel = list([...held, keyLabel(key.length === 1 ? key.toUpperCase() : key)]);
+  const other = shortcutPressed(computer, held, key);
+  if (other && other.id !== task.id) return `${pressedLabel} ${other.does}. To ${task.task.charAt(0).toLowerCase()}${task.task.slice(1)}: ${answer}.`;
+  if (sameKey(key, task.key)) {
+    const missing = wanted.filter((k) => !held.includes(k));
+    const extra = held.filter((k) => !wanted.includes(k));
+    if (missing.length > 0 && extra.length === 0) return `Right key. Hold ${list(missing)} first: ${answer}.`;
+    if (wanted.length === 0) return `${keyLabel(task.key)} on its own, with nothing held.`;
+    return `Right key, wrong one held: ${capital(task.cue)}. ${answer}.`;
+  }
+  if (wanted.length > 0 && wanted.length === held.length && wanted.every((k) => held.includes(k))) {
+    return `${list(wanted)} is right. The key is ${keyLabel(task.key)}: ${task.cue}.`;
+  }
+  return `Not that one. ${capital(task.cue)}: ${answer}.`;
 }
 
 /** How much help a task gets: both keys lit, just the first, or none. A miss always brings both back. */
@@ -140,66 +210,12 @@ export function hintFor(game: GameData, shortcutId: string, missed: boolean): Hi
   return known >= KNOWN_AFTER ? 'none' : known >= HALF_KNOWN_AFTER ? 'first' : 'full';
 }
 
-/** The keys that are in play at a level: lit on the keyboard, where the rest stay dim. */
-export function keysAt(levelIndex: number, computer: Computer): { holds: RealKey[]; keys: PressKey[] } {
-  const shortcuts = shortcutsAt(levelIndex).map(shortcutById);
-  return {
-    holds: [...new Set(shortcuts.flatMap((s) => holdsFor(s, computer)))],
-    keys: [...new Set(shortcuts.map((s) => s.key))],
-  };
-}
-
-export interface RoundResult {
-  /** From the first task appearing to the last being answered. */
-  ms: number;
-  /** Wrong presses along the way. */
-  misses: number;
-  /** The shortcuts that were answered right first time, once for each time. */
-  firstTry: string[];
-}
-
-/** Three stars for a clean, quick go; two for a nearly clean one; one for finishing. */
-export function starsFor(result: RoundResult): 1 | 2 | 3 {
-  if (result.misses === 0 && result.ms <= ROUND_LENGTH * QUICK_SECONDS * 1000) return 3;
-  return result.misses <= 2 ? 2 : 1;
-}
-
-/** XP for a go: a little for playing, more for playing well. */
-export const xpFor = (stars: number): number => stars * 2;
-
-export interface RoundOutcome {
-  game: GameData;
-  stars: 1 | 2 | 3;
-  /** Quicker than every go before it. Not said of the very first go. */
-  newBest: boolean;
-  /** This go finished the level for the first time, which opens the next one. */
-  opened: GameLevel | null;
-}
-
-/** What a finished go changes: the level's record, and how well each shortcut is known. */
-export function recordRound(game: GameData, levelIndex: number, result: RoundResult): RoundOutcome {
-  const level = GAME_LEVELS[levelIndex];
-  const before: GameLevelRecord | undefined = game.levels[level.id];
-  const stars = starsFor(result);
-  const known = { ...game.known };
-  for (const id of result.firstTry) known[id] = (known[id] ?? 0) + 1;
-  const record: GameLevelRecord = {
-    bestMs: before ? Math.min(before.bestMs, result.ms) : result.ms,
-    bestStars: Math.max(before?.bestStars ?? 0, stars),
-    plays: (before?.plays ?? 0) + 1,
-  };
-  return {
-    game: { levels: { ...game.levels, [level.id]: record }, known },
-    stars,
-    newBest: before !== undefined && result.ms < before.bestMs,
-    opened: before === undefined ? (GAME_LEVELS[levelIndex + 1] ?? null) : null,
-  };
-}
-
-/** "0:12.4": minutes, seconds and tenths. */
-export function clockTime(ms: number): string {
-  const tenths = Math.floor(Math.max(0, ms) / 100);
-  const minutes = Math.floor(tenths / 600);
-  const seconds = Math.floor((tenths % 600) / 10);
-  return `${minutes}:${String(seconds).padStart(2, '0')}.${tenths % 10}`;
+/** What a real keyboard event is in the game's own names. Null for a key the game has no use for. */
+export function fromKeyName(key: string): PressKey | null {
+  if (key === ' ' || key === 'Spacebar') return 'Space';
+  if (key === 'Escape' || key === 'Esc') return 'Esc';
+  if (key === 'Enter' || key === 'Tab') return key;
+  if (/^F([1-9]|1[0-2])$/.test(key)) return key;
+  if (key.startsWith('Arrow')) return key.slice(5);
+  return /^[a-zA-Z]$/.test(key) ? key.toUpperCase() : null;
 }
