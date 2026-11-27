@@ -297,8 +297,11 @@ AutoSum suggests rather than guesses, no "tap it again to type", Australian spel
 
 **Automated.** Typecheck, lint and 2,700 tests pass. The production web build (`expo export -p
 web`) succeeds at 2.0 MB. `expo install --check`: every package is on SDK 58, but four are a
-patch behind (expo 58.0.25 → ~58.1.0, expo-router, expo-splash-screen, jest-expo). Not updated:
-a dependency change, left for the product owner's approval.
+patch behind (expo 58.0.25 → ~58.1.0, expo-router, expo-splash-screen, jest-expo). Updated
+on approval with `expo install --fix`; typecheck, lint, tests and the production build pass on the
+new versions. `npm audit` is unchanged by the update (28 findings, all in development tooling;
+the one high is `xlsx`, a dev-only dependency). A dev server started before the update must be
+restarted with `--clear`.
 
 **Reviewed** in the browser at 375 × 812, 375 × 667 (the smallest supported phone) and
 812 × 375 (landscape), in Refined dark, Refined light and Classic Farm: the Farm, Games,
