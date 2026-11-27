@@ -27,6 +27,7 @@ import {
   type RangeAddr,
 } from '@/engine';
 import { MOTION_MS, useTheme } from '@/theme';
+import { clearSheet, reportSheet } from '@/world/transition/stage';
 
 import { Cell } from './Cell';
 import { fillArea, type SheetController, type SheetViewState } from './controller';
@@ -207,6 +208,19 @@ export function Grid({ controller, state, locked = false, fillHandle = false, gh
   useEffect(() => {
     live.current.layout = layout;
   });
+
+  // Where this sheet sits on screen, for the lesson transition to land the sky's grid on it.
+  const [owner] = useState(() => ({}));
+  const landingKey = layout ? `${size?.w}x${size?.h}:${layout.rowH}:${layout.colW.map((w) => w.toFixed(1)).join(',')}` : '';
+  useEffect(() => {
+    if (!layout) return;
+    const view = sheetView.current;
+    const { colX, colW, rowH } = layout;
+    view?.measureInWindow((x, y, w, h) => {
+      if (w > 0 && h > 0) reportSheet(owner, { x, y, w, h, colX, colW, rowH });
+    });
+  }, [landingKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => clearSheet(owner), [owner]);
 
   if (!size || !layout) return <View style={styles.fill} onLayout={onLayout} />;
 

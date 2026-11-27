@@ -128,7 +128,7 @@ function Play({ found, computer }: { found: Resolved; computer: Computer }) {
 
   const { backToWorld } = useLessonNav();
   // Leaving runs the lesson transition backwards, out to the world.
-  const onQuit = useCallback(() => backToWorld('back'), [backToWorld]);
+  const onQuit = useCallback(() => backToWorld(), [backToWorld]);
 
   return (
     <LessonPlayer

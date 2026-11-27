@@ -255,9 +255,10 @@ Built:
   and `ScreenSky`: the spreadsheet dome behind Games, Profile, welcome, tour, lesson screens,
   results and the games, open on overview screens and faint on working ones. Cell keeps its
   original blue on every screen.
-- **Lesson transition** (`src/world/transition/`): into a lesson, the camera rises into the
-  sky, the curved spreadsheet dome straightens into a flat sheet with letters and numbers, and
-  the lesson appears; leaving runs it in reverse to the world. ~0.8 s, native driver.
+- **Lesson transition** (`src/world/transition/`, rebuilt in Stage 3): a beam of light rises
+  from the lesson up its root, the taproot and the stem into the farm's sky, with the World's
+  camera following; the sky grid then bends into the lesson's own sheet, letters landing on its
+  headings. Leaving runs it backwards. See development-plan.md, Stage 3.
   Reduced = 0.3 s fade, Off = none; the phone's reduce-motion setting turns Full into Reduced.
 
 Checked in a phone-sized browser: farm, Games, Profile, a lesson, the transition both ways

@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { Defs, G, LinearGradient, Path, Stop, Text as SvgText } from 'react-native-svg';
 
+import { domeProjector } from './domeGeometry';
+
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 interface Props {
@@ -30,22 +32,12 @@ interface Props {
  * atmosphere only, faint enough to leave the sky and clouds in charge.
  */
 export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt, id = 'domeFade', strength = 1, tint = '#FFFFFF', labels = true }: Props) {
-  // A camera inside a unit sphere, tilted up by `tilt`. With f the focal length:
-  //   horizon y = cy + f·tan(tilt),  zenith y = cy − f / tan(tilt).
-  const tilt = (24 * Math.PI) / 180;
-  const f = (horizon - zenith) / (Math.tan(tilt) + 1 / Math.tan(tilt));
-  const cy = horizon - f * Math.tan(tilt);
-  const cx = width / 2;
+  // The projection is shared with the lesson transition (domeGeometry), which bends this grid into a sheet.
+  const proj = domeProjector({ width, horizon, zenith, labelsAt });
   const project = (lat: number, lon: number): { x: number; y: number } | null => {
-    const X = Math.cos(lat) * Math.sin(lon);
-    const Y = Math.sin(lat);
-    const Z = Math.cos(lat) * Math.cos(lon);
-    const y2 = Y * Math.cos(tilt) - Z * Math.sin(tilt);
-    const z2 = Y * Math.sin(tilt) + Z * Math.cos(tilt);
-    if (z2 < 0.08) return null;
-    return { x: cx + (f * X) / z2, y: cy - (f * y2) / z2 };
+    const p = proj(lat, lon);
+    return p.z < 0.08 ? null : p;
   };
-  const rad = (d: number) => (d * Math.PI) / 180;
   const line = (pts: ({ x: number; y: number } | null)[]) => {
     let d = '';
     let pen = false;
@@ -65,7 +57,7 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt,
   let hi = 85;
   for (let n = 0; n < 30; n++) {
     const mid = (lo + hi) / 2;
-    const p = project(rad(mid), 0);
+    const p = project(mid, 0);
     if (p && p.y > labelsAt) lo = mid;
     else hi = mid;
   }
@@ -78,7 +70,7 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt,
   for (let lat = letterLat + STEP / 2 - STEP * Math.floor((letterLat + STEP / 2) / STEP); lat <= 86; lat += STEP) {
     if (lat < 1) continue;
     const pts = [];
-    for (let lon = -88; lon <= 88; lon += 2) pts.push(project(rad(lat), rad(lon)));
+    for (let lon = -88; lon <= 88; lon += 2) pts.push(project(lat, lon));
     rows.push(line(pts));
   }
   // Columns every 9° of longitude.
@@ -87,17 +79,17 @@ export const SkyDome = memo(function SkyDome({ width, horizon, zenith, labelsAt,
   for (let lon = -84; lon <= 84; lon += COL) {
     colLons.push(lon);
     const pts = [];
-    for (let lat = 0; lat <= 86; lat += 2) pts.push(project(rad(lat), rad(lon)));
+    for (let lat = 0; lat <= 86; lat += 2) pts.push(project(lat, lon));
     cols.push(line(pts));
   }
 
   // As on a sheet: the first visible column is the row-number header, then A, B, C…
-  const cells = colLons.slice(0, -1).map((lon) => ({ lon: lon + COL / 2, p: project(rad(letterLat), rad(lon + COL / 2)) }));
+  const cells = colLons.slice(0, -1).map((lon) => ({ lon: lon + COL / 2, p: project(letterLat, lon + COL / 2) }));
   const onScreen = cells.filter((c) => c.p && c.p.x > 10 && c.p.x < width - 10);
   const letters = onScreen.slice(1, 27).map((c, i) => ({ p: c.p, t: LETTERS[i] }));
   // Row numbers down that header column, one per row below the letters.
   const numLon = onScreen.length > 0 ? onScreen[0].lon : -60;
-  const numbers = Array.from({ length: 6 }, (_, i) => ({ p: project(rad(letterLat - STEP * (i + 1)), rad(numLon)), t: String(i + 1) }));
+  const numbers = Array.from({ length: 6 }, (_, i) => ({ p: project(letterLat - STEP * (i + 1), numLon), t: String(i + 1) }));
 
   return (
     <G>

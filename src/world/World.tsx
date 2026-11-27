@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useIsFocused } from 'expo-router';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -29,12 +30,17 @@ import { useWorldArt } from './theme';
 import { display, GlassPanel, GOLD, GoldButton, GoldChip, tagStyle } from './ui/Gold';
 import { makeCamera } from './camera';
 import { useWorld } from './store';
+import { resample, type Pt } from './geometry';
+import { R } from './refined/paint';
 import { useLessonNav } from './transition/nav';
+import { registerWorldStage } from './transition/stage';
 
 /** Above ground takes this share of the farm view; the rest is the soil cross-section. */
 const ABOVE = 0.78;
 /** In the roots view the soil line sits this far down, so the grass stays in sight. */
 const ROOTS_SURFACE = 0.07;
+/** Going into a lesson, the camera comes to rest this far down the screen from the top of the farm's sky, with the sky grid's letters in the upper third. */
+const LIFT = 0.15;
 
 /**
  * The world (Creative Direction V2, section 4). One camera over one painting:
@@ -58,6 +64,8 @@ export function World() {
   const [pick, setPick] = useState<RootPick | null>(null);
   const [skyMood, setSkyMood] = useState<CloudMood>('happy');
   const [skyEffect, setSkyEffect] = useState<CloudEffect>('none');
+  // Ambient events wait while a lesson is open over the World; the loops underneath simply carry on.
+  const focused = useIsFocused();
   const [lastEvent, setLastEvent] = useState<string | null>(null);
   const [eventTurn, setEventTurn] = useState(0);
 
@@ -76,7 +84,7 @@ export function World() {
   const plantW = (Math.min(farmH * 0.66, w * 1.15) * 200) / 280;
   const cloudSize = Math.min(w * 0.27, 120);
   // Ambient life (birds, worm, Cell wandering) only runs while the farm is what you see.
-  const onFarm = col === 0 && row === 0;
+  const onFarm = col === 0 && row === 0 && focused;
   const layout = useMemo(() => (w > 0 ? layoutRoots(path, w, Math.max(h * 0.3, 190)) : null), [w, h, shape]); // eslint-disable-line react-hooks/exhaustive-deps
   const soilH = Math.max(layout?.height ?? 0, h);
   const rootsTop = ground - h * ROOTS_SURFACE;
@@ -87,6 +95,9 @@ export function World() {
   const autoOffset = nextAt ? Math.min(maxOffset, Math.max(0, ground + nextAt.y - rootsTop - h * 0.42)) : 0;
 
   const [cam] = useState(makeCamera);
+  const [skyPanel] = useState(() => new Animated.Value(1));
+  const viewport = useRef<ComponentRef<typeof View>>(null);
+  const [origin, setOrigin] = useState<Pt>({ x: 0, y: 0 });
 
   // Effects run in order: the camera learns the new frame before it is asked to move.
   useEffect(() => cam.setFrame({ col, row, w, h, rootsTop, maxOffset }));
@@ -99,18 +110,83 @@ export function World() {
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
+    // Hidden under a lesson, the World can be measured as nothing. Keep everything as it was,
+    // so the clouds, the plant and the camera carry on rather than being rebuilt on return.
+    if (width < 1 || height < 1) return;
     if (!size || Math.abs(size.w - width) > 1 || Math.abs(size.h - height) > 1) {
       cam.reset();
       setSize({ w: width, h: height });
     }
+    viewport.current?.measureInWindow((x, y) => setOrigin((o) => (o.x === x && o.y === y ? o : { x, y })));
+  };
+
+  // The lesson transition borrows the camera and the sky (see transition/stage.ts).
+  const camTop = useRef(0);
+  const skyColours: [string, string] = art.refined ? [R.skyHigh, R.skyMid] : [W.skyHigh, W.skyMid];
+  useEffect(() =>
+    registerWorldStage({
+      cameraTop: () => {
+        cam.y.stopAnimation((v) => (camTop.current = -v));
+        return camTop.current;
+      },
+      setCameraTop: (y) => {
+        camTop.current = y;
+        cam.y.setValue(-y);
+      },
+      homeTop: () => (cam.frame.row === 1 ? cam.frame.rootsTop + cam.offset : cam.frame.row === 0 ? h : 0),
+      dome: (top) => ({ width: w, horizon: h + farmH * 0.6, zenith: -h * 0.15, labelsAt: h + farmH * 0.17, origin: { x: origin.x, y: origin.y - top } }),
+      origin: () => origin,
+      sky: skyColours,
+      setSkyPanel: (v) => skyPanel.setValue(v),
+      showingCentre: () => cam.frame.col === 0 && w > 0,
+      height: h,
+      liftTop: h * (1 - LIFT),
+    }),
+  );
+
+  /**
+   * The beam's route, in the painting's coordinates: from the lesson's place on its root back
+   * to the taproot, up the taproot to the surface, up the plant's stem and out through the top
+   * of the farm's sky. From the farm it starts at the foot of the plant.
+   */
+  const routeFrom = (lessonId: string | null, junctionOf: string | null = null): Pt[] => {
+    const up: Pt[] = [];
+    const units = layout?.units ?? [];
+    const unit = units.find((u) => (lessonId && u.lessons.some((l) => l.node.lesson.id === lessonId)) || (junctionOf && u.unit.testOut?.id === junctionOf));
+    if (unit && row === 1) {
+      const placed = lessonId ? unit.lessons.find((l) => l.node.lesson.id === lessonId) : undefined;
+      if (placed) {
+        // Along the root from the lesson back to where it leaves the taproot.
+        let run = 0;
+        const back: Pt[] = [unit.root[0]];
+        for (let i = 1; i < unit.root.length && run < placed.along; i++) {
+          run += Math.hypot(unit.root[i].x - unit.root[i - 1].x, unit.root[i].y - unit.root[i - 1].y);
+          if (run < placed.along) back.push(unit.root[i]);
+        }
+        back.push(placed.at);
+        up.push(...back.reverse());
+      } else up.push(unit.junction);
+      // Up the taproot to the soil line.
+      const tap = (layout?.taproot ?? []).filter((p) => p.y < unit.junction.y).reverse();
+      up.push(...tap);
+    }
+    const soil = up.map((p) => ({ x: p.x, y: p.y + ground }));
+    const stemTop = ground - Math.min(h * ABOVE * 0.66, w * 1.15) * 0.8;
+    soil.push({ x: w / 2, y: ground }, { x: w / 2, y: stemTop }, { x: w / 2, y: h * (1 - LIFT) - h * 0.25 });
+    return resample(soil, 10);
   };
 
   // Into a lesson through the spreadsheet sky (see transition/GridTransition).
-  const openLesson = (node: LessonNode) => nav.openLesson(node.state === 'practice' ? practiceIdFor(node.lesson.id) : node.lesson.id);
+  const openLesson = (node: LessonNode) => {
+    setPick(null);
+    nav.openLesson(node.state === 'practice' ? practiceIdFor(node.lesson.id) : node.lesson.id, routeFrom(node.lesson.id));
+  };
   const openPick = () => {
     if (!pick) return;
-    if (pick.kind === 'test') nav.openLesson(pick.checkpoint.id);
-    else openLesson(pick.node);
+    if (pick.kind === 'test') {
+      setPick(null);
+      nav.openLesson(pick.checkpoint.id, routeFrom(null, pick.checkpoint.id));
+    } else openLesson(pick.node);
   };
 
   /** Development only: plays every ambient event in turn, for review. */
@@ -134,7 +210,7 @@ export function World() {
   const name = data.profile.name.trim();
 
   return (
-    <View style={styles.viewport} onLayout={onLayout} {...cam.pan.panHandlers} {...wheelProps}>
+    <View ref={viewport} style={styles.viewport} onLayout={onLayout} {...cam.pan.panHandlers} {...wheelProps}>
       {size && layout ? (
         <Animated.View style={[styles.row, { width: w * 3, height: h, transform: [{ translateX: cam.x }] }]}>
           {/* Left: Games and practice. */}
@@ -154,7 +230,7 @@ export function World() {
               <DriftingCloud y={h + h * 0.46} size={Math.min(w * 0.22, 110)} width={w} seconds={150} start={0.12} Shape={art.CloudShape} />
 
               {/* Above: Cell's sky. */}
-              <View style={[styles.abs, styles.sky, { top: 0, width: w, height: h, paddingTop: insets.top + 24 }]} testID="world-sky">
+              <Animated.View style={[styles.abs, styles.sky, { top: 0, width: w, height: h, paddingTop: insets.top + 24, opacity: skyPanel }]} testID="world-sky">
                 <View style={styles.skyColumn}>
                   <CloudMascot mood={skyMood} effect={skyEffect} size={Math.min(w * 0.5, 220)} alive={row === -1} />
                   <GlassPanel tone="light" glow style={styles.bubble}>
@@ -183,7 +259,7 @@ export function World() {
                   ) : null}
                 </View>
                 <GoldChip label="Back down to the farm ↓" onPress={() => go(0, 0)} style={styles.downHint} />
-              </View>
+              </Animated.View>
 
               {/* Below: the soil and its roots. */}
               <View style={[styles.abs, { top: ground, width: w, height: soilH }]}>

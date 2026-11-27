@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import { create } from 'zustand';
 
+import type { Pt } from '../geometry';
 import { usePrefs } from '../prefs';
 
 export type TransitionMode = 'full' | 'reduced' | 'off';
@@ -14,6 +15,12 @@ export interface TransitionRun {
   mode: Exclude<TransitionMode, 'off'>;
   /** Navigates. Called while the overlay covers the screen. */
   mid: () => void;
+  /**
+   * The beam's route through the World painting, from the lesson's place in the roots (or the
+   * foot of the plant) up the stem and out of the top of the sky. None when the lesson was
+   * opened from somewhere the World is not showing.
+   */
+  route: Pt[] | null;
 }
 
 interface TransitionState {
@@ -25,7 +32,8 @@ interface TransitionState {
 let ids = 0;
 export const useTransitionStore = create<TransitionState>((set) => ({
   run: null,
-  start: (run) => set({ run: { ...run, id: ++ids } }),
+  // One journey at a time: a second tap while one is under way is ignored.
+  start: (run) => set((s) => (s.run ? s : { run: { ...run, id: ++ids } })),
   end: (id) => set((s) => (s.run?.id === id ? { run: null } : s)),
 }));
 
@@ -59,17 +67,30 @@ export function useTransitionMode(): TransitionMode {
  * (`GridTransition`). Use these instead of `router.push` / `router.replace('/')` for those two
  * journeys; everything else navigates as before.
  */
+/** The route the last lesson was entered by, so leaving it follows the light back down. */
+let lastRoute: Pt[] | null = null;
+
 export function useLessonNav() {
   const router = useRouter();
   const mode = useTransitionMode();
   const start = useTransitionStore((s) => s.start);
-  const go = (dir: 'in' | 'out', mid: () => void) => {
+  const go = (dir: 'in' | 'out', mid: () => void, route: Pt[] | null) => {
     if (mode === 'off') mid();
-    else start({ dir, mode, mid });
+    else start({ dir, mode, mid, route });
+  };
+  // The World is always at the bottom of the stack (welcome replaces itself with it), so
+  // going back to it pops down to that same World rather than opening a second one: its
+  // clouds, plant and camera carry on from where they were.
+  const toWorld = () => {
+    if (router.canDismiss()) router.dismissAll();
+    else router.replace('/');
   };
   return {
-    openLesson: (lessonId: string) => go('in', () => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId } })),
-    /** Back to the world: `back` returns to where the learner came from when it can. */
-    backToWorld: (how: 'replace' | 'back' = 'replace') => go('out', () => (how === 'back' && router.canGoBack() ? router.back() : router.replace('/'))),
+    openLesson: (lessonId: string, route: Pt[] | null = null) => {
+      lastRoute = route;
+      go('in', () => router.push({ pathname: '/lesson/[lessonId]', params: { lessonId } }), route);
+    },
+    /** Back to the world, following the light back down to where the lesson was opened. */
+    backToWorld: () => go('out', toWorld, lastRoute),
   };
 }

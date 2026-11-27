@@ -12,7 +12,7 @@ behind it, and where each stage stands. Visual direction lives in
 |---|---|---|
 | 1 | Audit content, components, games, transitions | **Done** (below) |
 | 2 | Roots content overhaul; permanent editorial standards | **Done**: 5 lessons rewritten, then revised after a beginner walkthrough (27 Nov) |
-| 3 | Spreadsheet atmosphere; seamless lesson-entry transition (farm and roots routes) | Not started. A first transition exists (`src/world/transition/`) |
+| 3 | Spreadsheet atmosphere; seamless lesson-entry transition (farm and roots routes) | **Done** (27 Nov): beam up the roots and stem, sky grid bends into the lesson's own sheet; return runs it back |
 | 4 | New spreadsheet presentation, same engine | **Done** (27 Nov): Workbench, fitted columns, continuing sheet, Name Box and fx, ✕ ✓ |
 | 5 | Core games: Match Pairs, Speed Trial (overhaul), Formula Builder, Find the Error, Cell Hunt, Predict the Result | Not started (list revised 27 Nov) |
 | 6 | Grid Master into a locked Advanced Arcade | **Done** (code and route kept; entry points removed) |
@@ -99,6 +99,57 @@ One reusable sheet surface for lessons, questions and (Stage 5) games:
 - Not yet checked on a physical phone; verified in the browser at 375 × 812, 375 × 667 and
   812 × 375 (landscape split).
 
+## Stage 3: the lesson-entry transition (27 Nov 2026)
+
+One continuous move from the World into the lesson's real sheet, replacing the old overlay
+that ended on a generic flat grid (now gone).
+
+1. **Beam.** From the roots, light rises from the lesson's node along its root, up the taproot
+   and the plant's stem and out through the top of the sky. The World's own camera follows it,
+   so the farm really moves past; nothing is a picture of the World. From the farm, the beam
+   starts at the foot of the plant. The camera rests over the farm's sky, where the sky grid's
+   letters and numbers are in view, rather than climbing to Cell's panel above.
+2. **Hand-over.** The sky grid brightens and the sky deepens over the farm (0.3 s). The lesson
+   opens underneath, and its Grid reports where its sheet is on screen.
+3. **Landing.** The grid bends: the dome's letter band becomes the column headings and its first
+   column the row numbers, the view pushes in and settles, and every line comes to rest on the
+   lesson's own rows and columns (A on A, 1 on 1). Sky lines beyond the sheet fade as it
+   flattens; the lesson appears around the grid in the last third.
+4. **Leaving** runs it backwards: the sheet lifts off and curves back into the sky over the
+   farm, then the light drains back down to the lesson's place in the roots.
+
+Full ≈ 2.2 s in (roots), ≈ 2.5 s out; Reduced is a 0.3 s fade; Off navigates directly. The
+phone's reduce-motion setting turns Full into Reduced.
+
+Code: `src/world/transition/` (`GridTransition` directs, `morph.ts` is the arithmetic, tested
+in `__tests__/morph.test.ts`; `stage.ts` is how the World lends its camera and sky and the Grid
+reports its sheet). `src/world/env/domeGeometry.ts` is the sky grid's projection, now shared by
+the drawing and the transition so they cannot drift apart.
+
+**Also fixed:** the World was emptied and rebuilt behind every lesson (it was measured as zero
+size while hidden), restarting the clouds and the plant on return; and leaving a results screen
+could open a second World. The World now stays as it was, and returning pops back to it. Its
+ambient events (birds, worm, Cell wandering) wait while a lesson is open.
+
+**Compromises and departures, reported:**
+- Full mode runs on the JavaScript thread (each frame blends precomputed points and redraws one
+  SVG), not the native driver the performance rules ask for: the grid's lines change shape,
+  which the native driver cannot animate. Smooth in the browser; not yet measured on a phone.
+- During the 0.3 s hand-over the farm below the horizon fades under the sky colour rather than
+  becoming part of the sheet.
+- When a lesson opens on something without a sheet (a question, or "Which computer do you
+  use?"), or a sheet takes longer than 0.7 s to lay out, the grid lands on a stand-in sheet in
+  the middle of the screen. Leaving from the results screen (no sheet) starts from the sky grid.
+- The beam is drawn light (temporary visual asset); production VFX could add bloom and particles.
+- Ambient loops (drifting clouds, the plant's sway) keep running under the lesson so they never
+  restart; they are cheap native-driver loops.
+- The Grid (spreadsheet) now imports from the World's transition code to report its sheet, a
+  one-way dependency kept to two functions.
+- Checked in the browser (frame by frame with a slowed clock) at 375 × 812 and 812 × 375 (side
+  menu), Refined and Classic Farm, Full, Reduced and Off, roots and farm routes, both directions.
+  Not checked: entering from Games (needs skills due for review), leaving from the results
+  screen, and a physical phone.
+
 ## Approved vs deferred
 
 Approved and in scope: everything in the brief's stages 1–9.
@@ -109,6 +160,8 @@ arcade games; production artwork (see creative direction).
 ## Performance requirements
 
 - Static scenery drawn once per screen size; ambient life paused off screen.
-- Transitions on the native driver; no layout work during a transition.
+- Transitions on the native driver where they only move or fade (Reduced, camera travel); the
+  Full lesson transition reshapes the grid on the JavaScript thread (see Stage 3). No layout
+  work during a transition: its geometry is precomputed once.
 - Lesson data is synchronous (bundled), so nothing loads during a transition.
 - Target: no dropped frames on a mid-range phone in Expo Go (not yet measured on device).
